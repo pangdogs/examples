@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/golaxy-kit/components v0.0.0-20230116072443-cf722383d7ba
-	github.com/golaxy-kit/golaxy v0.0.0-20230116072238-551251edb645
+	github.com/golaxy-kit/golaxy v0.0.0-20230116080831-2f45dbc48ec2
 	github.com/golaxy-kit/plugins v0.0.0-20230116072428-581ea7cc1b7a
 )
 
