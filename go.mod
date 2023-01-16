@@ -3,9 +3,9 @@ module github.com/golaxy-kit/examples
 go 1.19
 
 require (
-	github.com/golaxy-kit/components v0.0.0-20230115132959-6896b57d57ae
-	github.com/golaxy-kit/golaxy v0.0.0-20230115130835-58d61352b1c6
-	github.com/golaxy-kit/plugins v0.0.0-20230115132839-1c3bf3bd0e5d
+	github.com/golaxy-kit/components v0.0.0-20230116072443-cf722383d7ba
+	github.com/golaxy-kit/golaxy v0.0.0-20230116072238-551251edb645
+	github.com/golaxy-kit/plugins v0.0.0-20230116072428-581ea7cc1b7a
 )
 
 require (

@@ -7,7 +7,7 @@ import (
 )
 
 // DemoComp 定义Demo组件
-var DemoComp = define.DefineComponentInterface[Demo]().Name
+var DemoComp = define.DefineComponent[Demo, _Demo]()
 
 // Demo Demo组件接口
 type Demo interface{}
