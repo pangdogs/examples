@@ -1,31 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"github.com/golaxy-kit/golaxy/define"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/runtime"
+	"kit.golaxy.org/golaxy/define"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/plugins/logger"
 )
 
-// DemoComp 定义Demo组件
-var DemoComp = define.DefineComponent[Demo, _Demo]("Demo组件，在组件生命周期回调函数中，打印一些信息。")
+// defineDemoComp 定义Demo组件
+var defineDemoComp = define.DefineComponent[Demo, _Demo]("Demo组件")
 
 // Demo Demo组件接口
 type Demo interface{}
 
-// _Demo Demo组件
+// _Demo Demo组件实现
 type _Demo struct {
 	ec.ComponentBehavior
 }
 
 // Awake 组件唤醒
 func (comp *_Demo) Awake() {
-	fmt.Printf("I'm entity %s, comp %s Awake.\n", comp.GetEntity(), comp)
+	logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
 }
 
 // Start 组件开始
 func (comp *_Demo) Start() {
-	fmt.Printf("I'm entity %s, comp %s Start.\n", comp.GetEntity(), comp)
+	logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
 }
 
 // Update 组件更新
@@ -34,7 +34,7 @@ func (comp *_Demo) Update() {
 	frame := ctx.GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		fmt.Printf("I'm entity %s, comp %s Update(%f).\n", comp.GetEntity(), comp, frame.GetRunningElapseTime().Seconds())
+		logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Update(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
@@ -44,11 +44,11 @@ func (comp *_Demo) LateUpdate() {
 	frame := ctx.GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		fmt.Printf("I'm entity %s, comp %s LateUpdate(%f).\n", comp.GetEntity(), comp, frame.GetRunningElapseTime().Seconds())
+		logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q LateUpdate(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
 // Shut 组件停止
 func (comp *_Demo) Shut() {
-	fmt.Printf("I'm entity %s, comp %s Shut.\n", comp.GetEntity(), comp)
+	logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
 }

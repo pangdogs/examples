@@ -1,16 +1,17 @@
-module github.com/golaxy-kit/examples
+module kit.golaxy.org/examples
 
-go 1.19
+go 1.20
 
 require (
-	github.com/golaxy-kit/components v0.0.0-20230116072443-cf722383d7ba
-	github.com/golaxy-kit/golaxy v0.0.0-20230116080831-2f45dbc48ec2
-	github.com/golaxy-kit/plugins v0.0.0-20230116072428-581ea7cc1b7a
+	go.uber.org/zap v1.24.0
+	kit.golaxy.org/components v0.0.0-20230226125856-bc196d341fcd
+	kit.golaxy.org/golaxy v0.1.28
+	kit.golaxy.org/plugins v0.0.0-20230421140650-2d94e2b13c33
 )
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
-	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )

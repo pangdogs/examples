@@ -1,35 +1,41 @@
 package main
 
 import (
-	"fmt"
-	"github.com/golaxy-kit/golaxy/define"
-	"github.com/golaxy-kit/golaxy/service"
+	"kit.golaxy.org/golaxy/define"
+	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/plugins/logger"
+	"reflect"
 )
 
-var DemoPlugin = define.DefinePlugin[IDemoPlugin, any]().ServicePlugin(
-	func(options ...any) IDemoPlugin {
-		return &_DemoPlugin{
-			options: options,
-		}
-	},
-)
+// defineDemoPlugin 定义demo插件
+var defineDemoPlugin = define.DefineServicePlugin[IDemoPlugin, any](func(options ...any) IDemoPlugin {
+	return &_DemoPlugin{
+		options: options,
+	}
+})
 
+// IDemoPlugin demo插件接口
 type IDemoPlugin interface {
-	Test()
+	HelloWorld()
 }
 
+// _DemoPlugin demo插件实现
 type _DemoPlugin struct {
 	options []any
+	ctx     service.Context
 }
 
-func (d *_DemoPlugin) Init(ctx service.Context) {
-	fmt.Printf("%s Init.\n", DemoPlugin.Name)
+// InitService 初始化服务插件
+func (d *_DemoPlugin) InitService(ctx service.Context) {
+	logger.Infof(ctx, "init service plugin %q with %q", defineDemoPlugin.Name, reflect.TypeOf(d).Elem())
+	d.ctx = ctx
 }
 
-func (d *_DemoPlugin) Shut() {
-	fmt.Printf("%s Shut.\n", DemoPlugin.Name)
+// ShutService 关闭服务插件
+func (d *_DemoPlugin) ShutService(ctx service.Context) {
+	logger.Infof(ctx, "shut service plugin %q", defineDemoPlugin.Name)
 }
 
-func (d *_DemoPlugin) Test() {
-	fmt.Printf("%s Test.\n", DemoPlugin.Name)
+func (d *_DemoPlugin) HelloWorld() {
+	logger.Infof(d.ctx, "%q say hello world", defineDemoPlugin.Name)
 }
