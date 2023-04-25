@@ -23,7 +23,7 @@ func main() {
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
 	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "./demo_ec.log", 100, true, true)
-	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger))
+	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
 
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
@@ -33,7 +33,7 @@ func main() {
 		service.WithContextOption{}.StartedCallback(func(serviceCtx service.Context) {
 			// 创建插件包，安装插件
 			pluginBundle := plugin.NewPluginBundle()
-			zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger))
+			zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
 
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
