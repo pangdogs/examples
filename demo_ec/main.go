@@ -22,7 +22,7 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "./demo_ec.log", 100, true, true)
+	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
 	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
 
 	// 创建服务上下文与服务，并开始运行

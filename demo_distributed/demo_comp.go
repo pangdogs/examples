@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
@@ -20,32 +23,17 @@ type Demo interface{}
 // _Demo Demo组件实现
 type _Demo struct {
 	ec.ComponentBehavior
+	service registry.Service
 }
 
-// Update 组件更新
-func (comp *_Demo) Update() {
-	frame := runtime.Get(comp).GetFrame()
-
-	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		err := registry.Register(service.Get(comp), registry.Service{
-			Name:    "demo",
-			Version: "v0.1.0",
-			Nodes: []registry.Node{
-				{
-					Id:      service.Get(comp).GetID().String(),
-					Address: fmt.Sprintf("service:%s:%s", service.Get(comp).GetName(), service.Get(comp).GetID()),
-				},
-			},
-		}, 3*time.Second)
-		if err != nil {
-			logger.Panic(service.Get(comp), err)
-		}
+// Start 组件开始
+func (comp *_Demo) Start() {
+	w, err := registry.Watch(service.Get(comp), context.Background(), "demo")
+	if err != nil {
+		logger.Panic(service.Get(comp), err)
 	}
-}
 
-// Shut 组件停止
-func (comp *_Demo) Shut() {
-	err := registry.Deregister(service.Get(comp), registry.Service{
+	comp.service = registry.Service{
 		Name:    "demo",
 		Version: "v0.1.0",
 		Nodes: []registry.Node{
@@ -54,7 +42,55 @@ func (comp *_Demo) Shut() {
 				Address: fmt.Sprintf("service:%s:%s", service.Get(comp).GetName(), service.Get(comp).GetID()),
 			},
 		},
-	})
+	}
+
+	err = registry.Register(service.Get(comp), context.Background(), comp.service, 10*time.Second)
+	if err != nil {
+		logger.Panic(service.Get(comp), err)
+	}
+
+	go func() {
+		for {
+			event, err := w.Next()
+			if err != nil {
+				if errors.Is(err, registry.ErrWatcherStopped) {
+					logger.Info(service.Get(comp), "stop watching")
+					return
+				}
+				logger.Panic(service.Get(comp), err)
+			}
+
+			eventData, _ := json.Marshal(event)
+			logger.Infof(service.Get(comp), "receive event: %s", eventData)
+		}
+	}()
+}
+
+// Update 组件更新
+func (comp *_Demo) Update() {
+	frame := runtime.Get(comp).GetFrame()
+
+	if frame.GetCurFrames()%uint64(150) == 0 {
+		err := registry.Register(service.Get(comp), context.Background(), comp.service, 10*time.Second)
+		if err != nil {
+			logger.Panic(service.Get(comp), err)
+		}
+	}
+
+	if frame.GetCurFrames()%uint64(300) == 0 {
+		servces, err := registry.ListServices(service.Get(comp), context.Background())
+		if err != nil {
+			logger.Panic(service.Get(comp), err)
+		}
+
+		servicesData, _ := json.Marshal(servces)
+		logger.Infof(service.Get(comp), "all services: %s", servicesData)
+	}
+}
+
+// Shut 组件停止
+func (comp *_Demo) Shut() {
+	err := registry.Deregister(service.Get(comp), context.Background(), comp.service)
 	if err != nil {
 		logger.Panic(service.Get(comp), err)
 	}

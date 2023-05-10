@@ -11,7 +11,11 @@ import (
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/logger"
 	zap_logger "kit.golaxy.org/plugins/logger/zap"
-	etcd_registry "kit.golaxy.org/plugins/registry/etcd"
+	cache_registry "kit.golaxy.org/plugins/registry/cache"
+	redis_registry "kit.golaxy.org/plugins/registry/redis"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -23,12 +27,16 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "./demo_ec.log", 100, true, true)
-	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
-	etcd_registry.Install(pluginBundle, etcd_registry.WithEtcdOption{}.Addresses("localhost:12379"))
 
-	// 创建服务上下文与服务，并开始运行
-	<-golaxy.NewService(service.NewContext(
+	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
+	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
+
+	//r := etcd_registry.NewEtcdRegistry(etcd_registry.WithEtcdOption{}.FastAddresses("localhost:12379"))
+	r := redis_registry.NewRedisRegistry()
+	cache_registry.Install(pluginBundle, cache_registry.WithCacheOption{}.Cached(r))
+
+	// 创建服务上下文
+	ctx := service.NewContext(
 		service.WithContextOption{}.EntityLib(entityLib),
 		service.WithContextOption{}.PluginBundle(pluginBundle),
 		service.WithContextOption{}.Name("service_demo_distributed"),
@@ -36,11 +44,10 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(serviceCtx,
-					runtime.WithContextOption{}.StoppedCallback(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
 					runtime.WithContextOption{}.AutoRecover(false),
 					runtime.WithContextOption{}.Name("runtime_demo_distributed"),
 				),
-				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 300, false)),
+				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 0, false)),
 				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
 			)
 
@@ -57,5 +64,17 @@ func main() {
 				logger.Debugf(rt.GetContext(), "create entity %q finish", entity)
 			})
 		}),
-	)).Run()
+	)
+
+	// 监听退出信号
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	go func() {
+		<-sigChan
+		ctx.GetCancelFunc()()
+	}()
+
+	// 开始运行
+	<-golaxy.NewService(ctx).Run()
 }
