@@ -31,21 +31,20 @@ func main() {
 	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
 	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
 
-	//r := etcd_registry.NewEtcdRegistry(etcd_registry.WithEtcdOption{}.FastAddresses("localhost:12379"))
-	r := redis_registry.NewRedisRegistry()
+	//r := etcd_registry.NewEtcdRegistry(etcd_registry.WithEtcdOption{}.FastAddresses("localhost:2379"))
+	r := redis_registry.NewRedisRegistry(redis_registry.WithRedisOption{}.FastAddress("localhost:6379"))
 	cache_registry.Install(pluginBundle, cache_registry.WithCacheOption{}.Cached(r))
 
 	// 创建服务上下文
 	ctx := service.NewContext(
 		service.WithContextOption{}.EntityLib(entityLib),
 		service.WithContextOption{}.PluginBundle(pluginBundle),
-		service.WithContextOption{}.Name("service_demo_distributed"),
+		service.WithContextOption{}.Name("demo_registry"),
 		service.WithContextOption{}.StartedCallback(func(serviceCtx service.Context) {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(serviceCtx,
 					runtime.WithContextOption{}.AutoRecover(false),
-					runtime.WithContextOption{}.Name("runtime_demo_distributed"),
 				),
 				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 0, false)),
 				golaxy.WithRuntimeOption{}.EnableAutoRun(true),

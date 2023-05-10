@@ -38,8 +38,8 @@ func (comp *_Demo) Start() {
 		Version: "v0.1.0",
 		Nodes: []registry.Node{
 			{
-				Id:      service.Get(comp).GetID().String(),
-				Address: fmt.Sprintf("service:%s:%s", service.Get(comp).GetName(), service.Get(comp).GetID()),
+				Id:      service.Get(comp).GetId().String(),
+				Address: fmt.Sprintf("service:%s:%s", service.Get(comp).GetName(), service.Get(comp).GetId()),
 			},
 		},
 	}

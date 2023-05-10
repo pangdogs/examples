@@ -25,14 +25,14 @@ type _DemoPlugin struct {
 	ctx     service.Context
 }
 
-// InitService 初始化服务插件
-func (d *_DemoPlugin) InitService(ctx service.Context) {
+// InitSP 初始化服务插件
+func (d *_DemoPlugin) InitSP(ctx service.Context) {
 	logger.Infof(ctx, "init service plugin %q with %q", defineDemoPlugin.Name, reflect.TypeOf(d).Elem())
 	d.ctx = ctx
 }
 
-// ShutService 关闭服务插件
-func (d *_DemoPlugin) ShutService(ctx service.Context) {
+// ShutSP 关闭服务插件
+func (d *_DemoPlugin) ShutSP(ctx service.Context) {
 	logger.Infof(ctx, "shut service plugin %q", defineDemoPlugin.Name)
 }
 

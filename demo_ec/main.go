@@ -29,7 +29,7 @@ func main() {
 	<-golaxy.NewService(service.NewContext(
 		service.WithContextOption{}.EntityLib(entityLib),
 		service.WithContextOption{}.PluginBundle(pluginBundle),
-		service.WithContextOption{}.Name("service_demo_ec"),
+		service.WithContextOption{}.Name("demo_ec"),
 		service.WithContextOption{}.StartedCallback(func(serviceCtx service.Context) {
 			// 创建插件包，安装插件
 			pluginBundle := plugin.NewPluginBundle()
@@ -41,7 +41,7 @@ func main() {
 					runtime.WithContextOption{}.StoppedCallback(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
 					runtime.WithContextOption{}.AutoRecover(false),
 					runtime.WithContextOption{}.PluginBundle(pluginBundle),
-					runtime.WithContextOption{}.Name("runtime_demo_ec"),
+					runtime.WithContextOption{}.Name("demo_ec"),
 				),
 				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 300, false)),
 				golaxy.WithRuntimeOption{}.EnableAutoRun(true),

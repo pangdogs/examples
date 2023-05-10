@@ -33,7 +33,7 @@ gopkg.in/natefinch/lumberjack.v2 v2.2.1/go.mod h1:YD8tP3GAjkrDg1eZH7EGmyESg/lsYs
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 kit.golaxy.org/components v0.0.0-20230226125856-bc196d341fcd h1:QQfh7gz3fwrTsQGtR7GMwLi5R20KsFiNZUy25kxSbrA=
 kit.golaxy.org/components v0.0.0-20230226125856-bc196d341fcd/go.mod h1:hGV5mgwTfZ1vqy99Mfsgo1OhzGWMLbjopI7709LIUpE=
-kit.golaxy.org/golaxy v0.1.30 h1:+xUy5vNyn8jlFKYQQmtfmq/MB289oxlaKKRjzRfbGTo=
-kit.golaxy.org/golaxy v0.1.30/go.mod h1:JtTR/AvF7cVKso2scd4HDE0nj9gmGLVxhXRIFFwImd0=
-kit.golaxy.org/plugins v0.1.6 h1:Gz8vocBelrBsziWWeR3VLiKmD6RInjYsIDP0pCiEAQU=
-kit.golaxy.org/plugins v0.1.6/go.mod h1:EpRHu07IjNs9IQxF03/DFENPFNCFPza7anaS7dTZ1rc=
+kit.golaxy.org/golaxy v0.1.33 h1:I/LTwJSfeFhsXLTuX9hdTo8Qf/jE4xs5y9IartF7DVM=
+kit.golaxy.org/golaxy v0.1.33/go.mod h1:JtTR/AvF7cVKso2scd4HDE0nj9gmGLVxhXRIFFwImd0=
+kit.golaxy.org/plugins v0.1.8-0.20230510163153-521a72271771 h1:kKMLDDWRXbayH+RiEYyRK+7GFS5YoI7zeiVGlszR6WQ=
+kit.golaxy.org/plugins v0.1.8-0.20230510163153-521a72271771/go.mod h1:1oybL5dKwBmo0UXq1Z/7B7wftgXEdZo0NdZkQcCd4Vw=
