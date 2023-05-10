@@ -12,6 +12,7 @@ import (
 	"kit.golaxy.org/plugins/logger"
 	zap_logger "kit.golaxy.org/plugins/logger/zap"
 	cache_registry "kit.golaxy.org/plugins/registry/cache"
+	_ "kit.golaxy.org/plugins/registry/etcd"
 	redis_registry "kit.golaxy.org/plugins/registry/redis"
 	"os"
 	"os/signal"

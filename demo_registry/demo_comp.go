@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
@@ -34,7 +34,7 @@ func (comp *_Demo) Start() {
 	}
 
 	comp.service = registry.Service{
-		Name:    "demo",
+		Name:    service.Get(comp).GetName(),
 		Version: "v0.1.0",
 		Nodes: []registry.Node{
 			{
