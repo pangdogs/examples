@@ -12,7 +12,7 @@ import (
 	"kit.golaxy.org/plugins/logger"
 	zap_logger "kit.golaxy.org/plugins/logger/zap"
 	cache_registry "kit.golaxy.org/plugins/registry/cache"
-	_ "kit.golaxy.org/plugins/registry/etcd"
+	etcd_registry "kit.golaxy.org/plugins/registry/etcd"
 	redis_registry "kit.golaxy.org/plugins/registry/redis"
 	"os"
 	"os/signal"
@@ -29,23 +29,25 @@ func main() {
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
 
-	zapLogger, _ := zap_logger.NewZapConsoleLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
-	zap_logger.Install(pluginBundle, zap_logger.WithZapOption{}.ZapLogger(zapLogger), zap_logger.WithZapOption{}.Fields(0))
+	zapLogger, _ := zap_logger.NewConsoleZapLogger(zapcore.InfoLevel, "\t", "", 0, true, true)
+	zap_logger.Install(pluginBundle, zap_logger.WithOption{}.ZapLogger(zapLogger), zap_logger.WithOption{}.Fields(0))
 
-	//r := etcd_registry.NewEtcdRegistry(etcd_registry.WithEtcdOption{}.FastAddresses("localhost:2379"))
-	r := redis_registry.NewRedisRegistry(redis_registry.WithRedisOption{}.FastAddress("localhost:6379"))
-	cache_registry.Install(pluginBundle, cache_registry.WithCacheOption{}.Cached(r))
+	etcdRegistry := etcd_registry.NewRegistry(etcd_registry.WithOption{}.FastAddresses("DevelopWin10:2379"))
+	_ = etcdRegistry
+	redisRegistry := redis_registry.NewRegistry(redis_registry.WithOption{}.FastAddress("DevelopWin10:6379"), redis_registry.WithOption{}.FastDBIndex(10))
+	_ = redisRegistry
+	cache_registry.Install(pluginBundle, cache_registry.WithOption{}.Cached(redisRegistry))
 
 	// 创建服务上下文
 	ctx := service.NewContext(
-		service.WithContextOption{}.EntityLib(entityLib),
-		service.WithContextOption{}.PluginBundle(pluginBundle),
-		service.WithContextOption{}.Name("demo_registry"),
-		service.WithContextOption{}.StartedCallback(func(serviceCtx service.Context) {
+		service.WithOption{}.EntityLib(entityLib),
+		service.WithOption{}.PluginBundle(pluginBundle),
+		service.WithOption{}.Name("demo_registry"),
+		service.WithOption{}.StartedCallback(func(serviceCtx service.Context) {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(serviceCtx,
-					runtime.WithContextOption{}.AutoRecover(false),
+					runtime.WithOption{}.AutoRecover(false),
 				),
 				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 0, false)),
 				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
@@ -54,8 +56,8 @@ func main() {
 			// 在运行时线程环境中，创建实体
 			rt.GetContext().AsyncCallNoRet(func() {
 				entity, err := golaxy.NewEntityCreator(rt.GetContext(),
-					pt.WithEntityOption{}.Prototype("demo"),
-					pt.WithEntityOption{}.Scope(ec.Scope_Global),
+					pt.WithOption{}.Prototype("demo"),
+					pt.WithOption{}.Scope(ec.Scope_Global),
 				).Spawn()
 				if err != nil {
 					logger.Panic(rt.GetContext(), err)

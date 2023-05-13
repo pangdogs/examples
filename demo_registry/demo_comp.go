@@ -28,7 +28,7 @@ type _Demo struct {
 
 // Start 组件开始
 func (comp *_Demo) Start() {
-	w, err := registry.Watch(service.Get(comp), context.Background(), "demo")
+	w, err := registry.Watch(service.Get(comp), context.Background(), service.Get(comp).GetName())
 	if err != nil {
 		logger.Panic(service.Get(comp), err)
 	}
