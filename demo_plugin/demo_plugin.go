@@ -3,8 +3,8 @@ package main
 import (
 	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/plugins/logger"
-	"reflect"
 )
 
 // defineDemoPlugin 定义demo插件
@@ -27,7 +27,7 @@ type _DemoPlugin struct {
 
 // InitSP 初始化服务插件
 func (d *_DemoPlugin) InitSP(ctx service.Context) {
-	logger.Infof(ctx, "init service plugin %q with %q", defineDemoPlugin.Name, reflect.TypeOf(d).Elem())
+	logger.Infof(ctx, "init service plugin %q with %q", defineDemoPlugin.Name, util.TypeOfAnyFullName(*d))
 	d.ctx = ctx
 }
 

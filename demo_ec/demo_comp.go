@@ -4,6 +4,7 @@ import (
 	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/logger"
 )
 
@@ -20,21 +21,20 @@ type _Demo struct {
 
 // Awake 组件唤醒
 func (comp *_Demo) Awake() {
-	logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
+	logger.Infof(service.Get(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
 }
 
 // Start 组件开始
 func (comp *_Demo) Start() {
-	logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
+	logger.Infof(service.Get(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
 }
 
 // Update 组件更新
 func (comp *_Demo) Update() {
-	ctx := runtime.Get(comp)
-	frame := ctx.GetFrame()
+	frame := runtime.Get(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Update(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
+		logger.Infof(service.Get(comp), "I'm entity %q, comp %q Update(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
@@ -44,11 +44,11 @@ func (comp *_Demo) LateUpdate() {
 	frame := ctx.GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q LateUpdate(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
+		logger.Infof(service.Get(comp), "I'm entity %q, comp %q LateUpdate(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
 // Shut 组件停止
 func (comp *_Demo) Shut() {
-	logger.Infof(runtime.Get(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
+	logger.Infof(service.Get(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
 }

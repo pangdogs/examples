@@ -9,8 +9,13 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
+	//etcd_dsync "kit.golaxy.org/plugins/dsync/etcd"
+	redis_dsync "kit.golaxy.org/plugins/dsync/redis"
 	"kit.golaxy.org/plugins/logger"
 	zap_logger "kit.golaxy.org/plugins/logger/zap"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -20,39 +25,50 @@ func main() {
 		defineDemoComp.Implementation,
 	})
 
-	// 创建插件包
+	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
 
 	// 安装日志插件
 	zapLogger, _ := zap_logger.NewConsoleZapLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
 	zap_logger.Install(pluginBundle, zap_logger.WithOption{}.ZapLogger(zapLogger), zap_logger.WithOption{}.Fields(0))
 
+	//// 安装etcd分布式同步插件
+	//etcd_dsync.Install(pluginBundle, etcd_dsync.WithOption{}.FastAddresses("127.0.0.1:2379"))
+
+	// 安装redis服务发现插件
+	redis_dsync.Install(pluginBundle, redis_dsync.WithOption{}.FastAddress("127.0.0.1:6379"), redis_dsync.WithOption{}.FastDBIndex(0))
+
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
 		service.WithOption{}.EntityLib(entityLib),
 		service.WithOption{}.PluginBundle(pluginBundle),
-		service.WithOption{}.Name("demo_ec"),
+		service.WithOption{}.Name("demo_registry"),
 		service.WithOption{}.StartedCallback(func(serviceCtx service.Context) {
+			// 监听退出信号
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+			go func() {
+				<-sigChan
+				serviceCtx.GetCancelFunc()()
+			}()
+
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
-				runtime.NewContext(serviceCtx,
-					runtime.WithOption{}.StoppedCallback(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
-				),
-				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 300, false)),
+				runtime.NewContext(serviceCtx),
+				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(1, 0, false)),
 				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体
 			golaxy.AsyncVoid(rt, func(runtimeCtx runtime.Context) {
-				entity, err := golaxy.NewEntityCreator(runtimeCtx,
+				_, err := golaxy.NewEntityCreator(runtimeCtx,
 					pt.WithOption{}.Prototype("demo"),
 					pt.WithOption{}.Scope(ec.Scope_Global),
 				).Spawn()
 				if err != nil {
 					logger.Panic(service.Get(runtimeCtx), err)
 				}
-
-				logger.Debugf(service.Get(runtimeCtx), "create entity %q finish", entity)
 			})
 		}),
 	)).Run()

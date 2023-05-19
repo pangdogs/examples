@@ -16,15 +16,17 @@ func main() {
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib()
 	entityLib.Register("demo", []string{
-		defineDemoComp.Path,
+		defineDemoComp.Implementation,
 	})
 
 	// 创建插件库，安装插件
 	pluginBundle := plugin.NewPluginBundle()
 
+	// 安装日志插件
 	zapLogger, _ := zap_logger.NewConsoleZapLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
 	zap_logger.Install(pluginBundle, zap_logger.WithOption{}.ZapLogger(zapLogger), zap_logger.WithOption{}.Fields(0))
 
+	// 安装demo插件
 	defineDemoPlugin.Install(pluginBundle)
 
 	// 创建服务上下文与服务，并开始运行
@@ -37,19 +39,18 @@ func main() {
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(serviceCtx,
 					runtime.WithOption{}.StoppedCallback(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
-					runtime.WithOption{}.AutoRecover(false),
 				),
 				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体
-			rt.GetContext().AsyncCallNoRet(func() {
-				_, err := golaxy.NewEntityCreator(rt.GetContext(),
+			golaxy.AsyncVoid(rt, func(runtimeCtx runtime.Context) {
+				_, err := golaxy.NewEntityCreator(runtimeCtx,
 					pt.WithOption{}.Prototype("demo"),
 					pt.WithOption{}.Scope(ec.Scope_Global),
 				).Spawn()
 				if err != nil {
-					logger.Panic(service.Get(rt), err)
+					logger.Panic(service.Get(runtimeCtx), err)
 				}
 			})
 		}),
