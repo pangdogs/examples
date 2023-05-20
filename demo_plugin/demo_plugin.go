@@ -9,7 +9,7 @@ import (
 
 // defineDemoPlugin 定义demo插件
 var defineDemoPlugin = define.DefineServicePlugin[IDemoPlugin, any](func(options ...any) IDemoPlugin {
-	return &_DemoPlugin{
+	return &DemoPlugin{
 		options: options,
 	}
 })
@@ -19,23 +19,23 @@ type IDemoPlugin interface {
 	HelloWorld()
 }
 
-// _DemoPlugin demo插件实现
-type _DemoPlugin struct {
+// DemoPlugin demo插件实现
+type DemoPlugin struct {
 	options []any
 	ctx     service.Context
 }
 
 // InitSP 初始化服务插件
-func (d *_DemoPlugin) InitSP(ctx service.Context) {
+func (d *DemoPlugin) InitSP(ctx service.Context) {
 	logger.Infof(ctx, "init service plugin %q with %q", defineDemoPlugin.Name, util.TypeOfAnyFullName(*d))
 	d.ctx = ctx
 }
 
 // ShutSP 关闭服务插件
-func (d *_DemoPlugin) ShutSP(ctx service.Context) {
+func (d *DemoPlugin) ShutSP(ctx service.Context) {
 	logger.Infof(ctx, "shut service plugin %q", defineDemoPlugin.Name)
 }
 
-func (d *_DemoPlugin) HelloWorld() {
+func (d *DemoPlugin) HelloWorld() {
 	logger.Infof(d.ctx, "%q say hello world", defineDemoPlugin.Name)
 }

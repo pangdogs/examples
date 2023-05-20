@@ -12,18 +12,15 @@ import (
 )
 
 // defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[Demo, _Demo]("Demo组件")
+var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 
-// Demo Demo组件接口
-type Demo interface{}
-
-// _Demo Demo组件实现
-type _Demo struct {
+// DemoComp Demo组件实现
+type DemoComp struct {
 	ec.ComponentBehavior
 }
 
 // Update 组件更新
-func (comp *_Demo) Update() {
+func (comp *DemoComp) Update() {
 	mutex := dsync.NewDMutex(service.Get(comp), "demo_dsync_count")
 	if err := mutex.Lock(context.Background()); err != nil {
 		logger.Panic(service.Get(comp), err)

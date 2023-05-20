@@ -9,28 +9,25 @@ import (
 )
 
 // defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[Demo, _Demo]("Demo组件")
+var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 
-// Demo Demo组件接口
-type Demo interface{}
-
-// _Demo Demo组件实现
-type _Demo struct {
+// DemoComp Demo组件实现
+type DemoComp struct {
 	ec.ComponentBehavior
 }
 
 // Awake 组件唤醒
-func (comp *_Demo) Awake() {
+func (comp *DemoComp) Awake() {
 	logger.Infof(service.Get(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
 }
 
 // Start 组件开始
-func (comp *_Demo) Start() {
+func (comp *DemoComp) Start() {
 	logger.Infof(service.Get(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
 }
 
 // Update 组件更新
-func (comp *_Demo) Update() {
+func (comp *DemoComp) Update() {
 	frame := runtime.Get(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
@@ -39,7 +36,7 @@ func (comp *_Demo) Update() {
 }
 
 // LateUpdate 组件滞后更新
-func (comp *_Demo) LateUpdate() {
+func (comp *DemoComp) LateUpdate() {
 	ctx := runtime.Get(comp)
 	frame := ctx.GetFrame()
 
@@ -49,6 +46,6 @@ func (comp *_Demo) LateUpdate() {
 }
 
 // Shut 组件停止
-func (comp *_Demo) Shut() {
+func (comp *DemoComp) Shut() {
 	logger.Infof(service.Get(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
 }

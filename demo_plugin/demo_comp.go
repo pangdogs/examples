@@ -8,18 +8,15 @@ import (
 )
 
 // defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[DemoComp, _DemoComp]("demo组件")
+var defineDemoComp = define.DefineComponent[any, DemoComp]("demo组件")
 
-// DemoComp Demo组件接口
-type DemoComp interface{}
-
-// _DemoComp Demo组件实现
-type _DemoComp struct {
+// DemoComp Demo组件实现
+type DemoComp struct {
 	ec.ComponentBehavior
 }
 
 // Start 组件开始
-func (comp *_DemoComp) Start() {
+func (comp *DemoComp) Start() {
 	// 调用demo插件
 	defineDemoPlugin.Get(service.Get(comp)).HelloWorld()
 
