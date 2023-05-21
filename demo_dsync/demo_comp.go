@@ -2,12 +2,17 @@ package main
 
 import (
 	"context"
+	"errors"
+	"kit.golaxy.org/golaxy"
 	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/dsync"
 	"kit.golaxy.org/plugins/logger"
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -17,18 +22,48 @@ var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
+	mutex dsync.DMutex
 }
 
 // Update 组件更新
 func (comp *DemoComp) Update() {
-	mutex := dsync.NewDMutex(service.Get(comp), "demo_dsync_count")
+	if comp.mutex != nil {
+		return
+	}
+
+	mutex := dsync.NewDMutex(service.Get(comp), "demo_dsync_counter", dsync.WithOption{}.Tries(64))
 	if err := mutex.Lock(context.Background()); err != nil {
+		logger.Errorf(service.Get(comp), "lock failed: %s", err)
+		return
+	}
+	comp.mutex = mutex
+
+	logger.Info(service.Get(comp), "lock")
+
+	content, err := os.ReadFile("demo_dsync_counter.txt")
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Panic(service.Get(comp), err)
+		}
+	}
+
+	n, _ := strconv.Atoi(string(content))
+	n++
+
+	logger.Infof(service.Get(comp), "counter: %d", n)
+
+	err = os.WriteFile("demo_dsync_counter.txt", []byte(strconv.Itoa(n)), os.ModePerm)
+	if err != nil {
 		logger.Panic(service.Get(comp), err)
 	}
-	defer mutex.Unlock(context.Background())
 
-	sleepTime := time.Duration(rand.Intn(2000)) * time.Millisecond
-	time.Sleep(sleepTime)
+	golaxy.AwaitTimeAfter(comp, time.Duration(rand.Int63n(1000))*time.Millisecond, func(ctx runtime.Context) {
+		if comp.mutex == nil {
+			return
+		}
+		comp.mutex.Unlock(context.Background())
+		comp.mutex = nil
 
-	logger.Panicf(service.Get(comp), "sleep: %f", sleepTime.Seconds())
+		logger.Info(service.Get(comp), "unlock")
+	})
 }
