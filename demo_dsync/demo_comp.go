@@ -57,13 +57,14 @@ func (comp *DemoComp) Update() {
 		logger.Panic(service.Get(comp), err)
 	}
 
-	golaxy.AwaitTimeAfter(comp, time.Duration(rand.Int63n(1000))*time.Millisecond, func(ctx runtime.Context) {
-		if comp.mutex == nil {
-			return
-		}
-		comp.mutex.Unlock(context.Background())
-		comp.mutex = nil
+	golaxy.Await(comp, golaxy.AsyncTimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
+		func(ctx runtime.Context, ret runtime.Ret) {
+			if comp.mutex == nil {
+				return
+			}
+			comp.mutex.Unlock(context.Background())
+			comp.mutex = nil
 
-		logger.Info(service.Get(comp), "unlock")
-	})
+			logger.Info(service.Get(comp), "unlock")
+		})
 }

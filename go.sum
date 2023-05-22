@@ -289,8 +289,8 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 kit.golaxy.org/components v0.0.0-20230226125856-bc196d341fcd h1:QQfh7gz3fwrTsQGtR7GMwLi5R20KsFiNZUy25kxSbrA=
 kit.golaxy.org/components v0.0.0-20230226125856-bc196d341fcd/go.mod h1:hGV5mgwTfZ1vqy99Mfsgo1OhzGWMLbjopI7709LIUpE=
-kit.golaxy.org/golaxy v0.1.48 h1:S2Qt/gNOfZ5xmovnCmzTA4zYmKv2zyM7R+Dh9210ffo=
-kit.golaxy.org/golaxy v0.1.48/go.mod h1:JtTR/AvF7cVKso2scd4HDE0nj9gmGLVxhXRIFFwImd0=
-kit.golaxy.org/plugins v0.1.13 h1:5cSqhZiXZrsGrjRvkWA6VfrpOlB6koHIaCgS8iBooHc=
-kit.golaxy.org/plugins v0.1.13/go.mod h1:ZKc5mQEMqtBNNYQ1l+NaiRqm+zfDNyYFslswtx9yMbg=
+kit.golaxy.org/golaxy v0.1.50 h1:Qw8SHl/2S7cHMfgKnI+Lv4gZ3vMFwasHWzGY0nXwiWE=
+kit.golaxy.org/golaxy v0.1.50/go.mod h1:JtTR/AvF7cVKso2scd4HDE0nj9gmGLVxhXRIFFwImd0=
+kit.golaxy.org/plugins v0.1.14-0.20230522071228-b20bd0c795d0 h1:IIUKNiwOu0x6ohV6+HlHpPyMSD9ia/NS/zZBw7GfCFg=
+kit.golaxy.org/plugins v0.1.14-0.20230522071228-b20bd0c795d0/go.mod h1:ISUL596ZrhpIVyVg83/pi6IJazA+yf04XnBjVhG5Yaw=
 sigs.k8s.io/yaml v1.2.0/go.mod h1:yfXDCHCao9+ENCvLSE62v9VSji2MKu5jeNfTrofGhJc=
