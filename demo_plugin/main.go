@@ -40,7 +40,7 @@ func main() {
 				runtime.NewContext(serviceCtx,
 					runtime.WithOption{}.StoppedCallback(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
 				),
-				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
+				golaxy.WithOption{}.RuntimeAutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体

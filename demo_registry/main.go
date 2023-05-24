@@ -63,10 +63,9 @@ func main() {
 			}()
 
 			// 创建运行时上下文与运行时，并开始运行
-			rt := golaxy.NewRuntime(
-				runtime.NewContext(serviceCtx),
-				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 0, false)),
-				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
+			rt := golaxy.NewRuntime(runtime.NewContext(serviceCtx),
+				golaxy.WithOption{}.RuntimeFrame(runtime.NewFrame(30, 0, false)),
+				golaxy.WithOption{}.RuntimeAutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体

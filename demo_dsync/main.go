@@ -9,7 +9,7 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
-	etcd_dsync "kit.golaxy.org/plugins/dsync/etcd"
+	redis_dsync "kit.golaxy.org/plugins/dsync/redis"
 	"kit.golaxy.org/plugins/logger"
 	zap_logger "kit.golaxy.org/plugins/logger/zap"
 	"os"
@@ -31,11 +31,11 @@ func main() {
 	zapLogger, _ := zap_logger.NewConsoleZapLogger(zapcore.DebugLevel, "\t", "", 0, true, true)
 	zap_logger.Install(pluginBundle, zap_logger.WithOption{}.ZapLogger(zapLogger), zap_logger.WithOption{}.Fields(0))
 
-	//// 安装redis服务发现插件
-	//redis_dsync.Install(pluginBundle, redis_dsync.WithOption{}.FastAddress("127.0.0.1:6379"), redis_dsync.WithOption{}.FastDBIndex(0))
+	// 安装redis服务发现插件
+	redis_dsync.Install(pluginBundle, redis_dsync.WithOption{}.FastAddress("127.0.0.1:6379"), redis_dsync.WithOption{}.FastDBIndex(0))
 
-	// 安装etcd分布式同步插件
-	etcd_dsync.Install(pluginBundle, etcd_dsync.WithOption{}.FastAddresses("127.0.0.1:2379"))
+	//// 安装etcd分布式同步插件
+	//etcd_dsync.Install(pluginBundle, etcd_dsync.WithOption{}.FastAddresses("127.0.0.1:12379"))
 
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
@@ -53,10 +53,9 @@ func main() {
 			}()
 
 			// 创建运行时上下文与运行时，并开始运行
-			rt := golaxy.NewRuntime(
-				runtime.NewContext(serviceCtx),
-				golaxy.WithRuntimeOption{}.Frame(runtime.NewFrame(30, 0, false)),
-				golaxy.WithRuntimeOption{}.EnableAutoRun(true),
+			rt := golaxy.NewRuntime(runtime.NewContext(serviceCtx),
+				golaxy.WithOption{}.RuntimeFrame(runtime.NewFrame(30, 0, false)),
+				golaxy.WithOption{}.RuntimeAutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体
