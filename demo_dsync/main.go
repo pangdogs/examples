@@ -35,7 +35,7 @@ func main() {
 	redis_dsync.Install(pluginBundle, redis_dsync.WithOption{}.FastAddress("127.0.0.1:6379"), redis_dsync.WithOption{}.FastDBIndex(0))
 
 	//// 安装etcd分布式同步插件
-	//etcd_dsync.Install(pluginBundle, etcd_dsync.WithOption{}.FastAddresses("127.0.0.1:12379"))
+	//etcd_dsync.Install(pluginBundle, etcd_dsync.WithOption{}.FastAddresses("127.0.0.1:2379"))
 
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
