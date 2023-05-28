@@ -42,7 +42,7 @@ func main() {
 		service.WithOption{}.EntityLib(entityLib),
 		service.WithOption{}.PluginBundle(pluginBundle),
 		service.WithOption{}.Name("demo_registry"),
-		service.WithOption{}.StartedCallback(func(serviceCtx service.Context) {
+		service.WithOption{}.StartedCb(func(serviceCtx service.Context) {
 			// 监听退出信号
 			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

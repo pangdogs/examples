@@ -50,7 +50,7 @@ func (comp *DemoComp) Start() {
 		for {
 			event, err := w.Next()
 			if err != nil {
-				if errors.Is(err, registry.ErrWatcherStopped) {
+				if errors.Is(err, registry.ErrStoppedWatching) {
 					logger.Info(service.Get(comp), "stop watching")
 					return
 				}

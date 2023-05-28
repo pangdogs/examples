@@ -32,11 +32,11 @@ func main() {
 		service.WithOption{}.EntityLib(entityLib),
 		service.WithOption{}.PluginBundle(pluginBundle),
 		service.WithOption{}.Name("demo_ec"),
-		service.WithOption{}.StartedCallback(func(serviceCtx service.Context) {
+		service.WithOption{}.StartedCb(func(serviceCtx service.Context) {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(serviceCtx,
-					runtime.WithOption{}.StoppedCallback(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
+					runtime.WithOption{}.StoppedCb(func(runtime.Context) { serviceCtx.GetCancelFunc()() }),
 				),
 				golaxy.WithOption{}.RuntimeFrame(runtime.NewFrame(30, 300, false)),
 				golaxy.WithOption{}.RuntimeAutoRun(true),
