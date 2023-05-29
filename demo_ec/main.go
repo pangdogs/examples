@@ -44,9 +44,8 @@ func main() {
 
 			// 在运行时线程环境中，创建实体
 			golaxy.AsyncVoid(rt, func(runtimeCtx runtime.Context) {
-				entity, err := golaxy.NewEntityCreator(runtimeCtx,
-					pt.WithOption{}.Prototype("demo"),
-					pt.WithOption{}.Scope(ec.Scope_Global),
+				entity, err := golaxy.NewEntityCreator(runtimeCtx, "demo",
+					golaxy.WithOption{}.EntityScope(ec.Scope_Global),
 				).Spawn()
 				if err != nil {
 					logger.Panic(service.Get(runtimeCtx), err)
