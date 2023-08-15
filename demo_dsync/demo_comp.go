@@ -31,7 +31,7 @@ func (comp *DemoComp) Update() {
 		return
 	}
 
-	mutex := dsync.NewDMutex(service.Get(comp), "demo_dsync_counter", dsync.WithOption{}.Tries(64))
+	mutex := dsync.NewDMutex(service.Get(comp), "demo_dsync_counter", dsync.Option{}.Tries(64))
 	if err := mutex.Lock(context.Background()); err != nil {
 		logger.Errorf(service.Get(comp), "lock failed: %s", err)
 		return

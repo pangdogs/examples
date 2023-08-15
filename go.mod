@@ -4,19 +4,21 @@ go 1.20
 
 require (
 	go.uber.org/zap v1.24.0
-	kit.golaxy.org/components v0.0.0-20230226125856-bc196d341fcd
-	kit.golaxy.org/golaxy v0.1.61
-	kit.golaxy.org/plugins v0.1.17
+	kit.golaxy.org/golaxy v0.1.73
+	kit.golaxy.org/plugins v0.1.19-0.20230815024308-11f0e9b3179f
 )
 
 require (
+	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/fufuok/bytespool v1.3.2 // indirect
 	github.com/go-redsync/redsync/v4 v4.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
@@ -26,6 +28,7 @@ require (
 	github.com/nats-io/nats.go v1.25.0 // indirect
 	github.com/nats-io/nkeys v0.4.4 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/redis/go-redis/v9 v9.0.3 // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.6 // indirect

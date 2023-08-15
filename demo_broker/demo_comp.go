@@ -27,7 +27,7 @@ type DemoComp struct {
 // Start 组件开始
 func (comp *DemoComp) Start() {
 	sub, err := broker.Subscribe(service.Get(comp), context.Background(), "demo.>",
-		broker.WithOption{}.EventHandler(func(e broker.Event) error {
+		broker.Option{}.EventHandler(func(e broker.Event) error {
 			logger.Infof(service.Get(comp), "pattern:%s, topic:%s, receive: %s", e.Pattern(), e.Topic(), string(e.Message()))
 			return nil
 		}))
