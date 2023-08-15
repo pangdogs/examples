@@ -24,7 +24,9 @@ func main() {
 			BlockCipherMode:     transport.BlockCipherMode_None,
 			PaddingMode:         transport.PaddingMode_None,
 			MACHash:             transport.Hash_Fnv1a64,
-		}))
+		}),
+		gtp_client.Option{}.CompressedSize(128),
+	)
 	if err != nil {
 		panic(err)
 	}

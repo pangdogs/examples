@@ -36,6 +36,7 @@ func main() {
 		gtp_gate.Option{}.Endpoints(os.Args[1:]...),
 		gtp_gate.Option{}.AgreeClientEncryptionProposal(true),
 		gtp_gate.Option{}.AgreeClientCompressionProposal(true),
+		gtp_gate.Option{}.CompressedSize(128),
 		gtp_gate.Option{}.SessionStateChangedHandlers(SessionStateChangedHandler),
 	)
 
