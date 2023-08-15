@@ -6,6 +6,7 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/plugins/gate"
 	"kit.golaxy.org/plugins/logger"
 )
@@ -14,6 +15,11 @@ import (
 func SessionStateChangedHandler(session gate.Session, old, new gate.SessionState) {
 	logger.Infof(session.GetContext(), "session %q state %q => %q", session.GetId(), old, new)
 
+	var id uid.Id
+	if err := id.UnmarshalText([]byte(session.GetId())); err != nil {
+		logger.Panic(session.GetContext(), err)
+	}
+	
 	switch new {
 	case gate.SessionState_Confirmed:
 		// 创建运行时上下文与运行时，并开始运行
@@ -30,15 +36,16 @@ func SessionStateChangedHandler(session gate.Session, old, new gate.SessionState
 					golaxy.Option{}.EntityCreator.EntityConstructor(func(entity ec.Entity) {
 						pt.Cast[IDemoComp](entity).(IDemoCompConstructor).Constructor(session)
 					}),
+					golaxy.Option{}.EntityCreator.PersistId(id),
 				).Spawn()
 			if err != nil {
 				logger.Panic(service.Get(runtimeCtx), err)
 			}
 		})
 
-	case gate.SessionState_Inactive:
-
 	case gate.SessionState_Death:
-
+		session.GetContext().AsyncCallVoid(id, func(entity ec.Entity) {
+			entity.DestroySelf()
+		})
 	}
 }

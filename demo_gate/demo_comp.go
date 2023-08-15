@@ -52,11 +52,14 @@ func (comp *DemoComp) Start() {
 		for _, text := range textQueue[comp.pos:] {
 			if err := comp.session.SendData([]byte(text), true); err != nil {
 				logger.Error(service.Get(ctx), err)
-				return
 			}
 		}
 		comp.pos = len(textQueue)
 	})
+}
+
+func (comp *DemoComp) Shut() {
+	runtime.Get(comp).GetCancelFunc()()
 }
 
 func (comp *DemoComp) Constructor(session gate.Session) {
