@@ -60,7 +60,7 @@ func main() {
 						golaxy.Option{}.EntityCreator.Scope(ec.Scope_Global),
 					).Spawn()
 				if err != nil {
-					logger.Panic(service.Get(runtimeCtx), err)
+					logger.Panic(service.Current(runtimeCtx), err)
 				}
 			})
 		}),

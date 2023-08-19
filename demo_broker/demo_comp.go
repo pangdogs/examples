@@ -26,26 +26,26 @@ type DemoComp struct {
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	sub, err := broker.Subscribe(service.Get(comp), context.Background(), "demo.>",
+	sub, err := broker.Subscribe(service.Current(comp), context.Background(), "demo.>",
 		broker.Option{}.EventHandler(func(e broker.Event) error {
-			logger.Infof(service.Get(comp), "pattern:%s, topic:%s, receive: %s", e.Pattern(), e.Topic(), string(e.Message()))
+			logger.Infof(service.Current(comp), "pattern:%s, topic:%s, receive: %s", e.Pattern(), e.Topic(), string(e.Message()))
 			return nil
 		}))
 	if err != nil {
-		logger.Panic(service.Get(comp), err)
+		logger.Panic(service.Current(comp), err)
 	}
 	comp.sub = sub
 
-	logger.Infof(service.Get(comp), "max payload: %d", broker.MaxPayload(service.Get(comp)))
+	logger.Infof(service.Current(comp), "max payload: %d", broker.MaxPayload(service.Current(comp)))
 
-	golaxy.Await(comp, golaxy.AsyncTimeTick(service.Get(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
+	golaxy.Await(comp, golaxy.AsyncTimeTick(service.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
 		func(ctx runtime.Context, ret runtime.Ret) {
 			msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
-			err := broker.Publish(service.Get(comp), context.Background(), "demo.broker_test", []byte(msg))
+			err := broker.Publish(service.Current(comp), context.Background(), "demo.broker_test", []byte(msg))
 			if err != nil {
-				logger.Panic(service.Get(comp), err)
+				logger.Panic(service.Current(comp), err)
 			}
-			logger.Infof(service.Get(comp), "send: %s", msg)
+			logger.Infof(service.Current(comp), "send: %s", msg)
 			comp.sequence++
 		})
 }

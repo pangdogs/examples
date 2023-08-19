@@ -19,7 +19,7 @@ func SessionStateChangedHandler(session gate.Session, old, new gate.SessionState
 	if err := id.UnmarshalText([]byte(session.GetId())); err != nil {
 		logger.Panic(session.GetContext(), err)
 	}
-	
+
 	switch new {
 	case gate.SessionState_Confirmed:
 		// 创建运行时上下文与运行时，并开始运行
@@ -39,7 +39,7 @@ func SessionStateChangedHandler(session gate.Session, old, new gate.SessionState
 					golaxy.Option{}.EntityCreator.PersistId(id),
 				).Spawn()
 			if err != nil {
-				logger.Panic(service.Get(runtimeCtx), err)
+				logger.Panic(service.Current(runtimeCtx), err)
 			}
 		})
 

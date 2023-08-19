@@ -67,7 +67,7 @@ func main() {
 
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(runtime.NewContext(ctx),
-				golaxy.Option{}.Runtime.Frame(runtime.NewFrame(30, 0, false)),
+				golaxy.Option{}.Runtime.Frame(runtime.NewFrame()),
 				golaxy.Option{}.Runtime.AutoRun(true),
 			)
 
@@ -79,7 +79,7 @@ func main() {
 						golaxy.Option{}.EntityCreator.Scope(ec.Scope_Global),
 					).Spawn()
 				if err != nil {
-					logger.Panic(service.Get(runtimeCtx), err)
+					logger.Panic(service.Current(runtimeCtx), err)
 				}
 			})
 		}),

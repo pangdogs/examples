@@ -46,7 +46,7 @@ func main() {
 						ctx.GetCancelFunc()()
 					}),
 				),
-				golaxy.Option{}.Runtime.Frame(runtime.NewFrame(30, 300, false)),
+				golaxy.Option{}.Runtime.Frame(runtime.NewFrame(runtime.Option{}.TotalFrames(300))),
 				golaxy.Option{}.Runtime.AutoRun(true),
 			)
 
@@ -58,9 +58,9 @@ func main() {
 						golaxy.Option{}.EntityCreator.Scope(ec.Scope_Global),
 					).Spawn()
 				if err != nil {
-					logger.Panic(service.Get(runtimeCtx), err)
+					logger.Panic(service.Current(runtimeCtx), err)
 				}
-				logger.Debugf(service.Get(runtimeCtx), "create entity %q finish", entity)
+				logger.Debugf(service.Current(runtimeCtx), "create entity %q finish", entity)
 			})
 		}),
 	)).Run()

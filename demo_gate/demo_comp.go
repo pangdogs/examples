@@ -45,13 +45,13 @@ func (comp *DemoComp) Start() {
 
 	comp.pos = len(textQueue)
 
-	golaxy.Await(runtime.Get(comp), golaxy.AsyncTimeTick(runtime.Get(comp), time.Second), func(ctx runtime.Context, ret runtime.Ret) {
+	golaxy.Await(runtime.Current(comp), golaxy.AsyncTimeTick(runtime.Current(comp), time.Second), func(ctx runtime.Context, ret runtime.Ret) {
 		textMutex.RLock()
 		defer textMutex.RUnlock()
 
 		for _, text := range textQueue[comp.pos:] {
-			if err := comp.session.SendData([]byte(text), true); err != nil {
-				logger.Error(service.Get(ctx), err)
+			if err := comp.session.SendData([]byte(text)); err != nil {
+				logger.Error(service.Current(ctx), err)
 			}
 		}
 		comp.pos = len(textQueue)
@@ -59,16 +59,16 @@ func (comp *DemoComp) Start() {
 }
 
 func (comp *DemoComp) Shut() {
-	runtime.Get(comp).GetCancelFunc()()
+	runtime.Current(comp).GetCancelFunc()()
 }
 
 func (comp *DemoComp) Constructor(session gate.Session) {
 	setting, err := gtp_gate.GetSessionSetting(session)
 	if err != nil {
-		logger.Panic(service.Get(comp), err)
+		logger.Panic(service.Current(comp), err)
 	}
 
-	setting.RecvDataHandlers(func(session gate.Session, data []byte, sequenced bool) error {
+	setting.RecvDataHandlers(func(session gate.Session, data []byte) error {
 		textMutex.Lock()
 		defer textMutex.Unlock()
 		textQueue = append(textQueue, fmt.Sprintf("[%s]:%s", session.GetId(), string(data)))

@@ -25,25 +25,25 @@ type DemoComp struct {
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	w, err := registry.Watch(service.Get(comp), context.Background(), service.Get(comp).GetName())
+	w, err := registry.Watch(service.Current(comp), context.Background(), service.Current(comp).GetName())
 	if err != nil {
-		logger.Panic(service.Get(comp), err)
+		logger.Panic(service.Current(comp), err)
 	}
 
 	comp.service = registry.Service{
-		Name:    service.Get(comp).GetName(),
+		Name:    service.Current(comp).GetName(),
 		Version: "v0.1.0",
 		Nodes: []registry.Node{
 			{
-				Id:      service.Get(comp).GetId().String(),
-				Address: fmt.Sprintf("service:%s:%s", service.Get(comp).GetName(), service.Get(comp).GetId()),
+				Id:      service.Current(comp).GetId().String(),
+				Address: fmt.Sprintf("service:%s:%s", service.Current(comp).GetName(), service.Current(comp).GetId()),
 			},
 		},
 	}
 
-	err = registry.Register(service.Get(comp), context.Background(), comp.service, 10*time.Second)
+	err = registry.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
 	if err != nil {
-		logger.Panic(service.Get(comp), err)
+		logger.Panic(service.Current(comp), err)
 	}
 
 	go func() {
@@ -51,44 +51,44 @@ func (comp *DemoComp) Start() {
 			event, err := w.Next()
 			if err != nil {
 				if errors.Is(err, registry.ErrStoppedWatching) {
-					logger.Info(service.Get(comp), "stop watching")
+					logger.Info(service.Current(comp), "stop watching")
 					return
 				}
-				logger.Panic(service.Get(comp), err)
+				logger.Panic(service.Current(comp), err)
 			}
 
 			eventData, _ := json.Marshal(event)
-			logger.Infof(service.Get(comp), "receive event: %s", eventData)
+			logger.Infof(service.Current(comp), "receive event: %s", eventData)
 		}
 	}()
 }
 
 // Update 组件更新
 func (comp *DemoComp) Update() {
-	frame := runtime.Get(comp).GetFrame()
+	frame := runtime.Current(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(150) == 0 {
-		err := registry.Register(service.Get(comp), context.Background(), comp.service, 10*time.Second)
+		err := registry.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
 		if err != nil {
-			logger.Panic(service.Get(comp), err)
+			logger.Panic(service.Current(comp), err)
 		}
 	}
 
 	if frame.GetCurFrames()%uint64(300) == 0 {
-		servces, err := registry.ListServices(service.Get(comp), context.Background())
+		servces, err := registry.ListServices(service.Current(comp), context.Background())
 		if err != nil {
-			logger.Panic(service.Get(comp), err)
+			logger.Panic(service.Current(comp), err)
 		}
 
 		servicesData, _ := json.Marshal(servces)
-		logger.Infof(service.Get(comp), "all services: %s", servicesData)
+		logger.Infof(service.Current(comp), "all services: %s", servicesData)
 	}
 }
 
 // Shut 组件停止
 func (comp *DemoComp) Shut() {
-	err := registry.Deregister(service.Get(comp), context.Background(), comp.service)
+	err := registry.Deregister(service.Current(comp), context.Background(), comp.service)
 	if err != nil {
-		logger.Panic(service.Get(comp), err)
+		logger.Panic(service.Current(comp), err)
 	}
 }

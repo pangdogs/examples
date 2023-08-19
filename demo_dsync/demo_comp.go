@@ -31,30 +31,30 @@ func (comp *DemoComp) Update() {
 		return
 	}
 
-	mutex := dsync.NewDMutex(service.Get(comp), "demo_dsync_counter", dsync.Option{}.Tries(64))
+	mutex := dsync.NewDMutex(service.Current(comp), "demo_dsync_counter", dsync.Option{}.Tries(64))
 	if err := mutex.Lock(context.Background()); err != nil {
-		logger.Errorf(service.Get(comp), "lock failed: %s", err)
+		logger.Errorf(service.Current(comp), "lock failed: %s", err)
 		return
 	}
 	comp.mutex = mutex
 
-	logger.Info(service.Get(comp), "lock")
+	logger.Info(service.Current(comp), "lock")
 
 	content, err := os.ReadFile("demo_dsync_counter.txt")
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			logger.Panic(service.Get(comp), err)
+			logger.Panic(service.Current(comp), err)
 		}
 	}
 
 	n, _ := strconv.Atoi(string(content))
 	n++
 
-	logger.Infof(service.Get(comp), "counter: %d", n)
+	logger.Infof(service.Current(comp), "counter: %d", n)
 
 	err = os.WriteFile("demo_dsync_counter.txt", []byte(strconv.Itoa(n)), os.ModePerm)
 	if err != nil {
-		logger.Panic(service.Get(comp), err)
+		logger.Panic(service.Current(comp), err)
 	}
 
 	golaxy.Await(comp, golaxy.AsyncTimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
@@ -65,6 +65,6 @@ func (comp *DemoComp) Update() {
 			comp.mutex.Unlock(context.Background())
 			comp.mutex = nil
 
-			logger.Info(service.Get(comp), "unlock")
+			logger.Info(service.Current(comp), "unlock")
 		})
 }
