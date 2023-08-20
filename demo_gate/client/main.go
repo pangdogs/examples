@@ -27,8 +27,9 @@ func main() {
 			MACHash:             transport.Hash_Fnv1a64,
 		}),
 		gtp_client.Option{}.CompressedSize(128),
-		gtp_client.Option{}.IOTimeout(10*time.Minute),
-		gtp_client.Option{}.IORetryTimes(1000),
+		gtp_client.Option{}.IOTimeout(3*time.Second),
+		gtp_client.Option{}.IOBufferCap(1024*1024*5),
+		gtp_client.Option{}.InactiveTimeout(time.Hour),
 	)
 	if err != nil {
 		panic(err)

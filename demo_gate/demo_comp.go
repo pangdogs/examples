@@ -71,7 +71,9 @@ func (comp *DemoComp) Constructor(session gate.Session) {
 	setting.RecvDataHandlers(func(session gate.Session, data []byte) error {
 		textMutex.Lock()
 		defer textMutex.Unlock()
-		textQueue = append(textQueue, fmt.Sprintf("[%s]:%s", session.GetId(), string(data)))
+		text := fmt.Sprintf("[%s]:%s", session.GetId(), string(data))
+		textQueue = append(textQueue, text)
+		logger.Infof(service.Current(comp), text)
 		return nil
 	})
 

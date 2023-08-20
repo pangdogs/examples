@@ -13,10 +13,8 @@ import (
 
 // SessionStateChangedHandler 会话状态变化的处理器
 func SessionStateChangedHandler(session gate.Session, old, new gate.SessionState) {
-	logger.Infof(session.GetContext(), "session %q state %q => %q", session.GetId(), old, new)
-
-	var id uid.Id
-	if err := id.UnmarshalText([]byte(session.GetId())); err != nil {
+	id, err := uid.UnmarshalText([]byte(session.GetId()))
+	if err != nil {
 		logger.Panic(session.GetContext(), err)
 	}
 

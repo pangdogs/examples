@@ -35,11 +35,12 @@ func main() {
 	// 安装网关插件
 	gtp_gate.Install(pluginBundle,
 		gtp_gate.Option{}.Endpoints(os.Args[1:]...),
-		gtp_gate.Option{}.IOTimeout(10*time.Minute),
-		gtp_gate.Option{}.IORetryTimes(1000),
+		gtp_gate.Option{}.IOTimeout(3*time.Second),
+		gtp_gate.Option{}.IOBufferCap(1024*1024*5),
 		gtp_gate.Option{}.AgreeClientEncryptionProposal(true),
 		gtp_gate.Option{}.AgreeClientCompressionProposal(true),
 		gtp_gate.Option{}.CompressedSize(128),
+		gtp_gate.Option{}.SessionInactiveTimeout(time.Hour),
 		gtp_gate.Option{}.SessionStateChangedHandlers(SessionStateChangedHandler),
 	)
 

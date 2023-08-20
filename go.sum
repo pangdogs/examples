@@ -372,6 +372,6 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 kit.golaxy.org/golaxy v0.1.74 h1:DylD6HefBSle90x7IiUig4e4/+1aU9FFEQxb7Sdv+r4=
 kit.golaxy.org/golaxy v0.1.74/go.mod h1:JtTR/AvF7cVKso2scd4HDE0nj9gmGLVxhXRIFFwImd0=
-kit.golaxy.org/plugins v0.1.19-0.20230819080019-0ea44056867c h1:CMKD6YJ5UeXIuDx2mkV+AaEyGBdxhQx3IYhwe38jvGs=
-kit.golaxy.org/plugins v0.1.19-0.20230819080019-0ea44056867c/go.mod h1:UNB/iSWlctLco4kSM7IA6fHHsachxJyMoaK6bTo3Ccw=
+kit.golaxy.org/plugins v0.1.19-0.20230820161029-fa74d095e63e h1:xFPcyGEjwlo4sXL0SsdqTxpXgswiTI0JTmI6hP+G9Tg=
+kit.golaxy.org/plugins v0.1.19-0.20230820161029-fa74d095e63e/go.mod h1:UNB/iSWlctLco4kSM7IA6fHHsachxJyMoaK6bTo3Ccw=
 sigs.k8s.io/yaml v1.2.0/go.mod h1:yfXDCHCao9+ENCvLSE62v9VSji2MKu5jeNfTrofGhJc=
