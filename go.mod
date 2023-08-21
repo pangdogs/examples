@@ -5,7 +5,7 @@ go 1.20
 require (
 	go.uber.org/zap v1.24.0
 	kit.golaxy.org/golaxy v0.1.74
-	kit.golaxy.org/plugins v0.1.19-0.20230820161029-fa74d095e63e
+	kit.golaxy.org/plugins v0.1.19-0.20230821062121-8d984c69e31e
 )
 
 require (

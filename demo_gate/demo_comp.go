@@ -8,7 +8,6 @@ import (
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/gate"
-	gtp_gate "kit.golaxy.org/plugins/gate/gtp"
 	"kit.golaxy.org/plugins/logger"
 	"sync"
 	"time"
@@ -63,19 +62,17 @@ func (comp *DemoComp) Shut() {
 }
 
 func (comp *DemoComp) Constructor(session gate.Session) {
-	setting, err := gtp_gate.GetSessionSetting(session)
-	if err != nil {
-		logger.Panic(service.Current(comp), err)
-	}
-
-	setting.RecvDataHandlers(func(session gate.Session, data []byte) error {
+	err := session.Options(gate.Option{}.RecvDataHandlers(func(session gate.Session, data []byte) error {
 		textMutex.Lock()
 		defer textMutex.Unlock()
 		text := fmt.Sprintf("[%s]:%s", session.GetId(), string(data))
 		textQueue = append(textQueue, text)
 		logger.Infof(service.Current(comp), text)
 		return nil
-	})
+	}))
+	if err != nil {
+		logger.Panic(service.Current(comp), err)
+	}
 
 	comp.session = session
 }
