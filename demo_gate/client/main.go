@@ -29,7 +29,7 @@ func main() {
 		gtp_client.Option{}.CompressedSize(128),
 		gtp_client.Option{}.IOTimeout(3*time.Second),
 		gtp_client.Option{}.IOBufferCap(1024*1024*5),
-		gtp_client.Option{}.InactiveTimeout(time.Hour),
+		gtp_client.Option{}.AutoReconnect(true),
 	)
 	if err != nil {
 		panic(err)
@@ -42,9 +42,7 @@ func main() {
 		var text string
 		fmt.Scanln(&text)
 		if err := cli.SendData([]byte(text)); err != nil {
-			if err := gtp_client.Reonnect(cli); err != nil {
-				fmt.Println("reconnect err:", err)
-			}
+			fmt.Println("send data err:", err)
 		}
 	}
 }
