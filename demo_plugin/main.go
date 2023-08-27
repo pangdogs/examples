@@ -42,7 +42,7 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(ctx,
-					runtime.Option{}.RunningHandler(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.Option{}.Context.RunningHandler(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}

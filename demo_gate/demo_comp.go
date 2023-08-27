@@ -7,7 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/plugins/gate"
+	"kit.golaxy.org/plugins/gtp_gate"
 	"kit.golaxy.org/plugins/logger"
 	"sync"
 	"time"
@@ -18,12 +18,12 @@ var defineDemoComp = define.DefineComponent[IDemoComp, DemoComp]("Demo组件")
 
 // IDemoComp Demo组件接口
 type IDemoComp interface {
-	GetSession() gate.Session
+	GetSession() gtp_gate.Session
 }
 
 // IDemoCompConstructor Demo组件构造函数
 type IDemoCompConstructor interface {
-	Constructor(session gate.Session)
+	Constructor(session gtp_gate.Session)
 }
 
 var (
@@ -34,7 +34,7 @@ var (
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	session gate.Session
+	session gtp_gate.Session
 	pos     int
 }
 
@@ -61,22 +61,24 @@ func (comp *DemoComp) Shut() {
 	runtime.Current(comp).GetCancelFunc()()
 }
 
-func (comp *DemoComp) Constructor(session gate.Session) {
-	err := session.Options(gate.Option{}.RecvDataHandlers(func(session gate.Session, data []byte) error {
-		textMutex.Lock()
-		defer textMutex.Unlock()
-		text := fmt.Sprintf("[%s]:%s", session.GetId(), string(data))
-		textQueue = append(textQueue, text)
-		logger.Infof(service.Current(comp), text)
-		return nil
-	}))
+func (comp *DemoComp) Constructor(session gtp_gate.Session) {
+	comp.session = session
+
+	err := session.Options(gtp_gate.Option{}.SessionOption.RecvDataHandlers(comp.RecvDataHandler))
 	if err != nil {
 		logger.Panic(service.Current(comp), err)
 	}
-
-	comp.session = session
 }
 
-func (comp *DemoComp) GetSession() gate.Session {
+func (comp *DemoComp) RecvDataHandler(data []byte) error {
+	textMutex.Lock()
+	defer textMutex.Unlock()
+	text := fmt.Sprintf("[%s]:%s", comp.session.GetId(), string(data))
+	textQueue = append(textQueue, text)
+	logger.Infof(service.Current(comp), text)
+	return nil
+}
+
+func (comp *DemoComp) GetSession() gtp_gate.Session {
 	return comp.session
 }

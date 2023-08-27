@@ -18,7 +18,7 @@ type DemoComp struct {
 // Start 组件开始
 func (comp *DemoComp) Start() {
 	// 调用demo插件
-	defineDemoPlugin.Get(service.Current(comp)).HelloWorld()
+	defineDemoPlugin.Fetch(service.Current(comp)).HelloWorld()
 
 	// 停止运行时
 	runtime.Current(comp).GetCancelFunc()()

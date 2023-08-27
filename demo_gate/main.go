@@ -6,7 +6,7 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
-	gtp_gate "kit.golaxy.org/plugins/gate/gtp"
+	"kit.golaxy.org/plugins/gtp_gate"
 	zap_logger "kit.golaxy.org/plugins/logger/zap"
 	"os"
 	"os/signal"
@@ -34,14 +34,14 @@ func main() {
 
 	// 安装网关插件
 	gtp_gate.Install(pluginBundle,
-		gtp_gate.Option{}.Endpoints(os.Args[1:]...),
-		gtp_gate.Option{}.IOTimeout(3*time.Second),
-		gtp_gate.Option{}.IOBufferCap(1024*1024*5),
-		gtp_gate.Option{}.AgreeClientEncryptionProposal(true),
-		gtp_gate.Option{}.AgreeClientCompressionProposal(true),
-		gtp_gate.Option{}.CompressedSize(128),
-		gtp_gate.Option{}.SessionInactiveTimeout(time.Hour),
-		gtp_gate.Option{}.SessionStateChangedHandlers(SessionStateChangedHandler),
+		gtp_gate.Option{}.GateOption.Endpoints(os.Args[1:]...),
+		gtp_gate.Option{}.GateOption.IOTimeout(3*time.Second),
+		gtp_gate.Option{}.GateOption.IOBufferCap(1024*1024*5),
+		gtp_gate.Option{}.GateOption.AgreeClientEncryptionProposal(true),
+		gtp_gate.Option{}.GateOption.AgreeClientCompressionProposal(true),
+		gtp_gate.Option{}.GateOption.CompressedSize(128),
+		gtp_gate.Option{}.GateOption.SessionInactiveTimeout(time.Hour),
+		gtp_gate.Option{}.GateOption.SessionStateChangedHandlers(SessionStateChangedHandler),
 	)
 
 	// 创建服务上下文与服务，并开始运行

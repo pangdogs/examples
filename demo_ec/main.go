@@ -39,14 +39,14 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := golaxy.NewRuntime(
 				runtime.NewContext(ctx,
-					runtime.Option{}.RunningHandler(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.Option{}.Context.RunningHandler(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
 						ctx.GetCancelFunc()()
 					}),
 				),
-				golaxy.Option{}.Runtime.Frame(runtime.NewFrame(runtime.Option{}.TotalFrames(300))),
+				golaxy.Option{}.Runtime.Frame(runtime.NewFrame(runtime.Option{}.Frame.TotalFrames(300))),
 				golaxy.Option{}.Runtime.AutoRun(true),
 			)
 
