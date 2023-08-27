@@ -7,7 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/gtp_gate"
-	zap_logger "kit.golaxy.org/plugins/logger/zap"
+	"kit.golaxy.org/plugins/logger/zap_logger"
 	"os"
 	"os/signal"
 	"syscall"

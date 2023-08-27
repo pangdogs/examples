@@ -374,4 +374,5 @@ kit.golaxy.org/golaxy v0.1.79 h1:hTb17PA16fs0HAV/+XXGqoIOOATymONjJ3TiLIoycKw=
 kit.golaxy.org/golaxy v0.1.79/go.mod h1:JtTR/AvF7cVKso2scd4HDE0nj9gmGLVxhXRIFFwImd0=
 kit.golaxy.org/plugins v0.1.19-0.20230827102809-53124d7b4edd h1:nKcZ99opD/E5LU/HVWAb5nKcZbJ9i2B2zoKDc6Q0luk=
 kit.golaxy.org/plugins v0.1.19-0.20230827102809-53124d7b4edd/go.mod h1:22Z4yNf8O0QxkDcldr3JIlVwUO3SafVCn90Mb+25k6I=
+kit.golaxy.org/plugins v0.1.19-0.20230827153744-34e195cbfe1c/go.mod h1:22Z4yNf8O0QxkDcldr3JIlVwUO3SafVCn90Mb+25k6I=
 sigs.k8s.io/yaml v1.2.0/go.mod h1:yfXDCHCao9+ENCvLSE62v9VSji2MKu5jeNfTrofGhJc=

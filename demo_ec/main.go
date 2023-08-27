@@ -9,7 +9,7 @@ import (
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/logger"
-	zap_logger "kit.golaxy.org/plugins/logger/zap"
+	"kit.golaxy.org/plugins/logger/zap_logger"
 )
 
 func main() {
