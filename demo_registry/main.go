@@ -40,11 +40,8 @@ func main() {
 	redisRegistry := redis_registry.NewRegistry(redis_registry.Option{}.FastAddress("127.0.0.1:6379"), redis_registry.Option{}.FastDBIndex(0))
 	_ = redisRegistry
 
-	// 创建服务发现缓存插件
-	cacheRegistry := cache_registry.Option{}.Cached(redisRegistry)
-
-	// 安装服务发现插件
-	cache_registry.Install(pluginBundle, cacheRegistry)
+	// 安装服务发现插件，使用服务缓存插件包装其他服务发现插件
+	cache_registry.Install(pluginBundle, cache_registry.Option{}.Wrap(redisRegistry))
 
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
