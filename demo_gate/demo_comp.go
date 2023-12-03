@@ -22,11 +22,6 @@ type IDemoComp interface {
 	GetSession() gtp_gate.Session
 }
 
-// IDemoCompConstructor Demo组件构造函数
-type IDemoCompConstructor interface {
-	Constructor(session gtp_gate.Session)
-}
-
 var (
 	textQueue []string
 	textMutex sync.RWMutex
@@ -37,6 +32,10 @@ type DemoComp struct {
 	ec.ComponentBehavior
 	session gtp_gate.Session
 	pos     int
+}
+
+func (comp *DemoComp) Awake() {
+	comp.session = comp.GetEntity().GetMeta().Get("session").(gtp_gate.Session)
 }
 
 func (comp *DemoComp) Start() {

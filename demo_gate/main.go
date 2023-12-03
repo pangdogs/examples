@@ -79,9 +79,7 @@ func handleSessionStateChanged(session gtp_gate.Session, old, new gtp_gate.Sessi
 				golaxy.Option{}.EntityCreator.Prototype("demo"),
 				golaxy.Option{}.EntityCreator.Scope(ec.Scope_Global),
 				golaxy.Option{}.EntityCreator.PersistId(uid.Id(session.GetId())),
-				golaxy.Option{}.EntityCreator.ComponentCtor(generic.CastDelegateAction2(func(entity ec.Entity, comp ec.Component) {
-					pt.Cast[IDemoComp](entity).(IDemoCompConstructor).Constructor(session)
-				})),
+				golaxy.Option{}.EntityCreator.Meta(map[string]any{"session": session}),
 			).Spawn()
 			if err != nil {
 				log.Panic(service.Current(ctx), err)
