@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go.uber.org/zap"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/plugins/gtp"
 	"kit.golaxy.org/plugins/gtp_client"
 	"os"
@@ -19,10 +20,10 @@ func main() {
 	log := zaplogger.Sugar()
 
 	cli, err := gtp_client.Connect(context.Background(), os.Args[1],
-		gtp_client.Option{}.RecvDataHandlers(func(client *gtp_client.Client, data []byte) error {
+		gtp_client.Option{}.RecvDataHandler(generic.CastDelegateFunc1(func(data []byte) error {
 			log.Infoln(string(data))
 			return nil
-		}),
+		})),
 		gtp_client.Option{}.EncCipherSuite(gtp.CipherSuite{
 			SecretKeyExchange:   gtp.SecretKeyExchange_ECDHE,
 			SymmetricEncryption: gtp.SymmetricEncryption_XChaCha20,
