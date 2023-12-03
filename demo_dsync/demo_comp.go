@@ -4,20 +4,16 @@ import (
 	"context"
 	"errors"
 	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/plugins/dsync"
-	"kit.golaxy.org/plugins/logger"
+	"kit.golaxy.org/plugins/log"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
 )
-
-// defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 
 // DemoComp Demo组件实现
 type DemoComp struct {
@@ -31,40 +27,41 @@ func (comp *DemoComp) Update() {
 		return
 	}
 
-	mutex := dsync.NewDMutex(service.Current(comp), "demo_dsync_counter", dsync.Option{}.Tries(64))
+	mutex := dsync.NewMutex(service.Current(comp), "demo_dsync_counter")
 	if err := mutex.Lock(context.Background()); err != nil {
-		logger.Errorf(service.Current(comp), "lock failed: %s", err)
+		log.Errorf(service.Current(comp), "lock failed: %s", err)
 		return
 	}
 	comp.mutex = mutex
 
-	logger.Info(service.Current(comp), "lock")
+	log.Info(service.Current(comp), "lock")
 
 	content, err := os.ReadFile("demo_dsync_counter.txt")
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			logger.Panic(service.Current(comp), err)
+			log.Panic(service.Current(comp), err)
 		}
 	}
 
 	n, _ := strconv.Atoi(string(content))
 	n++
 
-	logger.Infof(service.Current(comp), "counter: %d", n)
+	log.Infof(service.Current(comp), "counter: %d", n)
 
 	err = os.WriteFile("demo_dsync_counter.txt", []byte(strconv.Itoa(n)), os.ModePerm)
 	if err != nil {
-		logger.Panic(service.Current(comp), err)
+		log.Panic(service.Current(comp), err)
 	}
 
-	golaxy.Await(comp, golaxy.AsyncTimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
-		func(ctx runtime.Context, ret runtime.Ret) {
-			if comp.mutex == nil {
-				return
-			}
-			comp.mutex.Unlock(context.Background())
-			comp.mutex = nil
+	golaxy.Await(runtime.Current(comp),
+		golaxy.TimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
+	).Any(runtime.Current(comp), func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+		if comp.mutex == nil {
+			return
+		}
+		comp.mutex.Unlock(context.Background())
+		comp.mutex = nil
 
-			logger.Info(service.Current(comp), "unlock")
-		})
+		log.Info(service.Current(comp), "unlock")
+	})
 }

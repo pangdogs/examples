@@ -5,17 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/plugins/logger"
+	"kit.golaxy.org/plugins/log"
 	"kit.golaxy.org/plugins/registry"
 	"time"
 )
-
-// defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 
 // DemoComp Demo组件实现
 type DemoComp struct {
@@ -27,7 +23,7 @@ type DemoComp struct {
 func (comp *DemoComp) Start() {
 	w, err := registry.Watch(service.Current(comp), context.Background(), service.Current(comp).GetName())
 	if err != nil {
-		logger.Panic(service.Current(comp), err)
+		log.Panic(service.Current(comp), err)
 	}
 
 	comp.service = registry.Service{
@@ -43,7 +39,7 @@ func (comp *DemoComp) Start() {
 
 	err = registry.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
 	if err != nil {
-		logger.Panic(service.Current(comp), err)
+		log.Panic(service.Current(comp), err)
 	}
 
 	go func() {
@@ -51,14 +47,14 @@ func (comp *DemoComp) Start() {
 			event, err := w.Next()
 			if err != nil {
 				if errors.Is(err, registry.ErrStoppedWatching) {
-					logger.Info(service.Current(comp), "stop watching")
+					log.Info(service.Current(comp), "stop watching")
 					return
 				}
-				logger.Panic(service.Current(comp), err)
+				log.Panic(service.Current(comp), err)
 			}
 
 			eventData, _ := json.Marshal(event)
-			logger.Infof(service.Current(comp), "receive event: %s", eventData)
+			log.Infof(service.Current(comp), "receive event: %s", eventData)
 		}
 	}()
 }
@@ -70,18 +66,18 @@ func (comp *DemoComp) Update() {
 	if frame.GetCurFrames()%uint64(150) == 0 {
 		err := registry.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
 		if err != nil {
-			logger.Panic(service.Current(comp), err)
+			log.Panic(service.Current(comp), err)
 		}
 	}
 
 	if frame.GetCurFrames()%uint64(300) == 0 {
 		servces, err := registry.ListServices(service.Current(comp), context.Background())
 		if err != nil {
-			logger.Panic(service.Current(comp), err)
+			log.Panic(service.Current(comp), err)
 		}
 
 		servicesData, _ := json.Marshal(servces)
-		logger.Infof(service.Current(comp), "all services: %s", servicesData)
+		log.Infof(service.Current(comp), "all services: %s", servicesData)
 	}
 }
 
@@ -89,6 +85,6 @@ func (comp *DemoComp) Update() {
 func (comp *DemoComp) Shut() {
 	err := registry.Deregister(service.Current(comp), context.Background(), comp.service)
 	if err != nil {
-		logger.Panic(service.Current(comp), err)
+		log.Panic(service.Current(comp), err)
 	}
 }

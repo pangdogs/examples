@@ -4,18 +4,15 @@ import (
 	"context"
 	"fmt"
 	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/plugins/broker"
-	"kit.golaxy.org/plugins/logger"
+	"kit.golaxy.org/plugins/log"
 	"math/rand"
 	"time"
 )
-
-// defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 
 // DemoComp Demo组件实现
 type DemoComp struct {
@@ -26,28 +23,31 @@ type DemoComp struct {
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
+	log.Infof(service.Current(comp), "max payload: %d", broker.MaxPayload(service.Current(comp)))
+
 	sub, err := broker.Subscribe(service.Current(comp), context.Background(), "demo.>",
-		broker.Option{}.EventHandler(func(e broker.Event) error {
-			logger.Infof(service.Current(comp), "pattern:%s, topic:%s, receive: %s", e.Pattern(), e.Topic(), string(e.Message()))
+		broker.Option{}.EventHandler(generic.CastDelegateFunc1(func(e broker.Event) error {
+			log.Infof(service.Current(comp), "receive=> pattern:%q, topic:%q, msg:%q", e.Pattern(), e.Topic(), string(e.Message()))
 			return nil
-		}))
+		})))
 	if err != nil {
-		logger.Panic(service.Current(comp), err)
+		log.Panic(service.Current(comp), err)
 	}
 	comp.sub = sub
 
-	logger.Infof(service.Current(comp), "max payload: %d", broker.MaxPayload(service.Current(comp)))
+	golaxy.Await(runtime.Current(comp),
+		golaxy.TimeTick(runtime.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
+	).Pipe(comp, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+		topic := "demo.broker_test"
+		msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
 
-	golaxy.Await(comp, golaxy.AsyncTimeTick(service.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
-		func(ctx runtime.Context, ret runtime.Ret) {
-			msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
-			err := broker.Publish(service.Current(comp), context.Background(), "demo.broker_test", []byte(msg))
-			if err != nil {
-				logger.Panic(service.Current(comp), err)
-			}
-			logger.Infof(service.Current(comp), "send: %s", msg)
-			comp.sequence++
-		})
+		if err := broker.Publish(service.Current(comp), context.Background(), topic, []byte(msg)); err != nil {
+			log.Panic(service.Current(comp), err)
+		}
+
+		log.Infof(service.Current(comp), "send=> topic:%q, msg:%q", topic, msg)
+		comp.sequence++
+	})
 }
 
 // Shut 组件结束

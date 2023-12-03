@@ -1,15 +1,11 @@
 package main
 
 import (
-	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/plugins/logger"
+	"kit.golaxy.org/plugins/log"
 )
-
-// defineDemoComp 定义Demo组件
-var defineDemoComp = define.DefineComponent[any, DemoComp]("Demo组件")
 
 // DemoComp Demo组件实现
 type DemoComp struct {
@@ -18,12 +14,12 @@ type DemoComp struct {
 
 // Awake 组件唤醒
 func (comp *DemoComp) Awake() {
-	logger.Infof(service.Current(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
+	log.Infof(service.Current(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
 }
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	logger.Infof(service.Current(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
+	log.Infof(service.Current(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
 }
 
 // Update 组件更新
@@ -31,7 +27,7 @@ func (comp *DemoComp) Update() {
 	frame := runtime.Current(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		logger.Infof(service.Current(comp), "I'm entity %q, comp %q Update(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
+		log.Infof(service.Current(comp), "I'm entity %q, comp %q Update(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
@@ -41,11 +37,16 @@ func (comp *DemoComp) LateUpdate() {
 	frame := ctx.GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		logger.Infof(service.Current(comp), "I'm entity %q, comp %q LateUpdate(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
+		log.Infof(service.Current(comp), "I'm entity %q, comp %q LateUpdate(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
 // Shut 组件停止
 func (comp *DemoComp) Shut() {
-	logger.Infof(service.Current(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
+	log.Infof(service.Current(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
+}
+
+// Dispose 组件销毁
+func (comp *DemoComp) Dispose() {
+	log.Infof(service.Current(comp), "I'm entity %q, comp %q Dispose.", comp.GetEntity(), comp)
 }
