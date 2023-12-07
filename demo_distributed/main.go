@@ -91,8 +91,8 @@ type Container struct {
 	ctx service.Context
 }
 
-func (c *Container) handleMsg(topic string, msg gap.MsgPacket) error {
-	msgData, _ := json.Marshal(msg)
-	log.Infof(c.ctx, "receive => topic:%q, msg:%s", topic, msgData)
+func (c *Container) handleMsg(topic string, mp gap.MsgPacket) error {
+	data, _ := json.Marshal(mp)
+	log.Infof(c.ctx, "receive => topic:%q, msg-packet:%s", topic, data)
 	return nil
 }

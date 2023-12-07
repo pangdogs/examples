@@ -52,7 +52,7 @@ func (comp *DemoComp) Start() {
 				log.Panic(service.Current(ctx), err)
 			}
 
-			msgData, _ := json.Marshal(msg)
-			log.Infof(service.Current(ctx), "send => topic:%q, msg:%s", addr.ServiceBroadcastAddr, msgData)
+			data, _ := json.Marshal(msg)
+			log.Infof(service.Current(ctx), "send => topic:%q, msg:%s", addr.ServiceBroadcastAddr, data)
 		})
 }
