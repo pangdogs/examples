@@ -35,7 +35,7 @@ func main() {
 	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("127.0.0.1:4222"))
 	cache_registry.Install(pluginBundle, cache_registry.Option{}.Wrap(redis_registry.NewRegistry(redis_registry.Option{}.FastAddress("127.0.0.1:6379"))))
 	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.FastAddress("127.0.0.1:6379"), redis_dsync.Option{}.FastDB(1))
-	distributed.Install(pluginBundle, distributed.Option{}.RecvMsgPacketHandler(generic.CastDelegateFunc2(container.handleMsgPacket)))
+	distributed.Install(pluginBundle, distributed.Option{}.RecvMsgHandler(generic.CastDelegateFunc2(container.handleMsg)))
 
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
@@ -91,7 +91,7 @@ type Container struct {
 	ctx service.Context
 }
 
-func (c *Container) handleMsgPacket(topic string, msg gap.MsgPacket) error {
+func (c *Container) handleMsg(topic string, msg gap.MsgPacket) error {
 	msgData, _ := json.Marshal(msg)
 	log.Infof(c.ctx, "receive => topic:%q, msg:%s", topic, msgData)
 	return nil

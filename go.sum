@@ -381,5 +381,5 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 kit.golaxy.org/golaxy v0.2.14 h1:adHfU9PIHOpl0LWGzLFGNRgOzfiTgN3ZKjSi0kw1OMQ=
 kit.golaxy.org/golaxy v0.2.14/go.mod h1:3TYBUhFRpSf0kmn2pOX/vyyW2pwUzbXnzQL3nBYoqXc=
-kit.golaxy.org/plugins v0.1.19-0.20231207040415-c646fcfc4374 h1:K34WcZPeOrqyoEl4J99unshSwRXg7fFMKG7UlGVb8B4=
-kit.golaxy.org/plugins v0.1.19-0.20231207040415-c646fcfc4374/go.mod h1:xPvf+HgDq2Rt8b/i34KR+0xZPDtFxIOydGkZo+eGoW4=
+kit.golaxy.org/plugins v0.1.19-0.20231207061016-52465fdb7e01 h1:nLq6d4JZVbJMhJ1jzFEOe6/hvExlSvCM7F5SPPl+pY0=
+kit.golaxy.org/plugins v0.1.19-0.20231207061016-52465fdb7e01/go.mod h1:xPvf+HgDq2Rt8b/i34KR+0xZPDtFxIOydGkZo+eGoW4=
