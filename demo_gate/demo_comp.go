@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/define"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/generic"
@@ -14,13 +12,6 @@ import (
 	"sync"
 	"time"
 )
-
-var demoComp = define.DefineComponentWithInterface[DemoComp, IDemoComp](pt.DefaultComponentLib())
-
-// IDemoComp Demo组件接口
-type IDemoComp interface {
-	GetSession() gtp_gate.Session
-}
 
 var (
 	textQueue []string
