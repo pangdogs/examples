@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"kit.golaxy.org/golaxy"
 	"kit.golaxy.org/golaxy/ec"
@@ -23,19 +24,17 @@ import (
 )
 
 func main() {
-	container := Container{}
-
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
 	entityLib.Register("demo", DemoComp{})
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle)
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.InfoLevel))
 	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("127.0.0.1:4222"))
 	cache_registry.Install(pluginBundle, cache_registry.Option{}.Wrap(redis_registry.NewRegistry(redis_registry.Option{}.FastAddress("127.0.0.1:6379"))))
 	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.FastAddress("127.0.0.1:6379"), redis_dsync.Option{}.FastDB(1))
-	distributed.Install(pluginBundle, distributed.Option{}.RecvMsgHandler(generic.CastDelegateFunc2(container.handleMsg)))
+	distributed.Install(pluginBundle)
 
 	// 创建服务上下文与服务，并开始运行
 	<-golaxy.NewService(service.NewContext(
@@ -47,11 +46,18 @@ func main() {
 				return
 			}
 
-			container.ctx = ctx
-
 			// 监听退出信号
 			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+			// 监听消息
+			distributed.WatchMsg(ctx, context.Background(), generic.CastDelegateFunc2(
+				func(topic string, mp gap.MsgPacket) error {
+					data, _ := json.Marshal(mp)
+					log.Infof(ctx, "receive => topic:%q, msg-packet:%s", topic, data)
+					return nil
+				},
+			))
 
 			go func() {
 				<-sigChan
@@ -85,14 +91,4 @@ func main() {
 			})
 		})),
 	)).Run()
-}
-
-type Container struct {
-	ctx service.Context
-}
-
-func (c *Container) handleMsg(topic string, mp gap.MsgPacket) error {
-	data, _ := json.Marshal(mp)
-	log.Infof(c.ctx, "receive => topic:%q, msg-packet:%s", topic, data)
-	return nil
 }

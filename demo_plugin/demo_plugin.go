@@ -30,13 +30,13 @@ type DemoPlugin struct {
 
 // InitSP 初始化服务插件
 func (d *DemoPlugin) InitSP(ctx service.Context) {
-	log.Infof(ctx, "init service plugin %q with %q", demoPlugin.Name, types.AnyFullName(*d))
+	log.Infof(ctx, "init service plugin <%s>:[%s]", demoPlugin.Name, types.AnyFullName(*d))
 	d.ctx = ctx
 }
 
 // ShutSP 关闭服务插件
 func (d *DemoPlugin) ShutSP(ctx service.Context) {
-	log.Infof(ctx, "shut service plugin %q", demoPlugin.Name)
+	log.Infof(ctx, "shut service plugin <%s>:[%s]", demoPlugin.Name, types.AnyFullName(*d))
 }
 
 func (d *DemoPlugin) HelloWorld() {
