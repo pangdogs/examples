@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/segmentio/ksuid v1.0.4
 	go.uber.org/zap v1.26.0
-	kit.golaxy.org/golaxy v0.2.16
-	kit.golaxy.org/plugins v0.1.19-0.20240104112748-599463f70b3a
+	kit.golaxy.org/golaxy v0.2.17
+	kit.golaxy.org/plugins v0.1.19-0.20240107160449-bdbe10af58e4
 )
 
 require (

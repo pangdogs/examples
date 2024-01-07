@@ -57,7 +57,7 @@ func (comp *DemoComp) Shut() {
 func (comp *DemoComp) Constructor(session gtp_gate.Session) {
 	comp.session = session
 
-	err := session.Options(gtp_gate.Option{}.Session.RecvDataHandler(generic.CastDelegateFunc1(comp.RecvDataHandler)))
+	err := session.Settings(gtp_gate.Option{}.Session.RecvDataHandler(generic.CastDelegateFunc1(comp.RecvDataHandler)))
 	if err != nil {
 		log.Panic(session.GetContext(), err)
 	}
