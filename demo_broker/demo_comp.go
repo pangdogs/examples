@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/plugins/broker"
-	"kit.golaxy.org/plugins/log"
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/plugins/broker"
+	"git.golaxy.org/plugins/log"
 	"math/rand"
 	"time"
 )
@@ -17,16 +17,16 @@ import (
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	sub      broker.Subscriber
+	sub      broker.ISubscriber
 	sequence int
 }
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	log.Infof(service.Current(comp), "max payload: %d", broker.MaxPayload(service.Current(comp)))
+	log.Infof(service.Current(comp), "max payload: %d", broker.GetMaxPayload(service.Current(comp)))
 
 	sub, err := broker.Subscribe(service.Current(comp), context.Background(), "demo.>",
-		broker.Option{}.EventHandler(generic.CastDelegateFunc1(func(e broker.Event) error {
+		broker.Option{}.EventHandler(generic.CastDelegateFunc1(func(e broker.IEvent) error {
 			log.Infof(service.Current(comp), "receive=> pattern:%q, topic:%q, msg:%q", e.Pattern(), e.Topic(), string(e.Message()))
 			return nil
 		})))
@@ -35,8 +35,8 @@ func (comp *DemoComp) Start() {
 	}
 	comp.sub = sub
 
-	golaxy.Await(runtime.Current(comp),
-		golaxy.TimeTick(runtime.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
+	core.Await(runtime.Current(comp),
+		core.TimeTick(runtime.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
 	).Pipe(comp, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
 		topic := "demo.broker_test"
 		msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)

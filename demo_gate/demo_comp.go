@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/plugins/gtp_gate"
-	"kit.golaxy.org/plugins/log"
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/plugins/gtp_gate"
+	"git.golaxy.org/plugins/log"
 	"sync"
 	"time"
 )
@@ -21,12 +21,12 @@ var (
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	session gtp_gate.Session
+	session gtp_gate.ISession
 	pos     int
 }
 
 func (comp *DemoComp) Awake() {
-	comp.session = comp.GetEntity().GetMeta().Get("session").(gtp_gate.Session)
+	comp.session = comp.GetEntity().GetMeta().Get("session").(gtp_gate.ISession)
 }
 
 func (comp *DemoComp) Start() {
@@ -35,8 +35,8 @@ func (comp *DemoComp) Start() {
 
 	comp.pos = len(textQueue)
 
-	golaxy.Await(runtime.Current(comp),
-		golaxy.TimeTick(runtime.Current(comp), time.Second),
+	core.Await(runtime.Current(comp),
+		core.TimeTick(runtime.Current(comp), time.Second),
 	).Pipe(runtime.Current(comp), func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
 		textMutex.RLock()
 		defer textMutex.RUnlock()
@@ -54,7 +54,7 @@ func (comp *DemoComp) Shut() {
 	runtime.Current(comp).GetCancelFunc()()
 }
 
-func (comp *DemoComp) Constructor(session gtp_gate.Session) {
+func (comp *DemoComp) Constructor(session gtp_gate.ISession) {
 	comp.session = session
 
 	err := session.Settings(gtp_gate.Option{}.Session.RecvDataHandler(generic.CastDelegateFunc1(comp.RecvDataHandler)))
@@ -72,6 +72,6 @@ func (comp *DemoComp) RecvDataHandler(data []byte) error {
 	return nil
 }
 
-func (comp *DemoComp) GetSession() gtp_gate.Session {
+func (comp *DemoComp) GetSession() gtp_gate.ISession {
 	return comp.session
 }

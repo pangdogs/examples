@@ -1,9 +1,9 @@
 package main
 
 import (
-	"kit.golaxy.org/plugins/gap"
-	"kit.golaxy.org/plugins/gap/variant"
-	"kit.golaxy.org/plugins/util/binaryutil"
+	"git.golaxy.org/plugins/gap"
+	"git.golaxy.org/plugins/gap/variant"
+	"git.golaxy.org/plugins/util/binaryutil"
 )
 
 func init() {

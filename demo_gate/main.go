@@ -1,17 +1,17 @@
 package main
 
 import (
-	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/plugin"
-	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/uid"
-	"kit.golaxy.org/plugins/gtp_gate"
-	"kit.golaxy.org/plugins/log"
-	"kit.golaxy.org/plugins/log/console_log"
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/plugins/gtp_gate"
+	"git.golaxy.org/plugins/log"
+	"git.golaxy.org/plugins/log/console_log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -44,7 +44,7 @@ func main() {
 	)
 
 	// 创建服务上下文与服务，并开始运行
-	<-golaxy.NewService(service.NewContext(
+	<-core.NewService(service.NewContext(
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
 		service.Option{}.Name("demo_gate"),
@@ -65,21 +65,21 @@ func main() {
 	)).Run()
 }
 
-func handleSessionStateChanged(session gtp_gate.Session, old, new gtp_gate.SessionState) {
+func handleSessionStateChanged(session gtp_gate.ISession, old, new gtp_gate.SessionState) {
 	switch new {
 	case gtp_gate.SessionState_Confirmed:
 		// 创建运行时上下文与运行时，并开始运行
-		rt := golaxy.NewRuntime(runtime.NewContext(session.GetContext()),
-			golaxy.Option{}.Runtime.AutoRun(true),
+		rt := core.NewRuntime(runtime.NewContext(session.GetContext()),
+			core.Option{}.Runtime.AutoRun(true),
 		)
 
 		// 在运行时线程环境中，创建实体
-		golaxy.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-			entity, err := golaxy.CreateEntity(ctx,
-				golaxy.Option{}.EntityCreator.Prototype("demo"),
-				golaxy.Option{}.EntityCreator.Scope(ec.Scope_Global),
-				golaxy.Option{}.EntityCreator.PersistId(uid.Id(session.GetId())),
-				golaxy.Option{}.EntityCreator.Meta(map[string]any{"session": session}),
+		core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
+			entity, err := core.CreateEntity(ctx,
+				core.Option{}.EntityCreator.Prototype("demo"),
+				core.Option{}.EntityCreator.Scope(ec.Scope_Global),
+				core.Option{}.EntityCreator.PersistId(uid.Id(session.GetId())),
+				core.Option{}.EntityCreator.Meta(map[string]any{"session": session}),
 			).Spawn()
 			if err != nil {
 				log.Panic(service.Current(ctx), err)

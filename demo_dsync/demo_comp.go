@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"errors"
-	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/plugins/dsync"
-	"kit.golaxy.org/plugins/log"
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/plugins/dsync"
+	"git.golaxy.org/plugins/log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -18,7 +18,7 @@ import (
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	mutex dsync.DMutex
+	mutex dsync.IDistMutex
 }
 
 // Update 组件更新
@@ -53,8 +53,8 @@ func (comp *DemoComp) Update() {
 		log.Panic(service.Current(comp), err)
 	}
 
-	golaxy.Await(runtime.Current(comp),
-		golaxy.TimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
+	core.Await(runtime.Current(comp),
+		core.TimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
 	).Any(runtime.Current(comp), func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
 		if comp.mutex == nil {
 			return

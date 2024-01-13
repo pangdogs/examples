@@ -1,14 +1,14 @@
 package main
 
 import (
-	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/plugins/distributed"
-	"kit.golaxy.org/plugins/log"
-	"kit.golaxy.org/plugins/rpc"
-	"kit.golaxy.org/plugins/rpc/callpath"
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/plugins/dist"
+	"git.golaxy.org/plugins/log"
+	"git.golaxy.org/plugins/rpc"
+	"git.golaxy.org/plugins/rpc/callpath"
 	"math/rand"
 	"time"
 )
@@ -22,7 +22,7 @@ func (comp *DemoComp) Start() {
 	rt := runtime.Current(comp)
 	serv := service.Current(rt)
 
-	golaxy.Await(rt, golaxy.TimeTick(rt, time.Second)).
+	core.Await(rt, core.TimeTick(rt, 3*time.Second)).
 		Pipe(rt, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
 			var entityId string
 
@@ -37,7 +37,7 @@ func (comp *DemoComp) Start() {
 				return
 			}
 
-			dst := distributed.Using(serv).GetAddress().LocalAddr
+			dst := dist.Using(serv).GetAddress().LocalAddr
 			cp := callpath.CallPath{
 				Category:  callpath.Entity,
 				EntityId:  entityId,
@@ -45,11 +45,11 @@ func (comp *DemoComp) Start() {
 				Method:    "HelloWorld",
 			}
 
-			a := rand.Int31()
+			a := rand.Uint32()
 
-			golaxy.Await(rt, rpc.RPC(serv, dst, cp.String(), a)).
+			core.Await(rt, rpc.RPC(serv, dst, cp.String(), a)).
 				Any(rt, func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
-					rv, err := rpc.Result(ret)
+					rv, err := rpc.Result1[int32](ret)
 					if err != nil {
 						log.Errorf(serv, "3rd => result: %v", err)
 						return
@@ -61,7 +61,7 @@ func (comp *DemoComp) Start() {
 		})
 }
 
-func (comp *DemoComp) HelloWorld(a int) int32 {
+func (comp *DemoComp) HelloWorld(a uint32) int32 {
 	n := rand.Int31()
 	log.Infof(service.Current(comp), "2nd => accept: %d, return: %d", a, n)
 	return n

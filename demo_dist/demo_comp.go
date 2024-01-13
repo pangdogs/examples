@@ -2,14 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/plugins/dist"
+	"git.golaxy.org/plugins/gap/variant"
+	"git.golaxy.org/plugins/log"
 	"github.com/segmentio/ksuid"
-	"kit.golaxy.org/golaxy"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/plugins/distributed"
-	"kit.golaxy.org/plugins/gap/variant"
-	"kit.golaxy.org/plugins/log"
 	"math/rand"
 	"time"
 )
@@ -20,9 +20,9 @@ type DemoComp struct {
 }
 
 func (comp *DemoComp) Start() {
-	golaxy.Await(runtime.Current(comp), golaxy.TimeTick(runtime.Current(comp), time.Second)).
+	core.Await(runtime.Current(comp), core.TimeTick(runtime.Current(comp), time.Second)).
 		Pipe(runtime.Current(comp), func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
-			addr := distributed.Using(service.Current(ctx)).GetAddress()
+			addr := dist.Using(service.Current(ctx)).GetAddress()
 
 			vmap, err := variant.MakeMap(map[string]int{
 				ksuid.New().String(): rand.Int(),
@@ -47,7 +47,7 @@ func (comp *DemoComp) Start() {
 			}
 
 			// 广播消息
-			err = distributed.Using(service.Current(ctx)).SendMsg(addr.ServiceBroadcastAddr, msg)
+			err = dist.Using(service.Current(ctx)).SendMsg(addr.ServiceBroadcastAddr, msg)
 			if err != nil {
 				log.Panic(service.Current(ctx), err)
 			}
