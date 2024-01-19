@@ -38,16 +38,17 @@ func (comp *DemoComp) Start() {
 			}
 
 			dst := dist.Using(serv).GetAddress().LocalAddr
-			cp := callpath.CallPath{
+
+			cp1 := callpath.CallPath{
 				Category:  callpath.Entity,
 				EntityId:  entityId,
 				Component: "DemoComp",
-				Method:    "HelloWorld",
+				Method:    "TestRPC",
 			}
 
 			a := rand.Uint32()
 
-			core.Await(rt, rpc.RPC(serv, dst, cp.String(), a)).
+			core.Await(rt, rpc.RPC(serv, dst, cp1.String(), a)).
 				Any(rt, func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
 					rv, err := rpc.Result1[int32](ret)
 					if err != nil {
@@ -58,11 +59,28 @@ func (comp *DemoComp) Start() {
 				})
 
 			log.Infof(service.Current(comp), "1st => call: %d", a)
+
+			cp2 := callpath.CallPath{
+				Category:  callpath.Entity,
+				EntityId:  entityId,
+				Component: "DemoComp",
+				Method:    "TestOneWayRPC",
+			}
+
+			err := rpc.OneWayRPC(serv, dst, cp2.String(), a)
+			if err != nil {
+				log.Errorf(serv, "oneway => call: %v", err)
+				return
+			}
 		})
 }
 
-func (comp *DemoComp) HelloWorld(a uint32) int32 {
+func (comp *DemoComp) TestRPC(a uint32) int32 {
 	n := rand.Int31()
 	log.Infof(service.Current(comp), "2nd => accept: %d, return: %d", a, n)
 	return n
+}
+
+func (comp *DemoComp) TestOneWayRPC(a uint32) {
+	log.Infof(service.Current(comp), "oneway => accept: %d", a)
 }

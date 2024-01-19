@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	git.golaxy.org/core v0.2.20
-	git.golaxy.org/plugins v0.1.20
+	git.golaxy.org/plugins v0.1.21
 	github.com/segmentio/ksuid v1.0.4
 	go.uber.org/zap v1.26.0
 )

@@ -16,7 +16,7 @@ import (
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	service registry.Service
+	service *registry.Service
 }
 
 // Start 组件开始
@@ -26,7 +26,7 @@ func (comp *DemoComp) Start() {
 		log.Panic(service.Current(comp), err)
 	}
 
-	comp.service = registry.Service{
+	comp.service = &registry.Service{
 		Name:    service.Current(comp).GetName(),
 		Version: "v0.1.0",
 		Nodes: []registry.Node{

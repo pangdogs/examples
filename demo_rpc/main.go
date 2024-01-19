@@ -41,7 +41,7 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel), console_log.Option{}.TimestampLayout(time.StampMilli))
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.InfoLevel), console_log.Option{}.TimestampLayout(time.StampMilli))
 	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("192.168.10.7:4222"))
 	cache_registry.Install(pluginBundle, cache_registry.Option{}.Wrap(redis_registry.NewRegistry(redis_registry.Option{}.FastAddress("192.168.10.7:6379"))))
 	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.FastAddress("192.168.10.7:6379"), redis_dsync.Option{}.FastDB(1))
