@@ -1,2 +1,2 @@
 # examples
-GOLAXY分布式服务框架的一些示例。
+Golaxy分布式服务开发框架的一些示例。
