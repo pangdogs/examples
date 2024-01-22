@@ -11,13 +11,13 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/plugins/broker/nats_broker"
+	"git.golaxy.org/plugins/discovery/cache_discovery"
+	"git.golaxy.org/plugins/discovery/redis_discovery"
 	"git.golaxy.org/plugins/dist"
 	"git.golaxy.org/plugins/dsync/redis_dsync"
 	"git.golaxy.org/plugins/gap"
 	"git.golaxy.org/plugins/log"
 	"git.golaxy.org/plugins/log/console_log"
-	"git.golaxy.org/plugins/registry/cache_registry"
-	"git.golaxy.org/plugins/registry/redis_registry"
 	"os"
 	"os/signal"
 	"syscall"
@@ -32,7 +32,7 @@ func main() {
 	pluginBundle := plugin.NewPluginBundle()
 	console_log.Install(pluginBundle, console_log.Option{}.Level(log.InfoLevel))
 	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("127.0.0.1:4222"))
-	cache_registry.Install(pluginBundle, cache_registry.Option{}.Wrap(redis_registry.NewRegistry(redis_registry.Option{}.FastAddress("127.0.0.1:6379"))))
+	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(redis_discovery.NewRegistry(redis_discovery.Option{}.FastAddress("127.0.0.1:6379"))))
 	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.FastAddress("127.0.0.1:6379"), redis_dsync.Option{}.FastDB(1))
 	dist.Install(pluginBundle)
 

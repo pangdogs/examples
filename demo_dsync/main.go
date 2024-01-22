@@ -35,7 +35,7 @@ func main() {
 	<-core.NewService(service.NewContext(
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_registry"),
+		service.Option{}.Name("demo_dsync"),
 		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return

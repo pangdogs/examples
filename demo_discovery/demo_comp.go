@@ -8,28 +8,28 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/plugins/discovery"
 	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/registry"
 	"time"
 )
 
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	service *registry.Service
+	service *discovery.Service
 }
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	w, err := registry.Watch(service.Current(comp), context.Background(), service.Current(comp).GetName())
+	w, err := discovery.Watch(service.Current(comp), context.Background(), service.Current(comp).GetName())
 	if err != nil {
 		log.Panic(service.Current(comp), err)
 	}
 
-	comp.service = &registry.Service{
+	comp.service = &discovery.Service{
 		Name:    service.Current(comp).GetName(),
 		Version: "v0.1.0",
-		Nodes: []registry.Node{
+		Nodes: []discovery.Node{
 			{
 				Id:      service.Current(comp).GetId().String(),
 				Address: fmt.Sprintf("service:%s:%s", service.Current(comp).GetName(), service.Current(comp).GetId()),
@@ -37,7 +37,7 @@ func (comp *DemoComp) Start() {
 		},
 	}
 
-	err = registry.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
+	err = discovery.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
 	if err != nil {
 		log.Panic(service.Current(comp), err)
 	}
@@ -46,7 +46,7 @@ func (comp *DemoComp) Start() {
 		for {
 			event, err := w.Next()
 			if err != nil {
-				if errors.Is(err, registry.ErrStoppedWatching) {
+				if errors.Is(err, discovery.ErrStoppedWatching) {
 					log.Info(service.Current(comp), "stop watching")
 					return
 				}
@@ -64,14 +64,14 @@ func (comp *DemoComp) Update() {
 	frame := runtime.Current(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(150) == 0 {
-		err := registry.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
+		err := discovery.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
 		if err != nil {
 			log.Panic(service.Current(comp), err)
 		}
 	}
 
 	if frame.GetCurFrames()%uint64(300) == 0 {
-		servces, err := registry.ListServices(service.Current(comp), context.Background())
+		servces, err := discovery.ListServices(service.Current(comp), context.Background())
 		if err != nil {
 			log.Panic(service.Current(comp), err)
 		}
@@ -83,7 +83,7 @@ func (comp *DemoComp) Update() {
 
 // Shut 组件停止
 func (comp *DemoComp) Shut() {
-	err := registry.Deregister(service.Current(comp), context.Background(), comp.service)
+	err := discovery.Deregister(service.Current(comp), context.Background(), comp.service)
 	if err != nil {
 		log.Panic(service.Current(comp), err)
 	}

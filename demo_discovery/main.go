@@ -8,11 +8,11 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/plugins/discovery/cache_discovery"
+	"git.golaxy.org/plugins/discovery/etcd_discovery"
+	"git.golaxy.org/plugins/discovery/redis_discovery"
 	"git.golaxy.org/plugins/log"
 	"git.golaxy.org/plugins/log/console_log"
-	"git.golaxy.org/plugins/registry/cache_registry"
-	"git.golaxy.org/plugins/registry/etcd_registry"
-	"git.golaxy.org/plugins/registry/redis_registry"
 )
 
 func main() {
@@ -25,21 +25,21 @@ func main() {
 	console_log.Install(pluginBundle)
 
 	// 创建etcd服务发现插件
-	etcdRegistry := etcd_registry.NewRegistry(etcd_registry.Option{}.FastAddresses("192.168.10.8:2379"))
+	etcdRegistry := etcd_discovery.NewRegistry(etcd_discovery.Option{}.FastAddresses("192.168.10.8:2379"))
 	_ = etcdRegistry
 
 	// 创建redis服务发现插件
-	redisRegistry := redis_registry.NewRegistry(redis_registry.Option{}.FastAddress("192.168.10.8:6379"))
+	redisRegistry := redis_discovery.NewRegistry(redis_discovery.Option{}.FastAddress("192.168.10.8:6379"))
 	_ = redisRegistry
 
 	// 安装服务发现插件，使用服务缓存插件包装其他服务发现插件
-	cache_registry.Install(pluginBundle, cache_registry.Option{}.Wrap(redisRegistry))
+	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(redisRegistry))
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_registry"),
+		service.Option{}.Name("demo_discovery"),
 		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
