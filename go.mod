@@ -3,8 +3,8 @@ module git.golaxy.org/examples
 go 1.20
 
 require (
-	git.golaxy.org/core v0.2.21
-	git.golaxy.org/plugins v0.1.23
+	git.golaxy.org/core v0.2.22
+	git.golaxy.org/plugins v0.1.24
 	github.com/segmentio/ksuid v1.0.4
 	go.uber.org/zap v1.26.0
 )
