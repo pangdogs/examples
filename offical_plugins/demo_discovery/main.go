@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/plugin"
@@ -10,17 +8,11 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/plugins/broker/nats_broker"
-	"git.golaxy.org/plugins/discovery/cache_discovery"
-	"git.golaxy.org/plugins/discovery/redis_discovery"
-	"git.golaxy.org/plugins/dist"
-	"git.golaxy.org/plugins/dsync/redis_dsync"
-	"git.golaxy.org/plugins/gap"
-	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/log/console_log"
-	"os"
-	"os/signal"
-	"syscall"
+	"git.golaxy.org/framework/plugins/discovery/cache_discovery"
+	"git.golaxy.org/framework/plugins/discovery/etcd_discovery"
+	"git.golaxy.org/framework/plugins/discovery/redis_discovery"
+	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/framework/plugins/log/console_log"
 )
 
 func main() {
@@ -30,39 +22,28 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle, console_log.Option{}.Level(log.InfoLevel))
-	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("127.0.0.1:4222"))
-	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(redis_discovery.NewRegistry(redis_discovery.Option{}.FastAddress("127.0.0.1:6379"))))
-	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.FastAddress("127.0.0.1:6379"), redis_dsync.Option{}.FastDB(1))
-	dist.Install(pluginBundle)
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
+
+	// 创建etcd服务发现插件
+	etcdRegistry := etcd_discovery.NewRegistry(etcd_discovery.Option{}.CustomAddresses("192.168.10.5:2379"))
+	_ = etcdRegistry
+
+	// 创建redis服务发现插件
+	redisRegistry := redis_discovery.NewRegistry(redis_discovery.Option{}.CustomAddress("192.168.10.5:6379"))
+	_ = redisRegistry
+
+	// 安装服务发现插件，使用服务缓存插件包装其他服务发现插件
+	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(etcdRegistry))
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_dist"),
+		service.Option{}.Name("demo_discovery"),
 		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
-
-			// 监听退出信号
-			sigChan := make(chan os.Signal, 1)
-			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-			// 监听消息
-			dist.WatchMsg(ctx, context.Background(), generic.CastDelegateFunc2(
-				func(topic string, mp gap.MsgPacket) error {
-					data, _ := json.Marshal(mp)
-					log.Infof(ctx, "receive => topic:%q, msg-packet:%s", topic, data)
-					return nil
-				},
-			))
-
-			go func() {
-				<-sigChan
-				ctx.GetCancelFunc()()
-			}()
 
 			// 创建运行时上下文与运行时，并开始运行
 			rt := core.NewRuntime(

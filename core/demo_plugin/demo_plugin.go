@@ -4,7 +4,7 @@ import (
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/types"
-	"git.golaxy.org/plugins/log"
+	"git.golaxy.org/framework/plugins/log"
 )
 
 // demoPlugin 定义demo插件

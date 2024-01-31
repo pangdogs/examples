@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/plugin"
@@ -8,9 +10,14 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/plugins/broker/nats_broker"
-	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/log/console_log"
+	"git.golaxy.org/framework/plugins/broker/nats_broker"
+	"git.golaxy.org/framework/plugins/discovery/cache_discovery"
+	"git.golaxy.org/framework/plugins/discovery/redis_discovery"
+	"git.golaxy.org/framework/plugins/dserv"
+	"git.golaxy.org/framework/plugins/dsync/redis_dsync"
+	"git.golaxy.org/framework/plugins/gap"
+	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/framework/plugins/log/console_log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,16 +30,17 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle)
-
-	// 安装nets消息中间件插件
-	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("192.168.10.8:4222"))
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
+	nats_broker.Install(pluginBundle, nats_broker.Option{}.CustomAddresses("192.168.10.5:4222"))
+	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(redis_discovery.NewRegistry(redis_discovery.Option{}.CustomAddress("192.168.10.5:6379"))))
+	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.CustomAddress("192.168.10.5:6379"), redis_dsync.Option{}.CustomDB(1))
+	dserv.Install(pluginBundle)
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_broker"),
+		service.Option{}.Name("demo_dserv"),
 		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
@@ -41,6 +49,15 @@ func main() {
 			// 监听退出信号
 			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+			// 监听消息
+			dserv.WatchMsg(ctx, context.Background(), generic.CastDelegateFunc2(
+				func(topic string, mp gap.MsgPacket) error {
+					data, _ := json.Marshal(mp)
+					log.Infof(ctx, "receive => topic:%q, msg-packet:%s", topic, data)
+					return nil
+				},
+			))
 
 			go func() {
 				<-sigChan

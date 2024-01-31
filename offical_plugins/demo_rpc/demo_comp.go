@@ -5,10 +5,10 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/plugins/dist"
-	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/rpc"
-	"git.golaxy.org/plugins/rpc/callpath"
+	"git.golaxy.org/framework/plugins/dserv"
+	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/framework/plugins/rpc"
+	"git.golaxy.org/framework/plugins/rpc/callpath"
 	"math/rand"
 	"time"
 )
@@ -37,7 +37,10 @@ func (comp *DemoComp) Start() {
 				return
 			}
 
-			dst := dist.Using(serv).GetAddress().LocalAddr
+			dst := dserv.Using(serv).GetAddress().LocalAddr
+
+			addr := dserv.Using(serv).GetAddress()
+			_ = addr
 
 			cp1 := callpath.CallPath{
 				Category:  callpath.Entity,
@@ -48,15 +51,28 @@ func (comp *DemoComp) Start() {
 
 			a := rand.Uint32()
 
-			core.Await(rt, rpc.RPC(serv, dst, cp1.String(), a)).
-				Any(rt, func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
-					rv, err := rpc.Result1[int32](ret)
-					if err != nil {
-						log.Errorf(serv, "3rd => result: %v", err)
-						return
-					}
-					log.Infof(serv, "3rd => result: %d", rv)
-				})
+			// 异步
+			{
+				core.Await(rt, rpc.RPC(serv, dst, cp1.String(), a)).
+					Any(rt, func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
+						rv, err := rpc.Result1[int32](ret)
+						if err != nil {
+							log.Errorf(serv, "3rd => result: %v", err)
+							return
+						}
+						log.Infof(serv, "3rd => result: %d", rv)
+					})
+			}
+
+			//// 同步
+			//{
+			//	rv, err := rpc.Result1[int32](<-rpc.RPC(serv, dst, cp1.String(), a))
+			//	if err != nil {
+			//		log.Errorf(serv, "3rd => result: %v", err)
+			//	} else {
+			//		log.Infof(serv, "3rd => result: %d", rv)
+			//	}
+			//}
 
 			log.Infof(service.Current(comp), "1st => call: %d", a)
 

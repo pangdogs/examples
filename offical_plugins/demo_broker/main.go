@@ -8,8 +8,12 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/log/console_log"
+	"git.golaxy.org/framework/plugins/broker/nats_broker"
+	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/framework/plugins/log/console_log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -19,18 +23,29 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle)
-	demoPlugin.Install(pluginBundle)
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
+
+	// 安装nets消息中间件插件
+	nats_broker.Install(pluginBundle, nats_broker.Option{}.CustomAddresses("192.168.10.5:4222"))
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_plugin"),
+		service.Option{}.Name("demo_broker"),
 		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
+
+			// 监听退出信号
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+			go func() {
+				<-sigChan
+				ctx.GetCancelFunc()()
+			}()
 
 			// 创建运行时上下文与运行时，并开始运行
 			rt := core.NewRuntime(
@@ -42,6 +57,7 @@ func main() {
 						ctx.GetCancelFunc()()
 					})),
 				),
+				core.Option{}.Runtime.Frame(runtime.NewFrame()),
 				core.Option{}.Runtime.AutoRun(true),
 			)
 

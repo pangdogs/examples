@@ -8,15 +8,15 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/plugins/broker/nats_broker"
-	"git.golaxy.org/plugins/discovery/cache_discovery"
-	"git.golaxy.org/plugins/discovery/redis_discovery"
-	"git.golaxy.org/plugins/dist"
-	"git.golaxy.org/plugins/dsync/redis_dsync"
-	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/log/console_log"
-	"git.golaxy.org/plugins/rpc"
-	"git.golaxy.org/plugins/util/concurrent"
+	"git.golaxy.org/framework/plugins/broker/nats_broker"
+	"git.golaxy.org/framework/plugins/discovery/cache_discovery"
+	"git.golaxy.org/framework/plugins/discovery/redis_discovery"
+	"git.golaxy.org/framework/plugins/dserv"
+	"git.golaxy.org/framework/plugins/dsync/redis_dsync"
+	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/framework/plugins/log/console_log"
+	"git.golaxy.org/framework/plugins/rpc"
+	"git.golaxy.org/framework/plugins/util/concurrent"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -41,11 +41,11 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle, console_log.Option{}.Level(log.InfoLevel), console_log.Option{}.TimestampLayout(time.StampMilli))
-	nats_broker.Install(pluginBundle, nats_broker.Option{}.FastAddresses("192.168.10.7:4222"))
-	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(redis_discovery.NewRegistry(redis_discovery.Option{}.FastAddress("192.168.10.7:6379"))))
-	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.FastAddress("192.168.10.7:6379"), redis_dsync.Option{}.FastDB(1))
-	dist.Install(pluginBundle, dist.Option{}.FutureTimeout(time.Minute))
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel), console_log.Option{}.TimestampLayout(time.StampMilli))
+	nats_broker.Install(pluginBundle, nats_broker.Option{}.CustomAddresses("192.168.10.5:4222"))
+	cache_discovery.Install(pluginBundle, cache_discovery.Option{}.Wrap(redis_discovery.NewRegistry(redis_discovery.Option{}.CustomAddress("192.168.10.5:6379"), redis_discovery.Option{}.CustomDB(3))))
+	redis_dsync.Install(pluginBundle, redis_dsync.Option{}.CustomAddress("192.168.10.5:6379"), redis_dsync.Option{}.CustomDB(4))
+	dserv.Install(pluginBundle, dserv.Option{}.FutureTimeout(time.Minute))
 	rpc.Install(pluginBundle)
 
 	// 创建服务上下文与服务，并开始运行

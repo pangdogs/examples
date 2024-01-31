@@ -8,8 +8,8 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/plugins/broker"
-	"git.golaxy.org/plugins/log"
+	"git.golaxy.org/framework/plugins/broker"
+	"git.golaxy.org/framework/plugins/log"
 	"math/rand"
 	"time"
 )

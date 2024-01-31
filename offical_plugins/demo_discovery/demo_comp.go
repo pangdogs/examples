@@ -8,8 +8,8 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/plugins/discovery"
-	"git.golaxy.org/plugins/log"
+	"git.golaxy.org/framework/plugins/discovery"
+	"git.golaxy.org/framework/plugins/log"
 	"time"
 )
 

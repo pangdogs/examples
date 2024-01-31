@@ -9,9 +9,9 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/uid"
-	"git.golaxy.org/plugins/gtp_gate"
-	"git.golaxy.org/plugins/log"
-	"git.golaxy.org/plugins/log/console_log"
+	"git.golaxy.org/framework/plugins/gtp_gate"
+	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/framework/plugins/log/console_log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,7 +29,7 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle)
+	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
 
 	// 安装网关插件
 	gtp_gate.Install(pluginBundle,

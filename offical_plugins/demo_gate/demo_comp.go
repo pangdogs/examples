@@ -7,8 +7,8 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/plugins/gtp_gate"
-	"git.golaxy.org/plugins/log"
+	"git.golaxy.org/framework/plugins/gtp_gate"
+	"git.golaxy.org/framework/plugins/log"
 	"sync"
 	"time"
 )
