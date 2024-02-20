@@ -15,10 +15,10 @@ type DemoComp struct {
 
 func (comp *DemoComp) Start() {
 	comp.Await(comp.TimeTick(5 * time.Second)).Pipe(func(_ runtime.Ret, _ ...any) {
-		comp.GlobalBalanceOneWayRPC("DemoComp", "TestOnewayRPC", comp.GetServCtx().GetName(), comp.GetServCtx().GetId().String(), rand.Int31())
+		comp.GlobalBalanceOneWayRPC("DemoComp", "TestOnewayRPC", comp.GetServiceCtx().GetName(), comp.GetServiceCtx().GetId().String(), rand.Int31())
 	})
 }
 
 func (comp *DemoComp) TestOnewayRPC(serv, id string, a int) {
-	log.Infof(comp.GetRtCtx(), "from: %s:%s => accept: %d", serv, id, a)
+	log.Infof(comp.GetRuntimeCtx(), "from: %s:%s => accept: %d", serv, id, a)
 }

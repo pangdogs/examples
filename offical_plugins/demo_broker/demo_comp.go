@@ -23,10 +23,10 @@ type DemoComp struct {
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	log.Infof(service.Current(comp), "max payload: %d", broker.GetMaxPayload(service.Current(comp)))
+	log.Infof(service.Current(comp), "max payload: %d", broker.Using(service.Current(comp)).GetMaxPayload())
 
-	sub, err := broker.Subscribe(service.Current(comp), context.Background(), "demo.>",
-		broker.Option{}.EventHandler(generic.CastDelegateFunc1(func(e broker.IEvent) error {
+	sub, err := broker.Using(service.Current(comp)).Subscribe(context.Background(), "demo.>",
+		broker.With.EventHandler(generic.CastDelegateFunc1(func(e broker.IEvent) error {
 			log.Infof(service.Current(comp), "receive=> pattern:%q, topic:%q, msg:%q", e.Pattern(), e.Topic(), string(e.Message()))
 			return nil
 		})))
@@ -41,7 +41,7 @@ func (comp *DemoComp) Start() {
 		topic := "demo.broker_test"
 		msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
 
-		if err := broker.Publish(service.Current(comp), context.Background(), topic, []byte(msg)); err != nil {
+		if err := broker.Using(service.Current(comp)).Publish(context.Background(), topic, []byte(msg)); err != nil {
 			log.Panic(service.Current(comp), err)
 		}
 

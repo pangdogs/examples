@@ -9,7 +9,7 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/uid"
-	"git.golaxy.org/framework/plugins/gtp_gate"
+	"git.golaxy.org/framework/plugins/gate"
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/log/console_log"
 	"os"
@@ -29,26 +29,26 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
+	console_log.Install(pluginBundle, console_log.With.Level(log.DebugLevel))
 
 	// 安装网关插件
-	gtp_gate.Install(pluginBundle,
-		gtp_gate.Option{}.Gate.Endpoints(os.Args[1:]...),
-		gtp_gate.Option{}.Gate.IOTimeout(3*time.Second),
-		gtp_gate.Option{}.Gate.IOBufferCap(1024*1024*5),
-		gtp_gate.Option{}.Gate.AgreeClientEncryptionProposal(true),
-		gtp_gate.Option{}.Gate.AgreeClientCompressionProposal(true),
-		gtp_gate.Option{}.Gate.CompressedSize(128),
-		gtp_gate.Option{}.Gate.SessionInactiveTimeout(time.Hour),
-		gtp_gate.Option{}.Gate.SessionStateChangedHandler(generic.CastDelegateAction3(handleSessionStateChanged)),
+	gate.Install(pluginBundle,
+		gate.With.Gate.Endpoints(os.Args[1:]...),
+		gate.With.Gate.IOTimeout(3*time.Second),
+		gate.With.Gate.IOBufferCap(1024*1024*5),
+		gate.With.Gate.AgreeClientEncryptionProposal(true),
+		gate.With.Gate.AgreeClientCompressionProposal(true),
+		gate.With.Gate.CompressedSize(128),
+		gate.With.Gate.SessionInactiveTimeout(time.Hour),
+		gate.With.Gate.SessionStateChangedHandler(generic.CastDelegateAction3(handleSessionStateChanged)),
 	)
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
-		service.Option{}.EntityLib(entityLib),
-		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_gate"),
-		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+		service.With.EntityLib(entityLib),
+		service.With.PluginBundle(pluginBundle),
+		service.With.Name("demo_gate"),
+		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
@@ -65,29 +65,29 @@ func main() {
 	)).Run()
 }
 
-func handleSessionStateChanged(session gtp_gate.ISession, old, new gtp_gate.SessionState) {
+func handleSessionStateChanged(session gate.ISession, old, new gate.SessionState) {
 	switch new {
-	case gtp_gate.SessionState_Confirmed:
+	case gate.SessionState_Confirmed:
 		// 创建运行时上下文与运行时，并开始运行
 		rt := core.NewRuntime(runtime.NewContext(session.GetContext()),
-			core.Option{}.Runtime.AutoRun(true),
+			core.With.Runtime.AutoRun(true),
 		)
 
 		// 在运行时线程环境中，创建实体
 		core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-			entity, err := core.CreateEntity(ctx,
-				core.Option{}.EntityCreator.Prototype("demo"),
-				core.Option{}.EntityCreator.Scope(ec.Scope_Global),
-				core.Option{}.EntityCreator.PersistId(uid.Id(session.GetId())),
-				core.Option{}.EntityCreator.Meta(map[string]any{"session": session}),
-			).Spawn()
+			entity, err := core.CreateEntity(ctx).
+				Prototype("demo").
+				Scope(ec.Scope_Global).
+				PersistId(uid.Id(session.GetId())).
+				Meta(map[string]any{"session": session}).
+				Spawn()
 			if err != nil {
 				log.Panic(service.Current(ctx), err)
 			}
 			log.Infof(service.Current(ctx), "create entity %q finish", entity)
 		}).Wait(session.GetContext())
 
-	case gtp_gate.SessionState_Death:
+	case gate.SessionState_Death:
 		session.GetContext().CallVoid(uid.Id(session.GetId()), func(entity ec.Entity, _ ...any) {
 			entity.DestroySelf()
 		})

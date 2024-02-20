@@ -7,7 +7,7 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/framework/plugins/gtp_gate"
+	"git.golaxy.org/framework/plugins/gate"
 	"git.golaxy.org/framework/plugins/log"
 	"sync"
 	"time"
@@ -21,12 +21,12 @@ var (
 // DemoComp Demo组件实现
 type DemoComp struct {
 	ec.ComponentBehavior
-	session gtp_gate.ISession
+	session gate.ISession
 	pos     int
 }
 
 func (comp *DemoComp) Awake() {
-	comp.session = comp.GetEntity().GetMeta().Get("session").(gtp_gate.ISession)
+	comp.session = comp.GetEntity().GetMeta().Get("session").(gate.ISession)
 }
 
 func (comp *DemoComp) Start() {
@@ -54,10 +54,10 @@ func (comp *DemoComp) Shut() {
 	runtime.Current(comp).GetCancelFunc()()
 }
 
-func (comp *DemoComp) Constructor(session gtp_gate.ISession) {
+func (comp *DemoComp) Constructor(session gate.ISession) {
 	comp.session = session
 
-	err := session.Settings(gtp_gate.Option{}.Session.RecvDataHandler(generic.CastDelegateFunc1(comp.RecvDataHandler)))
+	err := session.Settings(gate.With.Session.RecvDataHandler(generic.CastDelegateFunc1(comp.RecvDataHandler)))
 	if err != nil {
 		log.Panic(session.GetContext(), err)
 	}
@@ -72,6 +72,6 @@ func (comp *DemoComp) RecvDataHandler(data []byte) error {
 	return nil
 }
 
-func (comp *DemoComp) GetSession() gtp_gate.ISession {
+func (comp *DemoComp) GetSession() gate.ISession {
 	return comp.session
 }

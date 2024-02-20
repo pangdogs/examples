@@ -53,7 +53,7 @@ func (comp *DemoComp) Start() {
 
 			// 异步
 			{
-				core.Await(rt, rpc.RPC(serv, dst, cp1.String(), a)).
+				core.Await(rt, rpc.Using(serv).RPC(dst, cp1.String(), a)).
 					Any(rt, func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
 						rv, err := rpc.Result1[int32](ret)
 						if err != nil {
@@ -83,7 +83,7 @@ func (comp *DemoComp) Start() {
 				Method:    "TestOneWayRPC",
 			}
 
-			err := rpc.OneWayRPC(serv, dst, cp2.String(), a)
+			err := rpc.Using(serv).OneWayRPC(dst, cp2.String(), a)
 			if err != nil {
 				log.Errorf(serv, "oneway => call: %v", err)
 				return

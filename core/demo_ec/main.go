@@ -19,14 +19,14 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
+	console_log.Install(pluginBundle, console_log.With.Level(log.DebugLevel))
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
-		service.Option{}.EntityLib(entityLib),
-		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_ec"),
-		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+		service.With.EntityLib(entityLib),
+		service.With.PluginBundle(pluginBundle),
+		service.With.Name("demo_ec"),
+		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
@@ -34,23 +34,23 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := core.NewRuntime(
 				runtime.NewContext(ctx,
-					runtime.Option{}.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.With.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
 						ctx.GetCancelFunc()()
 					})),
 				),
-				core.Option{}.Runtime.Frame(runtime.NewFrame(runtime.Option{}.Frame.TotalFrames(100))),
-				core.Option{}.Runtime.AutoRun(true),
+				core.With.Runtime.Frame(runtime.NewFrame(runtime.With.Frame.TotalFrames(100))),
+				core.With.Runtime.AutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体
 			core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-				entity, err := core.CreateEntity(ctx,
-					core.Option{}.EntityCreator.Prototype("demo"),
-					core.Option{}.EntityCreator.Scope(ec.Scope_Global),
-				).Spawn()
+				entity, err := core.CreateEntity(ctx).
+					Prototype("demo").
+					Scope(ec.Scope_Global).
+					Spawn()
 				if err != nil {
 					log.Panic(service.Current(ctx), err)
 				}

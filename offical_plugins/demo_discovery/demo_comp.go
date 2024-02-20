@@ -21,14 +21,13 @@ type DemoComp struct {
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	w, err := discovery.Watch(service.Current(comp), context.Background(), service.Current(comp).GetName())
+	w, err := discovery.Using(service.Current(comp)).Watch(context.Background(), service.Current(comp).GetName())
 	if err != nil {
 		log.Panic(service.Current(comp), err)
 	}
 
 	comp.service = &discovery.Service{
-		Name:    service.Current(comp).GetName(),
-		Version: "v0.1.0",
+		Name: service.Current(comp).GetName(),
 		Nodes: []discovery.Node{
 			{
 				Id:      service.Current(comp).GetId().String(),
@@ -37,7 +36,7 @@ func (comp *DemoComp) Start() {
 		},
 	}
 
-	err = discovery.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
+	err = discovery.Using(service.Current(comp)).Register(context.Background(), comp.service, 10*time.Second)
 	if err != nil {
 		log.Panic(service.Current(comp), err)
 	}
@@ -64,14 +63,14 @@ func (comp *DemoComp) Update() {
 	frame := runtime.Current(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(150) == 0 {
-		err := discovery.Register(service.Current(comp), context.Background(), comp.service, 10*time.Second)
+		err := discovery.Using(service.Current(comp)).Register(context.Background(), comp.service, 10*time.Second)
 		if err != nil {
 			log.Panic(service.Current(comp), err)
 		}
 	}
 
 	if frame.GetCurFrames()%uint64(300) == 0 {
-		servces, err := discovery.ListServices(service.Current(comp), context.Background())
+		servces, err := discovery.Using(service.Current(comp)).ListServices(context.Background())
 		if err != nil {
 			log.Panic(service.Current(comp), err)
 		}
@@ -83,7 +82,7 @@ func (comp *DemoComp) Update() {
 
 // Shut 组件停止
 func (comp *DemoComp) Shut() {
-	err := discovery.Deregister(service.Current(comp), context.Background(), comp.service)
+	err := discovery.Using(service.Current(comp)).Deregister(context.Background(), comp.service)
 	if err != nil {
 		log.Panic(service.Current(comp), err)
 	}

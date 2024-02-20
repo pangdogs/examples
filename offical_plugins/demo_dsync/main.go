@@ -23,20 +23,20 @@ func main() {
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
-	console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel))
+	console_log.Install(pluginBundle, console_log.With.Level(log.DebugLevel))
 
 	//// 安装redis服务发现插件
-	//redis_dsync.Install(pluginBundle, redis_dsync.Option{}.CustomAddress("192.168.10.5:6379"))
+	//redis_dsync.Install(pluginBundle, redis_dsync.With.CustomAddress("192.168.10.5:6379"))
 
 	// 安装etcd分布式同步插件
-	etcd_dsync.Install(pluginBundle, etcd_dsync.Option{}.CustomAddresses("192.168.10.5:2379"))
+	etcd_dsync.Install(pluginBundle, etcd_dsync.With.CustomAddresses("192.168.10.5:2379"))
 
 	// 创建服务上下文与服务，并开始运行
 	<-core.NewService(service.NewContext(
-		service.Option{}.EntityLib(entityLib),
-		service.Option{}.PluginBundle(pluginBundle),
-		service.Option{}.Name("demo_dsync"),
-		service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+		service.With.EntityLib(entityLib),
+		service.With.PluginBundle(pluginBundle),
+		service.With.Name("demo_dsync"),
+		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
@@ -53,23 +53,23 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := core.NewRuntime(
 				runtime.NewContext(ctx,
-					runtime.Option{}.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.With.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
 						ctx.GetCancelFunc()()
 					})),
 				),
-				core.Option{}.Runtime.Frame(runtime.NewFrame()),
-				core.Option{}.Runtime.AutoRun(true),
+				core.With.Runtime.Frame(runtime.NewFrame()),
+				core.With.Runtime.AutoRun(true),
 			)
 
 			// 在运行时线程环境中，创建实体
 			core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-				entity, err := core.CreateEntity(ctx,
-					core.Option{}.EntityCreator.Prototype("demo"),
-					core.Option{}.EntityCreator.Scope(ec.Scope_Global),
-				).Spawn()
+				entity, err := core.CreateEntity(ctx).
+					Prototype("demo").
+					Scope(ec.Scope_Global).
+					Spawn()
 				if err != nil {
 					log.Panic(service.Current(ctx), err)
 				}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/framework/plugins/gtp"
-	"git.golaxy.org/framework/plugins/gtp_cli"
+	"git.golaxy.org/framework/net/gtp"
+	"git.golaxy.org/framework/plugins/gate/cli"
 	"go.uber.org/zap"
 	"os"
 	"time"
@@ -19,23 +19,23 @@ func main() {
 	zaplogger, _ := zap.NewProduction()
 	log := zaplogger.Sugar()
 
-	cli, err := gtp_cli.Connect(context.Background(), os.Args[1],
-		gtp_cli.Option{}.RecvDataHandler(generic.CastDelegateFunc1(func(data []byte) error {
+	cli, err := cli.Connect(context.Background(), os.Args[1],
+		cli.With.RecvDataHandler(generic.CastDelegateFunc1(func(data []byte) error {
 			log.Infoln(string(data))
 			return nil
 		})),
-		gtp_cli.Option{}.EncCipherSuite(gtp.CipherSuite{
+		cli.With.EncCipherSuite(gtp.CipherSuite{
 			SecretKeyExchange:   gtp.SecretKeyExchange_ECDHE,
 			SymmetricEncryption: gtp.SymmetricEncryption_XChaCha20,
 			BlockCipherMode:     gtp.BlockCipherMode_None,
 			PaddingMode:         gtp.PaddingMode_None,
 			MACHash:             gtp.Hash_Fnv1a64,
 		}),
-		gtp_cli.Option{}.CompressedSize(128),
-		gtp_cli.Option{}.IOTimeout(3*time.Second),
-		gtp_cli.Option{}.IOBufferCap(1024*1024*5),
-		gtp_cli.Option{}.AutoReconnect(true),
-		gtp_cli.Option{}.ZapLogger(zaplogger),
+		cli.With.CompressedSize(128),
+		cli.With.IOTimeout(3*time.Second),
+		cli.With.IOBufferCap(1024*1024*5),
+		cli.With.AutoReconnect(true),
+		cli.With.ZapLogger(zaplogger),
 	)
 	if err != nil {
 		panic(err)

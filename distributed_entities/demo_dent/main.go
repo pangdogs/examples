@@ -35,24 +35,24 @@ func main() {
 	for i := 0; i < total; i++ {
 		// 创建实体库，注册实体原型
 		entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-		entityLib.Register("demo", pt.CompNamePair(DemoComp{}, "DemoComp"))
+		entityLib.Register("demo", pt.CompAlias(DemoComp{}, "DemoComp"))
 
 		// 创建插件包，安装插件
 		pluginBundle := plugin.NewPluginBundle()
-		console_log.Install(pluginBundle, console_log.Option{}.Level(log.DebugLevel), console_log.Option{}.ServiceInfo(true))
-		nats_broker.Install(pluginBundle, nats_broker.Option{}.CustomAddresses("127.0.0.1:4222"))
-		etcd_discovery.Install(pluginBundle, etcd_discovery.Option{}.CustomAddresses("127.0.0.1:12379"))
-		etcd_dsync.Install(pluginBundle, etcd_dsync.Option{}.CustomAddresses("127.0.0.1:12379"))
-		dserv.Install(pluginBundle, dserv.Option{}.FutureTimeout(time.Minute))
+		console_log.Install(pluginBundle, console_log.With.Level(log.DebugLevel), console_log.With.ServiceInfo(true))
+		nats_broker.Install(pluginBundle, nats_broker.With.CustomAddresses("127.0.0.1:4222"))
+		etcd_discovery.Install(pluginBundle, etcd_discovery.With.CustomAddresses("127.0.0.1:12379"))
+		etcd_dsync.Install(pluginBundle, etcd_dsync.With.CustomAddresses("127.0.0.1:12379"))
+		dserv.Install(pluginBundle, dserv.With.FutureTimeout(time.Minute))
 		rpc.Install(pluginBundle)
-		dentq.Install(pluginBundle, dentq.Option{}.CustomAddresses("127.0.0.1:12379"))
+		dentq.Install(pluginBundle, dentq.With.CustomAddresses("127.0.0.1:12379"))
 
 		// 创建服务上下文与服务，并开始运行
 		serv := core.NewService(service.NewContext(
-			service.Option{}.EntityLib(entityLib),
-			service.Option{}.PluginBundle(pluginBundle),
-			service.Option{}.Name(fmt.Sprintf("demo_dent_%d", i%(total/2))),
-			service.Option{}.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+			service.With.EntityLib(entityLib),
+			service.With.PluginBundle(pluginBundle),
+			service.With.Name(fmt.Sprintf("demo_dent_%d", i%(total/2))),
+			service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 				if state != service.RunningState_Started {
 					return
 				}
@@ -68,28 +68,28 @@ func main() {
 
 				// 创建运行时上下文与运行时，安装插件并开始运行
 				rtCtx := runtime.NewContext(ctx,
-					runtime.Option{}.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.With.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
 						ctx.GetCancelFunc()()
 					})),
 				)
-				console_log.Install(rtCtx, console_log.Option{}.Level(log.DebugLevel), console_log.Option{}.ServiceInfo(true))
-				dent.Install(rtCtx, dent.Option{}.CustomAddresses("127.0.0.1:12379"))
+				console_log.Install(rtCtx, console_log.With.Level(log.DebugLevel), console_log.With.ServiceInfo(true))
+				dent.Install(rtCtx, dent.With.CustomAddresses("127.0.0.1:12379"))
 
-				rt := core.NewRuntime(rtCtx, core.Option{}.Runtime.AutoRun(true))
+				rt := core.NewRuntime(rtCtx, core.With.Runtime.AutoRun(true))
 
 				// 在运行时线程环境中，创建实体
 				for i := range entIdList {
 					entId := entIdList[i]
 
 					core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-						entity, err := core.CreateEntity(ctx,
-							core.Option{}.EntityCreator.Prototype("demo"),
-							core.Option{}.EntityCreator.Scope(ec.Scope_Global),
-							core.Option{}.EntityCreator.PersistId(uid.Id(entId.String())),
-						).Spawn()
+						entity, err := core.CreateEntity(ctx).
+							Prototype("demo").
+							Scope(ec.Scope_Global).
+							PersistId(uid.Id(entId.String())).
+							Spawn()
 						if err != nil {
 							log.Panic(service.Current(ctx), err)
 						}
