@@ -57,13 +57,13 @@ func (comp *DemoComp) Shut() {
 func (comp *DemoComp) Constructor(session gate.ISession) {
 	comp.session = session
 
-	err := session.Settings(gate.With.Session.RecvDataHandler(generic.CastDelegateFunc1(comp.RecvDataHandler)))
+	err := session.GetSettings().RecvDataHandler(generic.CastDelegateFunc2(comp.RecvDataHandler)).Change()
 	if err != nil {
 		log.Panic(session.GetContext(), err)
 	}
 }
 
-func (comp *DemoComp) RecvDataHandler(data []byte) error {
+func (comp *DemoComp) RecvDataHandler(session gate.ISession, data []byte) error {
 	textMutex.Lock()
 	defer textMutex.Unlock()
 	text := fmt.Sprintf("[%s]:%s", comp.session.GetId(), string(data))

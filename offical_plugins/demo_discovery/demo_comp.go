@@ -45,7 +45,7 @@ func (comp *DemoComp) Start() {
 		for {
 			event, err := w.Next()
 			if err != nil {
-				if errors.Is(err, discovery.ErrStoppedWatching) {
+				if errors.Is(err, discovery.ErrTerminated) {
 					log.Info(service.Current(comp), "stop watching")
 					return
 				}

@@ -5,8 +5,8 @@ go 1.21
 toolchain go1.21.6
 
 require (
-	git.golaxy.org/core v0.2.43
-	git.golaxy.org/framework v0.1.31
+	git.golaxy.org/core v0.2.48
+	git.golaxy.org/framework v0.1.35
 	github.com/segmentio/ksuid v1.0.4
 	go.uber.org/zap v1.26.0
 )

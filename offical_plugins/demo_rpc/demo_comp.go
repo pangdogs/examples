@@ -37,9 +37,9 @@ func (comp *DemoComp) Start() {
 				return
 			}
 
-			dst := dserv.Using(serv).GetAddress().LocalAddr
+			dst := dserv.Using(serv).GetAddressDetails().LocalAddr
 
-			addr := dserv.Using(serv).GetAddress()
+			addr := dserv.Using(serv).GetAddressDetails()
 			_ = addr
 
 			cp1 := callpath.CallPath{

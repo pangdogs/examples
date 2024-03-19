@@ -33,14 +33,14 @@ func main() {
 
 	// 安装网关插件
 	gate.Install(pluginBundle,
-		gate.With.Gate.Endpoints(os.Args[1:]...),
-		gate.With.Gate.IOTimeout(3*time.Second),
-		gate.With.Gate.IOBufferCap(1024*1024*5),
-		gate.With.Gate.AgreeClientEncryptionProposal(true),
-		gate.With.Gate.AgreeClientCompressionProposal(true),
-		gate.With.Gate.CompressedSize(128),
-		gate.With.Gate.SessionInactiveTimeout(time.Hour),
-		gate.With.Gate.SessionStateChangedHandler(generic.CastDelegateAction3(handleSessionStateChanged)),
+		gate.With.Endpoints(os.Args[1:]...),
+		gate.With.IOTimeout(3*time.Second),
+		gate.With.IOBufferCap(1024*1024*5),
+		gate.With.AgreeClientEncryptionProposal(true),
+		gate.With.AgreeClientCompressionProposal(true),
+		gate.With.CompressedSize(128),
+		gate.With.SessionInactiveTimeout(time.Hour),
+		gate.With.SessionStateChangedHandler(generic.CastDelegateAction3(handleSessionStateChanged)),
 	)
 
 	// 创建服务上下文与服务，并开始运行
