@@ -5,6 +5,7 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/uid"
 	"git.golaxy.org/framework/plugins/dserv"
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/rpc"
@@ -37,14 +38,14 @@ func (comp *DemoComp) Start() {
 				return
 			}
 
-			dst := dserv.Using(serv).GetAddressDetails().LocalAddr
+			dst := dserv.Using(serv).GetNodeDetails().LocalAddr
 
-			addr := dserv.Using(serv).GetAddressDetails()
+			addr := dserv.Using(serv).GetNodeDetails()
 			_ = addr
 
 			cp1 := callpath.CallPath{
 				Category:  callpath.Entity,
-				EntityId:  entityId,
+				EntityId:  uid.From(entityId),
 				Component: "DemoComp",
 				Method:    "TestRPC",
 			}
@@ -78,7 +79,7 @@ func (comp *DemoComp) Start() {
 
 			cp2 := callpath.CallPath{
 				Category:  callpath.Entity,
-				EntityId:  entityId,
+				EntityId:  uid.From(entityId),
 				Component: "DemoComp",
 				Method:    "TestOneWayRPC",
 			}

@@ -30,7 +30,7 @@ func (comp *DemoComp) Start() {
 		Name: service.Current(comp).GetName(),
 		Nodes: []discovery.Node{
 			{
-				Id:      service.Current(comp).GetId().String(),
+				Id:      service.Current(comp).GetId(),
 				Address: fmt.Sprintf("service:%s:%s", service.Current(comp).GetName(), service.Current(comp).GetId()),
 			},
 		},

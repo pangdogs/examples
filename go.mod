@@ -6,8 +6,10 @@ toolchain go1.21.6
 
 require (
 	git.golaxy.org/core v0.2.48
-	git.golaxy.org/framework v0.1.35
+	git.golaxy.org/framework v0.1.36
 	github.com/segmentio/ksuid v1.0.4
+	github.com/spf13/pflag v1.0.5
+	github.com/spf13/viper v1.18.2
 	go.uber.org/zap v1.26.0
 )
 
@@ -70,8 +72,6 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.18.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.11 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.11 // indirect

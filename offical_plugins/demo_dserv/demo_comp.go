@@ -22,7 +22,7 @@ type DemoComp struct {
 func (comp *DemoComp) Start() {
 	core.Await(runtime.Current(comp), core.TimeTick(runtime.Current(comp), time.Second)).
 		Pipe(runtime.Current(comp), func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
-			addr := dserv.Using(service.Current(ctx)).GetAddressDetails()
+			addr := dserv.Using(service.Current(ctx)).GetNodeDetails()
 
 			vmap, err := variant.MakeMap(map[string]int{
 				ksuid.New().String(): rand.Int(),

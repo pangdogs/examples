@@ -47,7 +47,7 @@ func main() {
 	<-core.NewService(service.NewContext(
 		service.With.EntityLib(entityLib),
 		service.With.PluginBundle(pluginBundle),
-		service.With.Name("demo_gate"),
+		service.With.Name("demo_server"),
 		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
