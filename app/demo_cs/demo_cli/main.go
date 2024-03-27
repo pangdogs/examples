@@ -60,7 +60,7 @@ func main() {
 		GTPCompression(gtp.Compression_Brotli).
 		GTPCompressedSize(0).
 		GTPAutoReconnectRetryTimes(0).
-		FutureTimeout(time.Hour).
+		FutureTimeout(10*time.Second).
 		ZapLogger(logger).
 		MainProc(proc).
 		Connect(context.Background(), viper.GetString("endpoint"))
