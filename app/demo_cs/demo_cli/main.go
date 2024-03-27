@@ -11,6 +11,7 @@ import (
 	"git.golaxy.org/framework/plugins/rpc/rpcli"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -33,6 +34,8 @@ func main() {
 		panic(err)
 	}
 	_ = servPubKey
+
+	logger, _ := zap.NewDevelopment()
 
 	proc := &MainProc{}
 
@@ -58,6 +61,7 @@ func main() {
 		GTPCompressedSize(0).
 		GTPAutoReconnectRetryTimes(0).
 		FutureTimeout(time.Hour).
+		ZapLogger(logger).
 		MainProc(proc).
 		Connect(context.Background(), viper.GetString("endpoint"))
 	if err != nil {
