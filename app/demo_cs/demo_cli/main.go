@@ -80,6 +80,10 @@ func main() {
 	}()
 
 	<-cli.Done()
+
+	if err := context.Cause(cli); err != nil {
+		fmt.Println("cause:", err)
+	}
 }
 
 type MainProc struct {
