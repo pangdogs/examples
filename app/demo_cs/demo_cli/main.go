@@ -16,9 +16,9 @@ import (
 )
 
 func main() {
-	pflag.String("cli_priv_key", "cli.pem", "")
-	pflag.String("serv_pub_key", "serv.pub", "")
-	pflag.String("endpoint", "localhost:9090", "")
+	pflag.String("cli_priv_key", "cli.pem", "client private key for sign")
+	pflag.String("serv_pub_key", "serv.pub", "service public key for verify sign")
+	pflag.String("endpoint", "localhost:9090", "connect endpoint")
 
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)

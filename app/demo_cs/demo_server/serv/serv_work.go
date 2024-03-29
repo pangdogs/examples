@@ -11,7 +11,7 @@ import (
 )
 
 type WorkService struct {
-	framework.ServiceBehavior
+	framework.ServiceGeneric
 }
 
 func (serv *WorkService) Init(ctx service.Context) {

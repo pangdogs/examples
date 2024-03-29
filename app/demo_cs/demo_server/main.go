@@ -12,8 +12,8 @@ func main() {
 		Setup(serv.Gate, &serv.GateService{}).
 		Setup(serv.Work, &serv.WorkService{}).
 		InitCB(generic.CastDelegateAction1(func(*framework.App) {
-			pflag.String("cli_pub_key", "cli.pub", "")
-			pflag.String("serv_priv_key", "serv.pem", "")
+			pflag.String("cli_pub_key", "cli.pub", "client public key for verify sign")
+			pflag.String("serv_priv_key", "serv.pem", "service private key for sign")
 		})).
 		Run()
 }

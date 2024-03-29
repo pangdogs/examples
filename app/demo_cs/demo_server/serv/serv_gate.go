@@ -20,7 +20,7 @@ import (
 )
 
 type GateService struct {
-	framework.ServiceBehavior
+	framework.ServiceGeneric
 }
 
 func (serv *GateService) Init(ctx service.Context) {
