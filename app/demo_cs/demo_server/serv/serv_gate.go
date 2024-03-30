@@ -44,7 +44,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 	_ = servPrivKey
 
 	gate.Install(ctx,
-		gate.With.Endpoints("0.0.0.0:9090"),
+		gate.With.TCPAddress("0.0.0.0:9090"),
 		gate.With.IOTimeout(10*time.Second),
 		gate.With.IOBufferCap(1024*1024*5),
 		gate.With.AgreeClientEncryptionProposal(true),

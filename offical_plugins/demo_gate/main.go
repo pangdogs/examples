@@ -33,7 +33,7 @@ func main() {
 
 	// 安装网关插件
 	gate.Install(pluginBundle,
-		gate.With.Endpoints(os.Args[1:]...),
+		gate.With.TCPAddress(os.Args[1]),
 		gate.With.IOTimeout(3*time.Second),
 		gate.With.IOBufferCap(1024*1024*5),
 		gate.With.AgreeClientEncryptionProposal(true),
