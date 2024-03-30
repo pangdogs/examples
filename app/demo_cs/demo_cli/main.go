@@ -73,13 +73,14 @@ func main() {
 			var txt string
 			fmt.Scanln(&txt)
 
+			send := time.Now()
 			ret, err := rpc.Result1[string](<-proc.RPC(serv.Work, comp.CmdCompSelf.Name, "Echo", txt))
 			if err != nil {
-				fmt.Println("error:", err)
+				fmt.Printf("<= delay:%dms, error: %s\n", time.Now().Sub(send).Milliseconds(), err)
 				continue
 			}
 
-			fmt.Println("echo:", ret)
+			fmt.Printf("<= delay:%dms, echo: %s\n", time.Now().Sub(send).Milliseconds(), ret)
 		}
 	}()
 
