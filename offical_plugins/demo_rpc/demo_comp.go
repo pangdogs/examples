@@ -55,7 +55,7 @@ func (comp *DemoComp) Start() {
 			// 异步
 			{
 				core.Await(rt, rpc.Using(serv).RPC(dst, cp1.String(), a)).
-					Any(rt, func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
+					Any(func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
 						rv, err := rpc.Result1[int32](ret)
 						if err != nil {
 							log.Errorf(serv, "3rd => result: %v", err)

@@ -37,7 +37,7 @@ func (comp *DemoComp) Start() {
 
 	core.Await(runtime.Current(comp),
 		core.TimeTick(runtime.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
-	).Pipe(comp, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+	).Pipe(nil, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
 		topic := "demo.broker_test"
 		msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
 

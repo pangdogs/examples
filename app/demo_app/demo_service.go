@@ -10,7 +10,7 @@ import (
 
 // DemoService Demo服务
 type DemoService struct {
-	framework.ServiceBehavior
+	framework.ServiceGeneric
 }
 
 func (serv *DemoService) Init(ctx service.Context) {

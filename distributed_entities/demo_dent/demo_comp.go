@@ -14,7 +14,7 @@ type DemoComp struct {
 }
 
 func (comp *DemoComp) Start() {
-	comp.Await(comp.TimeTick(5 * time.Second)).Pipe(func(_ runtime.Ret, _ ...any) {
+	comp.Await(comp.TimeTick(5*time.Second)).Pipe(nil, func(_ runtime.Ret, _ ...any) {
 		comp.GlobalBalanceOneWayRPC("DemoComp", "TestOnewayRPC", comp.GetServiceCtx().GetName(), comp.GetServiceCtx().GetId().String(), rand.Int31())
 	})
 }

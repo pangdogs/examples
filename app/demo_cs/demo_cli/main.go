@@ -62,7 +62,7 @@ func main() {
 		GTPAutoReconnectRetryTimes(0).
 		FutureTimeout(10*time.Second).
 		ZapLogger(logger).
-		MainProc(proc).
+		MainProcedure(proc).
 		Connect(context.Background(), viper.GetString("endpoint"))
 	if err != nil {
 		panic(err)
@@ -91,5 +91,5 @@ func main() {
 }
 
 type MainProc struct {
-	rpcli.Proc
+	rpcli.Procedure
 }

@@ -55,7 +55,7 @@ func (comp *DemoComp) Update() {
 
 	core.Await(runtime.Current(comp),
 		core.TimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
-	).Any(runtime.Current(comp), func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+	).Any(func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
 		if comp.mutex == nil {
 			return
 		}

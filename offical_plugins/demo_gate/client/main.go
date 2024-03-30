@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer cli.Close()
+	defer cli.Close(nil)
 
 	log.Infoln("this console is", cli.GetSessionId())
 
