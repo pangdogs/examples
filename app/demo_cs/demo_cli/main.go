@@ -7,6 +7,7 @@ import (
 	"git.golaxy.org/examples/app/demo_cs/demo_server/serv"
 	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework/net/gtp"
+	"git.golaxy.org/framework/plugins/gate/cli"
 	"git.golaxy.org/framework/plugins/rpc"
 	"git.golaxy.org/framework/plugins/rpc/rpcli"
 	"github.com/spf13/pflag"
@@ -19,6 +20,7 @@ func main() {
 	pflag.String("cli_priv_key", "cli.pem", "client private key for sign")
 	pflag.String("serv_pub_key", "serv.pub", "service public key for verify sign")
 	pflag.String("endpoint", "localhost:9090", "connect endpoint")
+	pflag.Bool("ws", false, "use websocket")
 
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
@@ -39,7 +41,13 @@ func main() {
 
 	proc := &MainProc{}
 
-	cli, err := rpcli.CreateRPCli().
+	np := cli.TCP
+	if viper.GetBool("ws") {
+		np = cli.WebSocket
+	}
+
+	rpcli, err := rpcli.CreateRPCli().
+		NetProtocol(np).
 		IOTimeout(7*time.Second).
 		GTPAutoReconnect(true).
 		GTPEncCipherSuite(gtp.CipherSuite{
@@ -84,9 +92,9 @@ func main() {
 		}
 	}()
 
-	<-cli.Done()
+	<-rpcli.Done()
 
-	if err := context.Cause(cli); err != nil {
+	if err := context.Cause(rpcli); err != nil {
 		fmt.Println("cause:", err)
 	}
 }

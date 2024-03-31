@@ -45,6 +45,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 
 	gate.Install(ctx,
 		gate.With.TCPAddress("0.0.0.0:9090"),
+		gate.With.WebSocketURL("http://0.0.0.0:8080"),
 		gate.With.IOTimeout(10*time.Second),
 		gate.With.IOBufferCap(1024*1024*5),
 		gate.With.AgreeClientEncryptionProposal(true),
