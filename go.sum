@@ -9,8 +9,8 @@ cloud.google.com/go/firestore v1.14.0 h1:8aLcKnMPoldYU3YHgu4t2exrKhLQkqaXAGqT0lj
 cloud.google.com/go/firestore v1.14.0/go.mod h1:96MVaHLsEhbvkBEdZgfN+AS/GIkco1LRpH9Xp9YZfzQ=
 cloud.google.com/go/longrunning v0.5.4 h1:w8xEcbZodnA2BbW6sVirkkoC+1gP8wS57EUUgGS0GVg=
 cloud.google.com/go/longrunning v0.5.4/go.mod h1:zqNVncI0BOP8ST6XQD1+VcvuShMmq7+xFSzOL++V0dI=
-git.golaxy.org/core v0.2.49 h1:bY5lkjMkKFlwdGBQE/2vCxjAnGrTCtDF+o3wZ91oG5A=
-git.golaxy.org/core v0.2.49/go.mod h1:ee+AoKF3zn1Rqod6Uevx815yyONvkh0q1mejoAs5zSs=
+git.golaxy.org/core v0.2.51 h1:JHW+/lm4quefm8NsrUw9SFEd27dt4iyQu1xugjYza3Q=
+git.golaxy.org/core v0.2.51/go.mod h1:ee+AoKF3zn1Rqod6Uevx815yyONvkh0q1mejoAs5zSs=
 git.golaxy.org/framework v0.1.43 h1:2DQJtQJCcw3TM+T57PCqj7HdAONdewIcEdcJr5zHhFI=
 git.golaxy.org/framework v0.1.43/go.mod h1:mgr+rMr2PmHbA2eOl2Q+QMTSscCaZLWmaQ7RNH+3Vhs=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
