@@ -9,10 +9,10 @@ cloud.google.com/go/firestore v1.14.0 h1:8aLcKnMPoldYU3YHgu4t2exrKhLQkqaXAGqT0lj
 cloud.google.com/go/firestore v1.14.0/go.mod h1:96MVaHLsEhbvkBEdZgfN+AS/GIkco1LRpH9Xp9YZfzQ=
 cloud.google.com/go/longrunning v0.5.4 h1:w8xEcbZodnA2BbW6sVirkkoC+1gP8wS57EUUgGS0GVg=
 cloud.google.com/go/longrunning v0.5.4/go.mod h1:zqNVncI0BOP8ST6XQD1+VcvuShMmq7+xFSzOL++V0dI=
-git.golaxy.org/core v0.2.53 h1:kXwW51mgRg03fxJDdI1FlCewecwE7OgpGkrgi8w3LQE=
-git.golaxy.org/core v0.2.53/go.mod h1:ee+AoKF3zn1Rqod6Uevx815yyONvkh0q1mejoAs5zSs=
-git.golaxy.org/framework v0.1.44-0.20240416142930-f7f3131698be h1:yBboOG+/vPgFrk4E/TnBtDUPEb+/7RR7qaHIsyhD5rg=
-git.golaxy.org/framework v0.1.44-0.20240416142930-f7f3131698be/go.mod h1:eyCPLuTxu3zEK1APxoSXl4qnMHOWp+Z7aMDXZE0g5dY=
+git.golaxy.org/core v0.2.54 h1:vjT5aMjaBuX01xH1DU4fjkqy3r+2dlipcb4Yy2qxDe8=
+git.golaxy.org/core v0.2.54/go.mod h1:ee+AoKF3zn1Rqod6Uevx815yyONvkh0q1mejoAs5zSs=
+git.golaxy.org/framework v0.1.44-0.20240416144841-a269abbeee77 h1:hamqsFCY6Nu/xMEVzxFsyMQJELXWLrKD3Hv+SyQalo4=
+git.golaxy.org/framework v0.1.44-0.20240416144841-a269abbeee77/go.mod h1:6AEJxfDoYDmUKnCsLd20oqBRul+z3kISRtzkuAoADcE=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
