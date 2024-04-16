@@ -26,7 +26,7 @@ func (comp *DemoComp) Start() {
 	log.Infof(service.Current(comp), "max payload: %d", broker.Using(service.Current(comp)).GetMaxPayload())
 
 	sub, err := broker.Using(service.Current(comp)).Subscribe(context.Background(), "demo.>",
-		broker.With.EventHandler(generic.CastDelegateFunc1(func(e broker.IEvent) error {
+		broker.With.EventHandler(generic.MakeDelegateFunc1(func(e broker.IEvent) error {
 			log.Infof(service.Current(comp), "receive=> pattern:%q, topic:%q, msg:%q", e.Pattern(), e.Topic(), string(e.Message()))
 			return nil
 		})))

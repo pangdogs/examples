@@ -67,7 +67,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 		gate.With.EncVerifySignaturePublicKey(cliPubKey),
 		gate.With.CompressedSize(128),
 		gate.With.SessionInactiveTimeout(time.Hour),
-		gate.With.SessionStateChangedHandler(generic.CastDelegateAction3(func(sess gate.ISession, cur, old gate.SessionState) {
+		gate.With.SessionStateChangedHandler(generic.MakeDelegateAction3(func(sess gate.ISession, cur, old gate.SessionState) {
 			if cur != gate.SessionState_Confirmed {
 				return
 			}

@@ -52,7 +52,7 @@ func main() {
 			service.With.EntityLib(entityLib),
 			service.With.PluginBundle(pluginBundle),
 			service.With.Name(fmt.Sprintf("demo_dent_%d", i%(total/2))),
-			service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+			service.With.RunningHandler(generic.MakeDelegateAction2(func(ctx service.Context, state service.RunningState) {
 				if state != service.RunningState_Started {
 					return
 				}
@@ -68,7 +68,7 @@ func main() {
 
 				// 创建运行时上下文与运行时，安装插件并开始运行
 				rtCtx := runtime.NewContext(ctx,
-					runtime.With.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.With.Context.RunningHandler(generic.MakeDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}

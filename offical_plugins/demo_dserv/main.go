@@ -41,7 +41,7 @@ func main() {
 		service.With.EntityLib(entityLib),
 		service.With.PluginBundle(pluginBundle),
 		service.With.Name("demo_dserv"),
-		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+		service.With.RunningHandler(generic.MakeDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
@@ -51,7 +51,7 @@ func main() {
 			signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 			// 监听消息
-			dserv.Using(ctx).WatchMsg(context.Background(), generic.CastDelegateFunc2(
+			dserv.Using(ctx).WatchMsg(context.Background(), generic.MakeDelegateFunc2(
 				func(topic string, mp gap.MsgPacket) error {
 					data, _ := json.Marshal(mp)
 					log.Infof(ctx, "receive => topic:%q, msg-packet:%s", topic, data)
@@ -67,7 +67,7 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := core.NewRuntime(
 				runtime.NewContext(ctx,
-					runtime.With.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.With.Context.RunningHandler(generic.MakeDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}

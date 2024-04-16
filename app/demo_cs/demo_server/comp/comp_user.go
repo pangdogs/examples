@@ -3,13 +3,13 @@ package comp
 import (
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/framework/oc"
+	"git.golaxy.org/framework/dc"
 )
 
 var UserCompSelf = define.DefineComponent[UserComp]()
 
 type UserComp struct {
-	oc.ComponentBehavior
+	dc.ComponentBehavior
 }
 
 func (c *UserComp) Dispose() {

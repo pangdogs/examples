@@ -20,7 +20,7 @@ func main() {
 	log := zaplogger.Sugar()
 
 	cli, err := cli.Connect(context.Background(), os.Args[1],
-		cli.With.RecvDataHandler(generic.CastDelegateFunc1(func(data []byte) error {
+		cli.With.RecvDataHandler(generic.MakeDelegateFunc1(func(data []byte) error {
 			log.Infoln(string(data))
 			return nil
 		})),

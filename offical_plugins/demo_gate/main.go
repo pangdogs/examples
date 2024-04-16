@@ -40,7 +40,7 @@ func main() {
 		gate.With.AgreeClientCompressionProposal(true),
 		gate.With.CompressedSize(128),
 		gate.With.SessionInactiveTimeout(time.Hour),
-		gate.With.SessionStateChangedHandler(generic.CastDelegateAction3(handleSessionStateChanged)),
+		gate.With.SessionStateChangedHandler(generic.MakeDelegateAction3(handleSessionStateChanged)),
 	)
 
 	// 创建服务上下文与服务，并开始运行
@@ -48,7 +48,7 @@ func main() {
 		service.With.EntityLib(entityLib),
 		service.With.PluginBundle(pluginBundle),
 		service.With.Name("demo_server"),
-		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+		service.With.RunningHandler(generic.MakeDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}

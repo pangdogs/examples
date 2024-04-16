@@ -2,7 +2,7 @@ package main
 
 import (
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/framework/oc"
+	"git.golaxy.org/framework/dc"
 	"git.golaxy.org/framework/plugins/log"
 	"math/rand"
 	"time"
@@ -10,7 +10,7 @@ import (
 
 // DemoComp Demo组件实现
 type DemoComp struct {
-	oc.ComponentBehavior
+	dc.ComponentBehavior
 }
 
 func (comp *DemoComp) Start() {

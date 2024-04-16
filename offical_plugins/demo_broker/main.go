@@ -33,7 +33,7 @@ func main() {
 		service.With.EntityLib(entityLib),
 		service.With.PluginBundle(pluginBundle),
 		service.With.Name("demo_broker"),
-		service.With.RunningHandler(generic.CastDelegateAction2(func(ctx service.Context, state service.RunningState) {
+		service.With.RunningHandler(generic.MakeDelegateAction2(func(ctx service.Context, state service.RunningState) {
 			if state != service.RunningState_Started {
 				return
 			}
@@ -50,7 +50,7 @@ func main() {
 			// 创建运行时上下文与运行时，并开始运行
 			rt := core.NewRuntime(
 				runtime.NewContext(ctx,
-					runtime.With.Context.RunningHandler(generic.CastDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
+					runtime.With.Context.RunningHandler(generic.MakeDelegateAction2(func(_ runtime.Context, state runtime.RunningState) {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
