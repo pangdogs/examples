@@ -2,7 +2,10 @@ package serv
 
 import (
 	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/uid"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/comp"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/net/gap"
@@ -14,14 +17,16 @@ type WorkService struct {
 	framework.ServiceGeneric
 }
 
-func (serv *WorkService) Init(ctx service.Context) {
+func (serv *WorkService) Instantiation() service.Context {
+	return &WorkServiceInst{}
+}
+
+func (serv *WorkService) Built(ctx service.Context) {
 	core.CreateEntityPT(ctx).
 		Prototype("user").
 		AddComponent(&comp.UserComp{}).
 		AddComponent(&comp.CmdComp{}).
 		Declare()
-
-	EntitiesPluginSelf.Install(ctx)
 }
 
 func (serv *WorkService) InstallRPC(ctx service.Context) {
@@ -35,4 +40,23 @@ func (serv *WorkService) InstallRPC(ctx service.Context) {
 			processor.NewForwardInDispatcher(gap.DefaultMsgCreator()),
 		),
 	)
+}
+
+type WorkServiceInst struct {
+	framework.ServiceInstance
+}
+
+func (inst *WorkServiceInst) CreateEntity(entId uid.Id) {
+	rt := framework.CreateRuntime(inst).Spawn()
+
+	runtime.Concurrent(rt).CallVoid(func(...any) {
+		_, err := core.CreateEntity(rt).
+			Prototype("user").
+			Scope(ec.Scope_Global).
+			PersistId(entId).
+			Spawn()
+		if err != nil {
+			panic(err)
+		}
+	}).Wait(inst)
 }

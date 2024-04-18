@@ -23,7 +23,7 @@ type GateService struct {
 	framework.ServiceGeneric
 }
 
-func (serv *GateService) Init(ctx service.Context) {
+func (serv *GateService) Built(ctx service.Context) {
 	core.CreateEntityPT(ctx).
 		Prototype("user").
 		AddComponent(&comp.UserComp{}).
@@ -83,7 +83,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 					panic(err)
 				}
 
-				ret := <-rpcutil.ProxyService(ctx, Work).BalanceRPC(EntitiesPluginSelf.Name, "CreateEntity", entity.GetId())
+				ret := <-rpcutil.ProxyService(ctx, Work).BalanceRPC("", "CreateEntity", entity.GetId())
 				if !ret.OK() {
 					panic(ret.Error)
 				}
