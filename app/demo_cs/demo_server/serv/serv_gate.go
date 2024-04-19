@@ -102,12 +102,6 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 					}()
 				}).Wait(ctx)
 			},
-			func(sess gate.ISession, cur, old gate.SessionState) {
-				if cur != gate.SessionState_Death {
-					return
-				}
-				router.Using(ctx).LookupEntity(sess.GetId())
-			},
 		)),
 	)
 
