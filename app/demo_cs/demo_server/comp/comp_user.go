@@ -14,7 +14,7 @@ type UserComp struct {
 }
 
 func (c *UserComp) Dispose() {
-	if c.GetServiceCtx().GetName() == misc.Gate {
+	if c.GetService().Ctx.GetName() == misc.Gate {
 		c.BroadcastOneWayRPC(misc.Work, "", "DestroySelf")
 	}
 	runtime.Concurrent(c).GetCancelFunc()()

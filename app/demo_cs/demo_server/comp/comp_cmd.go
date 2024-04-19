@@ -13,6 +13,6 @@ type CmdComp struct {
 }
 
 func (comp *CmdComp) Echo(text string) string {
-	log.Infof(comp.GetRuntimeCtx(), text)
+	log.Infof(comp.GetRuntime().Ctx, text)
 	return text
 }
