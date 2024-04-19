@@ -3,7 +3,7 @@ package comp
 import (
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
+	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework/dc"
 )
 

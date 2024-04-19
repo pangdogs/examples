@@ -7,7 +7,6 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/comp"
-	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/net/gap"

@@ -2,8 +2,8 @@ package main
 
 import (
 	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/serv"
+	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework"
 	"github.com/spf13/pflag"
 )
