@@ -97,7 +97,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 					go func() {
 						<-mapping.Done()
 						runtime.Concurrent(mapping.GetEntity()).CallVoid(func(...any) {
-							entity.DestroySelf()
+							mapping.GetEntity().(ec.Entity).DestroySelf()
 						})
 					}()
 				}).Wait(ctx)
