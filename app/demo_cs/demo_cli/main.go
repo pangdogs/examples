@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/comp"
-	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework/net/gtp"
 	"git.golaxy.org/framework/plugins/gate/cli"
