@@ -67,34 +67,48 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 		gate.With.EncVerifySignaturePublicKey(cliPubKey),
 		gate.With.CompressedSize(128),
 		gate.With.SessionInactiveTimeout(time.Minute),
-		gate.With.SessionStateChangedHandler(generic.MakeDelegateAction3(func(sess gate.ISession, cur, old gate.SessionState) {
-			if cur != gate.SessionState_Confirmed {
-				return
-			}
-
-			rt := framework.CreateRuntime(ctx).Spawn()
-
-			runtime.Concurrent(rt).CallVoid(func(...any) {
-				entity, err := core.CreateEntity(rt).
-					Prototype("user").
-					Scope(ec.Scope_Global).
-					Spawn()
-				if err != nil {
-					panic(err)
+		gate.With.SessionStateChangedHandler(generic.MakeDelegateAction3(
+			func(sess gate.ISession, cur, old gate.SessionState) {
+				if cur != gate.SessionState_Confirmed {
+					return
 				}
 
-				ret := <-rpcutil.ProxyService(ctx, misc.Work).BalanceRPC("", "CreateEntity", entity.GetId())
-				if !ret.OK() {
-					panic(ret.Error)
-				}
+				rt := framework.CreateRuntime(ctx).Spawn()
 
-				err = router.Using(sess.GetContext()).Mapping(entity.GetId(), sess.GetId())
-				if err != nil {
-					panic(err)
-				}
+				runtime.Concurrent(rt).CallVoid(func(...any) {
+					entity, err := core.CreateEntity(rt).
+						Prototype("user").
+						Scope(ec.Scope_Global).
+						Spawn()
+					if err != nil {
+						panic(err)
+					}
 
-			}).Wait(ctx)
-		})),
+					ret := <-rpcutil.ProxyService(ctx, misc.Work).BalanceRPC("", "CreateEntity", entity.GetId())
+					if !ret.OK() {
+						panic(ret.Error)
+					}
+
+					mapping, err := router.Using(sess.GetContext()).Mapping(entity.GetId(), sess.GetId())
+					if err != nil {
+						panic(err)
+					}
+
+					go func() {
+						<-mapping.Done()
+						runtime.Concurrent(mapping.GetEntity()).CallVoid(func(...any) {
+							entity.DestroySelf()
+						})
+					}()
+				}).Wait(ctx)
+			},
+			func(sess gate.ISession, cur, old gate.SessionState) {
+				if cur != gate.SessionState_Death {
+					return
+				}
+				router.Using(ctx).LookupEntity(sess.GetId())
+			},
+		)),
 	)
 
 	router.Install(ctx,
