@@ -37,7 +37,7 @@ func (serv *WorkService) InstallRPC(ctx service.Context) {
 		),
 		rpc.With.Dispatchers(
 			processor.NewServiceDispatcher(),
-			processor.NewForwardInDispatcher(gap.DefaultMsgCreator()),
+			processor.NewForwardInDispatcher(gap.DefaultMsgCreator(), nil),
 		),
 	)
 }
