@@ -3,6 +3,7 @@ package comp
 import (
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/framework/dc"
 )
 
@@ -13,5 +14,8 @@ type UserComp struct {
 }
 
 func (c *UserComp) Dispose() {
+	if c.GetServiceCtx().GetName() == misc.Gate {
+		c.BroadcastOneWayRPC(misc.Work, "", "DestroySelf")
+	}
 	runtime.Concurrent(c).GetCancelFunc()()
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/comp"
-	"git.golaxy.org/examples/app/demo_cs/demo_server/serv"
+	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework/net/gtp"
 	"git.golaxy.org/framework/plugins/gate/cli"
@@ -82,7 +82,7 @@ func main() {
 			fmt.Scanln(&txt)
 
 			send := time.Now()
-			ret, err := rpc.Result1[string](<-proc.RPC(serv.Work, comp.CmdCompSelf.Name, "Echo", txt))
+			ret, err := rpc.Result1[string](<-proc.RPC(misc.Work, comp.CmdCompSelf.Name, "Echo", txt))
 			if err != nil {
 				fmt.Printf("<= delay:%dms, error: %s\n", time.Now().Sub(send).Milliseconds(), err)
 				continue

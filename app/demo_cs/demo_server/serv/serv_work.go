@@ -7,6 +7,7 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/uid"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/comp"
+	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/plugins/rpc"
@@ -33,7 +34,7 @@ func (serv *WorkService) InstallRPC(ctx service.Context) {
 	rpc.Install(ctx,
 		rpc.With.Deliverers(
 			processor.NewServiceDeliverer(),
-			processor.NewForwardOutDeliverer(Gate),
+			processor.NewForwardOutDeliverer(misc.Gate),
 		),
 		rpc.With.Dispatchers(
 			processor.NewServiceDispatcher(),

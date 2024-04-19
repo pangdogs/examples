@@ -7,6 +7,7 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/examples/app/demo_cs/demo_server/comp"
+	"git.golaxy.org/examples/app/demo_cs/demo_server/misc"
 	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/net/gap"
@@ -83,7 +84,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 					panic(err)
 				}
 
-				ret := <-rpcutil.ProxyService(ctx, Work).BalanceRPC("", "CreateEntity", entity.GetId())
+				ret := <-rpcutil.ProxyService(ctx, misc.Work).BalanceRPC("", "CreateEntity", entity.GetId())
 				if !ret.OK() {
 					panic(ret.Error)
 				}

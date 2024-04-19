@@ -1,4 +1,4 @@
-package serv
+package misc
 
 const (
 	Gate = "gate"
