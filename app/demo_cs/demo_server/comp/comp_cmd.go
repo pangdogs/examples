@@ -2,14 +2,14 @@ package comp
 
 import (
 	"git.golaxy.org/core/define"
-	"git.golaxy.org/framework/dc"
+	"git.golaxy.org/framework/fwec"
 	"git.golaxy.org/framework/plugins/log"
 )
 
 var CmdCompSelf = define.DefineComponent[CmdComp]()
 
 type CmdComp struct {
-	dc.ComponentBehavior
+	fwec.ComponentBehavior
 }
 
 func (comp *CmdComp) Echo(text string) string {
