@@ -10,7 +10,7 @@ import (
 )
 
 // DemoCompSelf Demo组件定义
-var DemoCompSelf = define.DefineComponent[DemoComp]()
+var DemoCompSelf = define.Component[DemoComp]()
 
 // DemoComp Demo组件
 type DemoComp struct {

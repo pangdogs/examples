@@ -8,7 +8,7 @@ import (
 )
 
 // demoPlugin 定义demo插件
-var demoPlugin = define.DefineServicePlugin(func(...any) IDemoPlugin {
+var demoPlugin = define.ServicePlugin(func(...any) IDemoPlugin {
 	return &DemoPlugin{}
 })
 

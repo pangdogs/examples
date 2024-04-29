@@ -7,7 +7,7 @@ import (
 	"git.golaxy.org/framework/fwec"
 )
 
-var UserCompSelf = define.DefineComponent[UserComp]()
+var UserCompSelf = define.Component[UserComp]()
 
 type UserComp struct {
 	fwec.ComponentBehavior

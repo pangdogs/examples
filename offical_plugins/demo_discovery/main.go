@@ -18,7 +18,7 @@ import (
 func main() {
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-	entityLib.Register("demo", DemoComp{})
+	entityLib.Declare("demo", DemoComp{})
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()

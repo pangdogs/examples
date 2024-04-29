@@ -6,7 +6,7 @@ import (
 	"git.golaxy.org/framework/plugins/log"
 )
 
-var CmdCompSelf = define.DefineComponent[CmdComp]()
+var CmdCompSelf = define.Component[CmdComp]()
 
 type CmdComp struct {
 	fwec.ComponentBehavior
