@@ -47,14 +47,69 @@ func main() {
 
 			// 在运行时线程环境中，创建实体
 			core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-				entity, err := core.CreateEntity(ctx).
+				entity1, err := core.CreateEntity(ctx).
 					Prototype("demo").
 					Scope(ec.Scope_Global).
 					Spawn()
 				if err != nil {
 					log.Panic(service.Current(ctx), err)
 				}
-				log.Infof(service.Current(ctx), "create entity %q finish", entity)
+
+				log.Infof(service.Current(ctx), "create entity %q finish", entity1)
+
+				entity2, err := core.CreateEntity(ctx).
+					Prototype("demo").
+					Scope(ec.Scope_Global).
+					ParentId(entity1.GetId()).
+					Spawn()
+				if err != nil {
+					log.Panic(service.Current(ctx), err)
+				}
+
+				log.Infof(service.Current(ctx), "create entity %q finish", entity2)
+
+				entity3, err := core.CreateEntity(ctx).
+					Prototype("demo").
+					Scope(ec.Scope_Global).
+					ParentId(entity1.GetId()).
+					Spawn()
+				if err != nil {
+					log.Panic(service.Current(ctx), err)
+				}
+
+				log.Infof(service.Current(ctx), "create entity %q finish", entity3)
+
+				entity4, err := core.CreateEntity(ctx).
+					Prototype("demo").
+					Scope(ec.Scope_Global).
+					ParentId(entity2.GetId()).
+					Spawn()
+				if err != nil {
+					log.Panic(service.Current(ctx), err)
+				}
+
+				log.Infof(service.Current(ctx), "create entity %q finish", entity4)
+
+				ctx.GetEntityTree().RangeChildren(entity1.GetId(), func(child ec.Entity) bool {
+					log.Infof(service.Current(ctx), "child: %s <- %s", entity1.GetId(), child.GetId())
+					return true
+				})
+
+				ctx.GetEntityTree().RangeChildren(entity2.GetId(), func(child ec.Entity) bool {
+					log.Infof(service.Current(ctx), "child: %s <- %s", entity2.GetId(), child.GetId())
+					return true
+				})
+
+				ctx.GetEntityTree().ChangeParentNode(entity2.GetId(), entity3.GetId())
+
+				ctx.GetEntityTree().RangeChildren(entity1.GetId(), func(child ec.Entity) bool {
+					log.Infof(service.Current(ctx), "child: %s <- %s", entity1.GetId(), child.GetId())
+					return true
+				})
+
+				ctx.GetEntityTree().PruningNode(entity3.GetId())
+
+				entity3.DestroySelf()
 			})
 		})),
 	)).Run()
