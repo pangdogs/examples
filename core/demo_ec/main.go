@@ -100,7 +100,7 @@ func main() {
 					return true
 				})
 
-				ctx.GetEntityTree().ChangeParentNode(entity2.GetId(), entity3.GetId())
+				ctx.GetEntityTree().ChangeParent(entity2.GetId(), entity3.GetId())
 
 				ctx.GetEntityTree().RangeChildren(entity1.GetId(), func(child ec.Entity) bool {
 					log.Infof(service.Current(ctx), "child: %s <- %s", entity1.GetId(), child.GetId())

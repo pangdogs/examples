@@ -114,13 +114,9 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 	)
 
 	rpc.Install(ctx,
-		rpc.With.Deliverers(
-			processor.NewServiceDeliverer(),
-		),
-		rpc.With.Dispatchers(
-			processor.NewServiceDispatcher(),
-			processor.NewOutboundDispatcher(),
-			processor.NewInboundDispatcher(gap.DefaultMsgCreator()),
+		rpc.With.Processors(
+			processor.NewServiceProcessor(),
+			processor.NewGateProcessor(gap.DefaultMsgCreator()),
 		),
 	)
 }

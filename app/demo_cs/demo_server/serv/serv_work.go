@@ -32,13 +32,9 @@ func (serv *WorkService) Built(ctx service.Context) {
 
 func (serv *WorkService) InstallRPC(ctx service.Context) {
 	rpc.Install(ctx,
-		rpc.With.Deliverers(
-			processor.NewServiceDeliverer(),
-			processor.NewForwardOutDeliverer(misc.Gate),
-		),
-		rpc.With.Dispatchers(
-			processor.NewServiceDispatcher(),
-			processor.NewForwardInDispatcher(gap.DefaultMsgCreator(), nil),
+		rpc.With.Processors(
+			processor.NewServiceProcessor(),
+			processor.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), nil),
 		),
 	)
 }
