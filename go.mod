@@ -6,7 +6,7 @@ toolchain go1.22.1
 
 require (
 	git.golaxy.org/core v0.2.60
-	git.golaxy.org/framework v0.1.55
+	git.golaxy.org/framework v0.1.56
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2

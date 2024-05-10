@@ -3,7 +3,7 @@ package main
 import (
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/framework/fwec"
+	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/plugins/log"
 	"math/rand"
 	"time"
@@ -14,7 +14,7 @@ var DemoCompSelf = define.Component[DemoComp]()
 
 // DemoComp Demo组件
 type DemoComp struct {
-	fwec.ComponentBehavior
+	framework.ComponentBehavior
 }
 
 func (comp *DemoComp) Start() {

@@ -4,13 +4,13 @@ import (
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/examples/app/demo_cs/misc"
-	"git.golaxy.org/framework/fwec"
+	"git.golaxy.org/framework"
 )
 
 var UserCompSelf = define.Component[UserComp]()
 
 type UserComp struct {
-	fwec.ComponentBehavior
+	framework.ComponentBehavior
 }
 
 func (c *UserComp) Dispose() {
