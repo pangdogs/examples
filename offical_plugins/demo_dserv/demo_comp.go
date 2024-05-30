@@ -6,6 +6,7 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/framework/net/gap/variant"
 	"git.golaxy.org/framework/plugins/dserv"
 	"git.golaxy.org/framework/plugins/log"
@@ -21,7 +22,7 @@ type DemoComp struct {
 
 func (comp *DemoComp) Start() {
 	core.Await(runtime.Current(comp), core.TimeTick(runtime.Current(comp), time.Second)).
-		Pipe(runtime.Current(comp), func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
+		Pipe(runtime.Current(comp), func(ctx runtime.Context, ret async.Ret, _ ...any) {
 			addr := dserv.Using(service.Current(ctx)).GetNodeDetails()
 
 			vmap, err := variant.MakeMap(map[string]int{

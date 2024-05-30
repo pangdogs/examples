@@ -7,7 +7,7 @@ import (
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/framework/plugins/discovery/cache_discovery"
 	"git.golaxy.org/framework/plugins/discovery/etcd_discovery"
 	"git.golaxy.org/framework/plugins/discovery/redis_discovery"
@@ -18,7 +18,7 @@ import (
 func main() {
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-	entityLib.Declare("demo", DemoComp{})
+	entityLib.Declare("demo", pt.Attribute{}, DemoComp{})
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
@@ -52,7 +52,7 @@ func main() {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
-						ctx.GetCancelFunc()()
+						ctx.Terminate()
 					})),
 				),
 				core.With.Runtime.Frame(runtime.NewFrame()),
@@ -61,8 +61,7 @@ func main() {
 
 			// 在运行时线程环境中，创建实体
 			core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-				entity, err := core.CreateEntity(ctx).
-					Prototype("demo").
+				entity, err := core.CreateEntity(ctx, "demo").
 					Scope(ec.Scope_Global).
 					Spawn()
 				if err != nil {

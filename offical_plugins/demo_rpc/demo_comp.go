@@ -5,11 +5,13 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/framework/plugins/dserv"
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/rpc"
 	"git.golaxy.org/framework/plugins/rpc/callpath"
+	"git.golaxy.org/framework/plugins/rpcstack"
 	"math/rand"
 	"time"
 )
@@ -24,7 +26,7 @@ func (comp *DemoComp) Start() {
 	serv := service.Current(rt)
 
 	core.Await(rt, core.TimeTick(rt, 3*time.Second)).
-		Pipe(rt, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+		Pipe(rt, func(ctx runtime.Context, _ async.Ret, _ ...any) {
 			var entityId string
 
 			entities.AutoRLock(func(es *[]string) {
@@ -54,8 +56,8 @@ func (comp *DemoComp) Start() {
 
 			// 异步
 			{
-				core.Await(rt, rpc.Using(serv).RPC(dst, cp1.String(), a)).
-					Any(func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
+				core.Await(rt, rpc.Using(serv).RPC(dst, rpcstack.EmptyCallChain, cp1.String(), a)).
+					Any(func(ctx runtime.Context, ret async.Ret, _ ...any) {
 						rv, err := rpc.Result1[int32](ret)
 						if err != nil {
 							log.Errorf(serv, "3rd => result: %v", err)
@@ -84,7 +86,7 @@ func (comp *DemoComp) Start() {
 				Method:    "TestOneWayRPC",
 			}
 
-			err := rpc.Using(serv).OneWayRPC(dst, cp2.String(), a)
+			err := rpc.Using(serv).OneWayRPC(dst, rpcstack.EmptyCallChain, cp2.String(), a)
 			if err != nil {
 				log.Errorf(serv, "oneway => call: %v", err)
 				return

@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	gap.DefaultMsgCreator().Register(&MsgDemo{})
+	gap.DefaultMsgCreator().Declare(&MsgDemo{})
 }
 
 const (

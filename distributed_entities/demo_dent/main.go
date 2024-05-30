@@ -8,11 +8,11 @@ import (
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/framework/plugins/broker/nats_broker"
-	"git.golaxy.org/framework/plugins/dent"
 	"git.golaxy.org/framework/plugins/dentq"
+	"git.golaxy.org/framework/plugins/dentr"
 	"git.golaxy.org/framework/plugins/discovery/etcd_discovery"
 	"git.golaxy.org/framework/plugins/dserv"
 	"git.golaxy.org/framework/plugins/dsync/etcd_dsync"
@@ -20,7 +20,6 @@ import (
 	"git.golaxy.org/framework/plugins/log/console_log"
 	"git.golaxy.org/framework/plugins/rpc"
 	"github.com/segmentio/ksuid"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -35,7 +34,7 @@ func main() {
 	for i := 0; i < total; i++ {
 		// 创建实体库，注册实体原型
 		entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-		entityLib.Declare("demo", pt.CompAlias(DemoComp{}, "DemoComp"))
+		entityLib.Declare("demo", pt.Attribute{}, pt.CompAlias(DemoComp{}, "DemoComp"))
 
 		// 创建插件包，安装插件
 		pluginBundle := plugin.NewPluginBundle()
@@ -63,7 +62,7 @@ func main() {
 
 				go func() {
 					<-sigChan
-					ctx.GetCancelFunc()()
+					ctx.Terminate()
 				}()
 
 				// 创建运行时上下文与运行时，安装插件并开始运行
@@ -72,11 +71,11 @@ func main() {
 						if state != runtime.RunningState_Terminated {
 							return
 						}
-						ctx.GetCancelFunc()()
+						ctx.Terminate()
 					})),
 				)
 				console_log.Install(rtCtx, console_log.With.Level(log.DebugLevel), console_log.With.ServiceInfo(true))
-				dent.Install(rtCtx, dent.With.CustomAddresses("127.0.0.1:12379"))
+				dentr.Install(rtCtx, dentr.With.CustomAddresses("127.0.0.1:12379"))
 
 				rt := core.NewRuntime(rtCtx, core.With.Runtime.AutoRun(true))
 
@@ -85,8 +84,7 @@ func main() {
 					entId := entIdList[i]
 
 					core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-						entity, err := core.CreateEntity(ctx).
-							Prototype("demo").
+						entity, err := core.CreateEntity(ctx, "demo").
 							Scope(ec.Scope_Global).
 							PersistId(uid.Id(entId.String())).
 							Spawn()

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/framework/net/gtp"
 	"git.golaxy.org/framework/plugins/gate/cli"
 	"go.uber.org/zap"

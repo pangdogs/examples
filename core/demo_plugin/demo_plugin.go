@@ -1,16 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/types"
-	"git.golaxy.org/framework/plugins/log"
+	"git.golaxy.org/core/utils/types"
 )
 
 // demoPlugin 定义demo插件
-var demoPlugin = define.ServicePlugin(func(...any) IDemoPlugin {
-	return &DemoPlugin{}
-})
+var demoPlugin = define.ServicePlugin(func(...any) IDemoPlugin { return &DemoPlugin{} })
 
 var (
 	Using     = demoPlugin.Using
@@ -30,15 +28,16 @@ type DemoPlugin struct {
 
 // InitSP 初始化服务插件
 func (d *DemoPlugin) InitSP(ctx service.Context) {
-	log.Infof(ctx, "init service plugin <%s>:[%s]", demoPlugin.Name, types.AnyFullName(*d))
+	fmt.Printf("init service plugin <%s>:[%s]\n", demoPlugin.Name, types.FullNameT[DemoPlugin]())
 	d.ctx = ctx
 }
 
 // ShutSP 关闭服务插件
 func (d *DemoPlugin) ShutSP(ctx service.Context) {
-	log.Infof(ctx, "shut service plugin <%s>:[%s]", demoPlugin.Name, types.AnyFullName(*d))
+	fmt.Printf("shut service plugin <%s>:[%s]", demoPlugin.Name, types.FullNameT[DemoPlugin]())
 }
 
+// HelloWorld Hello World
 func (d *DemoPlugin) HelloWorld() {
-	log.Infof(d.ctx, "plugin %q say hello world", demoPlugin.Name)
+	fmt.Printf("plugin %q say hello world", demoPlugin.Name)
 }

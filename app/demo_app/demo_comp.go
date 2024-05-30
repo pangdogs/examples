@@ -2,7 +2,7 @@ package main
 
 import (
 	"git.golaxy.org/core/define"
-	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/plugins/log"
 	"math/rand"
@@ -19,11 +19,12 @@ type DemoComp struct {
 
 func (comp *DemoComp) Start() {
 	// 每隔5秒，以均衡模式，发送测试单程RPC
-	comp.Await(comp.TimeTick(5*time.Second)).Pipe(nil, func(runtime.Ret, ...any) {
-		comp.GlobalBalanceOneWayRPC(DemoCompSelf.Name, "TestOnewayRPC", comp.GetService().Ctx.GetName(), comp.GetService().Ctx.GetId().String(), rand.Int31())
+	comp.Await(comp.TimeTick(5*time.Second)).Pipe(nil, func(async.Ret, ...any) {
+		comp.GlobalBalanceOneWayRPC(DemoCompSelf.Name, "TestOnewayRPC", rand.Int31())
 	})
 }
 
-func (comp *DemoComp) TestOnewayRPC(serv, id string, a int) {
-	log.Infof(comp.GetRuntime().Ctx, "entity id: %s, from: %s:%s => accept: %d", comp.GetEntity().GetId(), serv, id, a)
+func (comp *DemoComp) TestOnewayRPC(r int) {
+	log.Infof(comp, "entityId: %s, callChain: %+v => accept: %d",
+		comp.GetEntity().GetId(), comp.GetRuntime().GetRPCStack().CallChain(), r)
 }

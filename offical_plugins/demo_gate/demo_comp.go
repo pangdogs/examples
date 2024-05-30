@@ -6,7 +6,8 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/framework/plugins/gate"
 	"git.golaxy.org/framework/plugins/log"
 	"sync"
@@ -37,7 +38,7 @@ func (comp *DemoComp) Start() {
 
 	core.Await(runtime.Current(comp),
 		core.TimeTick(runtime.Current(comp), time.Second),
-	).Pipe(runtime.Current(comp), func(ctx runtime.Context, ret runtime.Ret, _ ...any) {
+	).Pipe(runtime.Current(comp), func(ctx runtime.Context, ret async.Ret, _ ...any) {
 		textMutex.RLock()
 		defer textMutex.RUnlock()
 
@@ -51,7 +52,7 @@ func (comp *DemoComp) Start() {
 }
 
 func (comp *DemoComp) Shut() {
-	runtime.Current(comp).GetCancelFunc()()
+	runtime.Current(comp).Terminate()
 }
 
 func (comp *DemoComp) Constructor(session gate.ISession) {

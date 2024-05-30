@@ -16,5 +16,5 @@ func (comp *DemoComp) Start() {
 	// 调用demo插件
 	Using(service.Current(comp)).HelloWorld()
 	// 停止运行时
-	runtime.Current(comp).GetCancelFunc()()
+	runtime.Current(comp).Terminate()
 }

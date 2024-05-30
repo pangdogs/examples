@@ -24,13 +24,13 @@ func main() {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
-	cliPrivKey, err := misc.LoadPrivateKey(viper.GetString("cli_priv_key"))
+	cliPrivKey, err := gtp.LoadPrivateKeyFile(viper.GetString("cli_priv_key"))
 	if err != nil {
 		panic(err)
 	}
 	_ = cliPrivKey
 
-	servPubKey, err := misc.LoadPublicKey(viper.GetString("serv_pub_key"))
+	servPubKey, err := gtp.LoadPublicKeyFile(viper.GetString("serv_pub_key"))
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func main() {
 			MACHash:             gtp.Hash_Fnv1a64,
 		}).
 		GTPEncSignatureAlgorithm(gtp.SignatureAlgorithm{
-			AsymmetricEncryption: gtp.AsymmetricEncryption_RSA_256,
+			AsymmetricEncryption: gtp.AsymmetricEncryption_RSA256,
 			PaddingMode:          gtp.PaddingMode_Pkcs1v15,
 			Hash:                 gtp.Hash_SHA256,
 		}).
@@ -75,21 +75,7 @@ func main() {
 		panic(err)
 	}
 
-	go func() {
-		for {
-			var txt string
-			fmt.Scanln(&txt)
-
-			send := time.Now()
-			ret, err := rpc.Result1[string](<-proc.RPC(misc.Work, comp.CmdCompSelf.Name, "Echo", txt))
-			if err != nil {
-				fmt.Printf("<= delay:%dms, error: %s\n", time.Now().Sub(send).Milliseconds(), err)
-				continue
-			}
-
-			fmt.Printf("<= delay:%dms, echo: %s\n", time.Now().Sub(send).Milliseconds(), ret)
-		}
-	}()
+	go proc.MainLoop()
 
 	<-rpcli.Done()
 
@@ -100,4 +86,23 @@ func main() {
 
 type MainProc struct {
 	rpcli.Procedure
+}
+
+func (p *MainProc) MainLoop() {
+	go func() {
+		for {
+			var txt string
+			fmt.Scanln(&txt)
+
+			send := time.Now()
+			ret, err := rpc.Result1[string](<-p.RPC(misc.Work, comp.CmdCompSelf.Name, "Echo", txt))
+			if err != nil {
+				fmt.Printf("=> delay:%dms, error:%s\n", time.Now().Sub(send).Milliseconds(), err)
+				continue
+			}
+
+			fmt.Printf("=> delay:%dms, echo:%s\n", time.Now().Sub(send).Milliseconds(), ret)
+		}
+	}()
+
 }

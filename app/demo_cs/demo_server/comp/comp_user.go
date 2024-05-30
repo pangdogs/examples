@@ -2,9 +2,9 @@ package comp
 
 import (
 	"git.golaxy.org/core/define"
-	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/examples/app/demo_cs/misc"
 	"git.golaxy.org/framework"
+	"git.golaxy.org/framework/plugins/rpc/rpcutil"
 )
 
 var UserCompSelf = define.Component[UserComp]()
@@ -15,7 +15,6 @@ type UserComp struct {
 
 func (c *UserComp) Dispose() {
 	if c.GetService().Ctx.GetName() == misc.Gate {
-		c.BroadcastOneWayRPC(misc.Work, "", "DestroySelf")
+		c.RPC(misc.Work, rpcutil.NoComp, "DestroySelf")
 	}
-	runtime.Concurrent(c).GetCancelFunc()()
 }

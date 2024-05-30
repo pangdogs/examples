@@ -1,10 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/service"
-	"git.golaxy.org/framework/plugins/log"
 )
 
 // DemoComp Demo组件实现
@@ -14,12 +13,12 @@ type DemoComp struct {
 
 // Awake 组件唤醒
 func (comp *DemoComp) Awake() {
-	log.Infof(service.Current(comp), "I'm entity %q, comp %q Awake.", comp.GetEntity(), comp)
+	fmt.Printf("I'm entity %q, comp %q Awake.\n", comp.GetEntity(), comp)
 }
 
 // Start 组件开始
 func (comp *DemoComp) Start() {
-	log.Infof(service.Current(comp), "I'm entity %q, comp %q Start.", comp.GetEntity(), comp)
+	fmt.Printf("I'm entity %q, comp %q Start.\n", comp.GetEntity(), comp)
 }
 
 // Update 组件更新
@@ -27,26 +26,25 @@ func (comp *DemoComp) Update() {
 	frame := runtime.Current(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		log.Infof(service.Current(comp), "I'm entity %q, comp %q Update(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
+		fmt.Printf("I'm entity %q, comp %q Update(%s).\n", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
 // LateUpdate 组件滞后更新
 func (comp *DemoComp) LateUpdate() {
-	ctx := runtime.Current(comp)
-	frame := ctx.GetFrame()
+	frame := runtime.Current(comp).GetFrame()
 
 	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
-		log.Infof(service.Current(comp), "I'm entity %q, comp %q LateUpdate(%s).", comp.GetEntity(), comp, frame.GetRunningElapseTime())
+		fmt.Printf("I'm entity %q, comp %q LateUpdate(%s).\n", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
 
 // Shut 组件停止
 func (comp *DemoComp) Shut() {
-	log.Infof(service.Current(comp), "I'm entity %q, comp %q Shut.", comp.GetEntity(), comp)
+	fmt.Printf("I'm entity %q, comp %q Shut.\n", comp.GetEntity(), comp)
 }
 
 // Dispose 组件销毁
 func (comp *DemoComp) Dispose() {
-	log.Infof(service.Current(comp), "I'm entity %q, comp %q Dispose.", comp.GetEntity(), comp)
+	fmt.Printf("I'm entity %q, comp %q Dispose.\n", comp.GetEntity(), comp)
 }

@@ -7,6 +7,7 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/framework/plugins/dsync"
 	"git.golaxy.org/framework/plugins/log"
 	"math/rand"
@@ -55,7 +56,7 @@ func (comp *DemoComp) Update() {
 
 	core.Await(runtime.Current(comp),
 		core.TimeAfter(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
-	).Any(func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+	).Any(func(ctx runtime.Context, _ async.Ret, _ ...any) {
 		if comp.mutex == nil {
 			return
 		}

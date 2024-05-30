@@ -7,7 +7,8 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/framework/plugins/broker"
 	"git.golaxy.org/framework/plugins/log"
 	"math/rand"
@@ -37,7 +38,7 @@ func (comp *DemoComp) Start() {
 
 	core.Await(runtime.Current(comp),
 		core.TimeTick(runtime.Current(comp), time.Duration(rand.Int63n(5000))*time.Millisecond),
-	).Pipe(nil, func(ctx runtime.Context, _ runtime.Ret, _ ...any) {
+	).Pipe(nil, func(ctx runtime.Context, _ async.Ret, _ ...any) {
 		topic := "demo.broker_test"
 		msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
 

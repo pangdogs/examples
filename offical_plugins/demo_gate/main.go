@@ -7,8 +7,8 @@ import (
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/framework/plugins/gate"
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/log/console_log"
@@ -25,7 +25,7 @@ func main() {
 
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-	entityLib.Declare("demo", DemoComp{})
+	entityLib.Declare("demo", pt.Attribute{}, DemoComp{})
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()
@@ -59,7 +59,7 @@ func main() {
 
 			go func() {
 				<-sigChan
-				ctx.GetCancelFunc()()
+				ctx.Terminate()
 			}()
 		})),
 	)).Run()
@@ -75,8 +75,7 @@ func handleSessionStateChanged(session gate.ISession, old, new gate.SessionState
 
 		// 在运行时线程环境中，创建实体
 		core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
-			entity, err := core.CreateEntity(ctx).
-				Prototype("demo").
+			entity, err := core.CreateEntity(ctx, "demo").
 				Scope(ec.Scope_Global).
 				PersistId(uid.Id(session.GetId())).
 				Meta(map[string]any{"session": session}).
