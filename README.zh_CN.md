@@ -22,5 +22,5 @@
 
 ## 安装
 ```
-go get -u git.golaxy.org/framework
+go get -u git.golaxy.org/examples
 ```
