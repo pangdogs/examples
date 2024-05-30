@@ -21,5 +21,5 @@ Some examples of the [**Golaxy Distributed Service Development Framework**](http
 
 ## Installation
 ```
-go get -u git.golaxy.org/framework
+go get -u git.golaxy.org/examples
 ```
