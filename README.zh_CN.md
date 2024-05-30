@@ -19,3 +19,8 @@
 | [/offical_plugins/demo_dsync](https://github.com/pangdogs/examples/tree/main/offical_plugins/demo_dsync) | 分布式锁插件示例。 |
 | [/offical_plugins/demo_gate](https://github.com/pangdogs/examples/tree/main/offical_plugins/demo_gate) | 网关插件示例。 |
 | [/offical_plugins/demo_rpc](https://github.com/pangdogs/examples/tree/main/offical_plugins/demo_rpc) | RPC插件示例。 |
+
+## 安装
+```
+go get -u git.golaxy.org/framework
+```
