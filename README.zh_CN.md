@@ -11,7 +11,6 @@
 | [/app/demo_cs](https://github.com/pangdogs/examples/tree/main/app/demo_cs) | 一个简单CS应用服务器示例。 |
 | [/core/demo_ec](https://github.com/pangdogs/examples/tree/main/core/demo_ec) | 内核的EC系统示例。 |
 | [/core/demo_plugin](https://github.com/pangdogs/examples/tree/main/core/demo_plugin) | 内核的插件系统示例。 |
-| [/core/demo_plugin](https://github.com/pangdogs/examples/tree/main/core/demo_plugin) | 内核的插件系统示例。 |
 | [/distributed_entities/demo_dent](https://github.com/pangdogs/examples/tree/main/distributed_entities/demo_dent) | 分布式实体示例。 |
 | [/offical_plugins/demo_broker](https://github.com/pangdogs/examples/tree/main/offical_plugins/demo_broker) | 消息队列中间件插件示例。 |
 | [/offical_plugins/demo_discovery](https://github.com/pangdogs/examples/tree/main/offical_plugins/demo_discovery) | 服务发现插件示例。 |
