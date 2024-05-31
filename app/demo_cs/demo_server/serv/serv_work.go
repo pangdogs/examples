@@ -10,7 +10,7 @@ import (
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/rpc"
-	"git.golaxy.org/framework/plugins/rpc/rpcproc"
+	"git.golaxy.org/framework/plugins/rpc/rpcpcsr"
 )
 
 // WorkService 工作服务
@@ -22,8 +22,8 @@ func (serv *WorkService) InstallRPC(ctx service.Context) {
 	// 安装RPC插件
 	rpc.Install(ctx,
 		rpc.With.Processors(
-			rpcproc.NewServiceProcessor(nil),
-			rpcproc.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), nil),
+			rpcpcsr.NewServiceProcessor(nil),
+			rpcpcsr.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), nil),
 		),
 	)
 }

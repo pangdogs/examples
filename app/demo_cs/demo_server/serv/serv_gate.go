@@ -14,7 +14,7 @@ import (
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/router"
 	"git.golaxy.org/framework/plugins/rpc"
-	"git.golaxy.org/framework/plugins/rpc/rpcproc"
+	"git.golaxy.org/framework/plugins/rpc/rpcpcsr"
 	"git.golaxy.org/framework/plugins/rpc/rpcutil"
 	"time"
 )
@@ -87,8 +87,8 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 	// 安装RPC插件
 	rpc.Install(ctx,
 		rpc.With.Processors(
-			rpcproc.NewServiceProcessor(nil),
-			rpcproc.NewGateProcessor(gap.DefaultMsgCreator()),
+			rpcpcsr.NewServiceProcessor(nil),
+			rpcpcsr.NewGateProcessor(gap.DefaultMsgCreator()),
 		),
 	)
 }
