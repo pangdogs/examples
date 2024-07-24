@@ -25,7 +25,7 @@ func (comp *DemoComp) Start() {
 		Pipe(runtime.Current(comp), func(ctx runtime.Context, ret async.Ret, _ ...any) {
 			addr := dserv.Using(service.Current(ctx)).GetNodeDetails()
 
-			vmap, err := variant.MakeMap(map[string]int{
+			vmap, err := variant.MakeReadonlyMapFromGoMap(map[string]int{
 				ksuid.New().String(): rand.Int(),
 				ksuid.New().String(): rand.Int(),
 				ksuid.New().String(): rand.Int(),
@@ -34,7 +34,7 @@ func (comp *DemoComp) Start() {
 				log.Panic(service.Current(ctx), err)
 			}
 
-			arr, err := variant.MakeArray([]int{rand.Int(), rand.Int(), rand.Int()})
+			arr, err := variant.MakeReadonlyArray([]int{rand.Int(), rand.Int(), rand.Int()})
 			if err != nil {
 				log.Panic(service.Current(ctx), err)
 			}

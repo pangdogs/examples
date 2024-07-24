@@ -27,7 +27,7 @@ type DemoComp struct {
 }
 
 func (comp *DemoComp) Awake() {
-	comp.session = comp.GetEntity().GetMeta().Get("session").(gate.ISession)
+	comp.session = comp.GetEntity().GetMeta().Value("session").(gate.ISession)
 }
 
 func (comp *DemoComp) Start() {

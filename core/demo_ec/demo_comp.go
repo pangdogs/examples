@@ -25,7 +25,7 @@ func (comp *DemoComp) Start() {
 func (comp *DemoComp) Update() {
 	frame := runtime.Current(comp).GetFrame()
 
-	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
+	if frame.GetCurFrames()%int64(frame.GetTargetFPS()) == 0 {
 		fmt.Printf("I'm entity %q, comp %q Update(%s).\n", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }
@@ -34,7 +34,7 @@ func (comp *DemoComp) Update() {
 func (comp *DemoComp) LateUpdate() {
 	frame := runtime.Current(comp).GetFrame()
 
-	if frame.GetCurFrames()%uint64(frame.GetTargetFPS()) == 0 {
+	if frame.GetCurFrames()%int64(frame.GetTargetFPS()) == 0 {
 		fmt.Printf("I'm entity %q, comp %q LateUpdate(%s).\n", comp.GetEntity(), comp, frame.GetRunningElapseTime())
 	}
 }

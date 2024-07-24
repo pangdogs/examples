@@ -62,14 +62,14 @@ func (comp *DemoComp) Start() {
 func (comp *DemoComp) Update() {
 	frame := runtime.Current(comp).GetFrame()
 
-	if frame.GetCurFrames()%uint64(150) == 0 {
+	if frame.GetCurFrames()%int64(150) == 0 {
 		err := discovery.Using(service.Current(comp)).Register(context.Background(), comp.service, 10*time.Second)
 		if err != nil {
 			log.Panic(service.Current(comp), err)
 		}
 	}
 
-	if frame.GetCurFrames()%uint64(300) == 0 {
+	if frame.GetCurFrames()%int64(300) == 0 {
 		servces, err := discovery.Using(service.Current(comp)).ListServices(context.Background())
 		if err != nil {
 			log.Panic(service.Current(comp), err)

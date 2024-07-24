@@ -20,7 +20,7 @@ type DemoComp struct {
 func (comp *DemoComp) Start() {
 	// 每隔5秒，以均衡模式，发送测试单程RPC
 	comp.Await(comp.TimeTick(5*time.Second)).Pipe(nil, func(async.Ret, ...any) {
-		comp.GlobalBalanceOneWayRPC(DemoCompSelf.Name, "TestOnewayRPC", rand.Int31())
+		comp.GlobalBalanceOneWayRPC(true, DemoCompSelf.Name, "TestOnewayRPC", rand.Int31())
 	})
 }
 

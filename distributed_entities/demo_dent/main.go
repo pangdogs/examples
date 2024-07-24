@@ -34,7 +34,7 @@ func main() {
 	for i := 0; i < total; i++ {
 		// 创建实体库，注册实体原型
 		entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-		entityLib.Declare("demo", pt.Attribute{}, pt.CompAlias(DemoComp{}, "DemoComp"))
+		entityLib.Declare("demo", pt.Attribute{}, pt.CompAlias(DemoComp{}, true, "DemoComp"))
 
 		// 创建插件包，安装插件
 		pluginBundle := plugin.NewPluginBundle()

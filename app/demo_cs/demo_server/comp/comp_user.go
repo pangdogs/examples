@@ -14,7 +14,7 @@ type UserComp struct {
 }
 
 func (c *UserComp) Dispose() {
-	if c.GetService().Ctx.GetName() == misc.Gate {
+	if c.GetService().GetName() == misc.Gate {
 		c.RPC(misc.Work, rpcutil.NoComp, "DestroySelf")
 	}
 }

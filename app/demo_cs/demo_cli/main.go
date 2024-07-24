@@ -95,9 +95,9 @@ func (p *MainProc) MainLoop() {
 			fmt.Scanln(&txt)
 
 			send := time.Now()
-			ret, err := rpc.Result1[string](<-p.RPC(misc.Work, comp.CmdCompSelf.Name, "Echo", txt))
-			if err != nil {
-				fmt.Printf("=> delay:%dms, error:%s\n", time.Now().Sub(send).Milliseconds(), err)
+			ret := rpc.Result1[string](<-p.RPC(misc.Work, comp.CmdCompSelf.Name, "Echo", txt))
+			if ret.Error != nil {
+				fmt.Printf("=> delay:%dms, error:%s\n", time.Now().Sub(send).Milliseconds(), ret.Error)
 				continue
 			}
 

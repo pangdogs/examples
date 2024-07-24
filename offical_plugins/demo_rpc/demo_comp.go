@@ -57,13 +57,13 @@ func (comp *DemoComp) Start() {
 			// 异步
 			{
 				core.Await(rt, rpc.Using(serv).RPC(dst, rpcstack.EmptyCallChain, cp1.String(), a)).
-					Any(func(ctx runtime.Context, ret async.Ret, _ ...any) {
-						rv, err := rpc.Result1[int32](ret)
-						if err != nil {
-							log.Errorf(serv, "3rd => result: %v", err)
+					Any(func(ctx runtime.Context, _ret async.Ret, _ ...any) {
+						ret := rpc.Result1[int32](_ret)
+						if ret.Error != nil {
+							log.Errorf(serv, "3rd => result: %v", ret.Error)
 							return
 						}
-						log.Infof(serv, "3rd => result: %d", rv)
+						log.Infof(serv, "3rd => result: %d", ret)
 					})
 			}
 

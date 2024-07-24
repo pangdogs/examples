@@ -16,7 +16,7 @@ import (
 	"git.golaxy.org/framework/plugins/log"
 	"git.golaxy.org/framework/plugins/log/console_log"
 	"git.golaxy.org/framework/plugins/rpc"
-	"git.golaxy.org/framework/util/concurrent"
+	"git.golaxy.org/framework/utils/concurrent"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -37,7 +37,7 @@ func main() {
 
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib(pt.DefaultComponentLib())
-	entityLib.Declare("demo", pt.Attribute{}, pt.CompAlias(DemoComp{}, "DemoComp"))
+	entityLib.Declare("demo", pt.Attribute{}, pt.CompAlias(DemoComp{}, true, "DemoComp"))
 
 	// 创建插件包，安装插件
 	pluginBundle := plugin.NewPluginBundle()

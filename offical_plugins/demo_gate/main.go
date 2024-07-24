@@ -8,6 +8,7 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/framework/plugins/gate"
 	"git.golaxy.org/framework/plugins/log"
@@ -77,8 +78,8 @@ func handleSessionStateChanged(session gate.ISession, old, new gate.SessionState
 		core.AsyncVoid(rt, func(ctx runtime.Context, _ ...any) {
 			entity, err := core.CreateEntity(ctx, "demo").
 				Scope(ec.Scope_Global).
-				PersistId(uid.Id(session.GetId())).
-				Meta(map[string]any{"session": session}).
+				PersistId(session.GetId()).
+				Meta(meta.Make().Add("session", session).Get()).
 				Spawn()
 			if err != nil {
 				log.Panic(service.Current(ctx), err)
