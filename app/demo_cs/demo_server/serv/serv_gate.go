@@ -91,7 +91,7 @@ func (serv *GateService) InstallRPC(ctx service.Context) {
 		gate.With.EncVerifySignaturePublicKey(cliPubKey),
 		gate.With.CompressedSize(128),
 		gate.With.SessionInactiveTimeout(time.Minute),
-		gate.With.SessionStateChangedHandler(generic.MakeAction3(serv.sessionChanged).CastDelegate()),
+		gate.With.SessionStateChangedHandler(generic.MakeAction3(serv.sessionChanged).ToDelegate()),
 	)
 
 	// 安装路由插件
