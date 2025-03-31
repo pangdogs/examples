@@ -27,7 +27,7 @@ import (
 )
 
 /*
- * 基于core层提供的支持，演示一个简单的EC系统实例，创建一个实体并运行，约10秒后结束。
+ * 基于core层提供的支持，演示一个简单的服务插件案例，约10秒后结束。
  */
 func main() {
 	// 创建服务并开始运行
@@ -39,6 +39,9 @@ func main() {
 				core.BuildEntityPT(svcCtx, "helloworld").
 					AddComponent(HelloWorldComp{}).
 					Declare()
+
+				// 安装插件
+				Install(svcCtx)
 
 			case service.RunningStatus_Started:
 				// 创建运行时并开始运行

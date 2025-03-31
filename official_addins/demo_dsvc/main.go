@@ -23,15 +23,21 @@ import (
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"log"
+	"git.golaxy.org/framework/addins/broker/nats_broker"
+	"git.golaxy.org/framework/addins/discovery/etcd_discovery"
+	"git.golaxy.org/framework/addins/dsvc"
+	"git.golaxy.org/framework/addins/dsync/etcd_dsync"
+	"git.golaxy.org/framework/addins/log"
+	"git.golaxy.org/framework/addins/log/zap_log"
 )
 
 /*
- * 基于core层提供的支持，演示一个简单的EC系统实例，创建一个实体并运行，约10秒后结束。
+ * 基于core层提供的支持，演示一个简单的服务节点，连接本地etcd、nats，约10秒后结束。
  */
 func main() {
 	// 创建服务并开始运行
 	<-core.NewService(service.NewContext(
+		service.With.Name("helloworld"),
 		service.With.RunningStatusChangedCB(func(svcCtx service.Context, state service.RunningStatus, _ ...any) {
 			switch state {
 			case service.RunningStatus_Starting:
@@ -39,6 +45,21 @@ func main() {
 				core.BuildEntityPT(svcCtx, "helloworld").
 					AddComponent(HelloWorldComp{}).
 					Declare()
+
+				// 安装日志插件
+				zap_log.Install(svcCtx)
+
+				// 安装服务发现插件
+				etcd_discovery.Install(svcCtx)
+
+				// 安装broker插件
+				nats_broker.Install(svcCtx)
+
+				// 安装分布式同步插件
+				etcd_dsync.Install(svcCtx)
+
+				// 安装分布式服务插件
+				dsvc.Install(svcCtx)
 
 			case service.RunningStatus_Started:
 				// 创建运行时并开始运行
@@ -55,21 +76,21 @@ func main() {
 				core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
 					entity, err := core.BuildEntity(rtCtx, "helloworld").New()
 					if err != nil {
-						log.Panic(err)
+						log.Panic(svcCtx, err)
 					}
-					log.Printf("[%s] entity created.", entity.GetId())
+					log.Infof(svcCtx, "[%s] entity created.", entity.GetId())
 
 					go func() {
 						<-entity.Terminated()
-						log.Printf("[%s] entity destroyed.", entity.GetId())
+						log.Infof(svcCtx, "[%s] entity destroyed.", entity.GetId())
 						<-svcCtx.Terminate()
 					}()
 				})
 
-				log.Println("service started.")
+				log.Info(svcCtx, "service started.")
 
 			case service.RunningStatus_Terminated:
-				log.Println("service terminated.")
+				log.Info(svcCtx, "service terminated.")
 			}
 		}),
 	)).Run()
