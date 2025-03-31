@@ -31,7 +31,6 @@ import (
 
 type GateUserComp struct {
 	framework.ComponentBehavior
-	mapping router.IMapping
 }
 
 func (c *GateUserComp) Start() {
@@ -41,8 +40,7 @@ func (c *GateUserComp) Start() {
 	if err != nil {
 		log.Panicf(c, "mapping gate user %s to session %s failed, %s", c.GetId(), session.GetId(), err)
 	}
-	c.mapping = mapping
-
+ 
 	err = rpc.ResultVoid(<-rpcutil.ProxyService(c.GetService(), misc.Chat).BalanceRPC(rpcutil.NoAddIn, "WakeUpUser", c.GetId())).Extract()
 	if err != nil {
 		log.Panicf(c, "wakeup chat user %s failed, %s", c.GetId(), err)
