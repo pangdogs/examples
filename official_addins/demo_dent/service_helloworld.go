@@ -25,11 +25,11 @@ func (s *HelloWorldService) Started(svc framework.IService) {
 		SetPersistId(entityId).
 		New()
 	if err != nil {
-		log.Panic(svc, err)
+		log.Panic(s, err)
 	}
 
 	go func() {
 		<-entity.Terminated()
-		<-svc.Terminate()
+		<-s.Terminate()
 	}()
 }
