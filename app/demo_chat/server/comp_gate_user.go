@@ -31,6 +31,7 @@ import (
 
 type GateUserComp struct {
 	framework.ComponentBehavior
+	chatChannel *ChatChannelComp
 }
 
 func (c *GateUserComp) Start() {

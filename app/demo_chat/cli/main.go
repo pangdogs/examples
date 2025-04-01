@@ -20,7 +20,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"git.golaxy.org/examples/app/demo_chat/misc"
@@ -28,10 +27,10 @@ import (
 	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcli"
 	"git.golaxy.org/framework/net/gtp"
+	"github.com/peterh/liner"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"os"
 	"strings"
 	"time"
 )
@@ -106,83 +105,80 @@ type MainProc struct {
 }
 
 func (p *MainProc) Console() {
-	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
+	line := liner.NewLiner()
+	defer line.Close()
 
-		for {
-			fmt.Printf("> ")
+	for {
+		text, err := line.Prompt("> ")
+		if err != nil {
+			return
+		}
 
-			if !scanner.Scan() {
-				break
-			}
+		fields := strings.Fields(text)
+		if len(fields) < 1 {
+			continue
+		}
+		line.AppendHistory(text)
 
-			text := strings.TrimSpace(scanner.Text())
-
-			fields := strings.Fields(text)
-			if len(fields) < 1 {
+		switch strings.ToLower(fields[0]) {
+		case "create":
+			if len(fields) < 2 {
 				continue
 			}
-
-			switch strings.ToLower(fields[0]) {
-			case "create":
-				if len(fields) < 2 {
-					continue
-				}
-				channel := fields[1]
-				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
-					p.GetCli().GetLogger().Debugf("create channel %s failed, %s", channel, err)
-					continue
-				}
-				p.GetCli().GetLogger().Debugf("create channel %s ok", channel)
-			case "remove":
-				if len(fields) < 2 {
-					continue
-				}
-				channel := fields[1]
-				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
-					p.GetCli().GetLogger().Debugf("remove channel %s failed, %s", channel, err)
-					continue
-				}
-				p.GetCli().GetLogger().Debugf("remove channel %s ok", channel)
-			case "join":
-				if len(fields) < 2 {
-					continue
-				}
-				channel := fields[1]
-				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
-					p.GetCli().GetLogger().Debugf("join channel %s failed, %s", channel, err)
-					continue
-				}
-				p.GetCli().GetLogger().Debugf("join channel %s ok", channel)
-			case "leave":
-				if len(fields) < 2 {
-					continue
-				}
-				channel := fields[1]
-				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
-					p.GetCli().GetLogger().Debugf("leave channel %s failed, %s", channel, err)
-					continue
-				}
-				p.GetCli().GetLogger().Debugf("leave channel %s ok", channel)
-			case "switch":
-				if len(fields) < 2 {
-					continue
-				}
-				channel := fields[1]
-				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_SwitchChannel", channel)).Extract(); err != nil {
-					p.GetCli().GetLogger().Debugf("switch channel %s failed, %s", channel, err)
-					continue
-				}
-				p.GetCli().GetLogger().Debugf("switch channel %s ok", channel)
-			default:
-				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", text)).Extract(); err != nil {
-					p.GetCli().GetLogger().Debugf("input %s failed, %s", text, err)
-					continue
-				}
-				p.GetCli().GetLogger().Debugf("input %s ok", text)
+			channel := fields[1]
+			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
+				p.GetCli().GetLogger().Debugf("create channel %s failed, %s", channel, err)
+				continue
 			}
+			p.GetCli().GetLogger().Debugf("create channel %s ok", channel)
+		case "remove":
+			if len(fields) < 2 {
+				continue
+			}
+			channel := fields[1]
+			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
+				p.GetCli().GetLogger().Debugf("remove channel %s failed, %s", channel, err)
+				continue
+			}
+			p.GetCli().GetLogger().Debugf("remove channel %s ok", channel)
+		case "join":
+			if len(fields) < 2 {
+				continue
+			}
+			channel := fields[1]
+			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
+				p.GetCli().GetLogger().Debugf("join channel %s failed, %s", channel, err)
+				continue
+			}
+			p.GetCli().GetLogger().Debugf("join channel %s ok", channel)
+		case "leave":
+			if len(fields) < 2 {
+				continue
+			}
+			channel := fields[1]
+			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
+				p.GetCli().GetLogger().Debugf("leave channel %s failed, %s", channel, err)
+				continue
+			}
+			p.GetCli().GetLogger().Debugf("leave channel %s ok", channel)
+		case "switch":
+			if len(fields) < 2 {
+				continue
+			}
+			channel := fields[1]
+			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_SwitchChannel", channel)).Extract(); err != nil {
+				p.GetCli().GetLogger().Debugf("switch channel %s failed, %s", channel, err)
+				continue
+			}
+			p.GetCli().GetLogger().Debugf("switch channel %s ok", channel)
+		default:
+			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", text)).Extract(); err != nil {
+				p.GetCli().GetLogger().Debugf("input %s failed, %s", text, err)
+				continue
+			}
+			p.GetCli().GetLogger().Debugf("input %s ok", text)
 		}
-	}()
+	}
 }
 
 func (p *MainProc) OutputText(ts int64, channel, userId, text string) {

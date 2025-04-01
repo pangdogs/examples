@@ -3,8 +3,9 @@ module git.golaxy.org/examples
 go 1.23.0
 
 require (
-	git.golaxy.org/core v0.4.4
-	git.golaxy.org/framework v0.3.27
+	git.golaxy.org/core v0.4.5
+	git.golaxy.org/framework v0.3.28
+	github.com/peterh/liner v1.2.2
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
@@ -52,6 +53,7 @@ require (
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
