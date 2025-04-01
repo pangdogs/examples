@@ -108,8 +108,10 @@ func (p *MainProc) Console() {
 	line := liner.NewLiner()
 	defer line.Close()
 
+	curChannel := misc.GlobalChannel
+
 	for {
-		text, err := line.Prompt("> ")
+		text, err := line.Prompt(fmt.Sprintf("%s > ", curChannel))
 		if err != nil {
 			return
 		}
@@ -171,6 +173,7 @@ func (p *MainProc) Console() {
 				continue
 			}
 			p.GetCli().GetLogger().Debugf("switch channel %s ok", channel)
+			curChannel = channel
 		default:
 			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", text)).Extract(); err != nil {
 				p.GetCli().GetLogger().Debugf("input %s failed, %s", text, err)
