@@ -20,14 +20,42 @@
 package main
 
 import (
+	"git.golaxy.org/examples/app/demo_chat/misc"
 	"git.golaxy.org/framework"
+	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
+	"git.golaxy.org/framework/addins/router"
+	"git.golaxy.org/framework/addins/rpc"
+	"git.golaxy.org/framework/addins/rpc/rpcutil"
 )
 
-type ChatUserComp struct {
+type GateUserComp struct {
 	framework.ComponentBehavior
 }
 
-func (comp *ChatUserComp) C_Input(text string) {
-	log.Infof(comp.GetService(), "input %s", text)
+func (c *GateUserComp) Start() {
+	session := c.GetEntity().GetMeta().Value("session").(gate.ISession)
+
+	mapping, err := router.Using(c.GetService()).Mapping(c.GetId(), session.GetId())
+	if err != nil {
+		log.Panicf(c, "mapping gate user %s to session %s failed, %s", c.GetId(), session.GetId(), err)
+	}
+
+	err = rpc.ResultVoid(<-rpcutil.ProxyService(c.GetService(), misc.Chat).BalanceRPC(rpcutil.NoAddIn, "WakeUpUser", c.GetId())).Extract()
+	if err != nil {
+		log.Panicf(c, "wakeup chat user %s failed, %s", c.GetId(), err)
+	}
+
+	go func() {
+		<-mapping.Done()
+		<-c.GetRuntime().Terminate()
+	}()
+}
+
+func (c *GateUserComp) Shut() {
+	<-c.RPC(misc.Chat, "ChatUserComp", "DestroySelf")
+}
+
+func (c *GateUserComp) Dispose() {
+	log.Infof(c, "gate user %s destroyed", c.GetId())
 }

@@ -47,7 +47,14 @@ func (s *GateService) Built(svc framework.IService) {
 	s.BuildEntityPT(misc.User).
 		SetScope(ec.Scope_Global).
 		AddComponent(&GateUserComp{}).
+		AddComponent(&ChatChannelComp{}).
 		Declare()
+}
+
+func (s *GateService) Started(svc framework.IService) {
+	if _, err := router.Using(s).AddGroup(s, misc.GlobalChannel); err != nil {
+		log.Panicf(s, "create channel %s failed, %s", misc.GlobalChannel, err)
+	}
 }
 
 func (s *GateService) InstallRPC(svc framework.IService) {
@@ -62,7 +69,7 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 	if err != nil {
 		panic(err)
 	}
- 
+
 	// 安装网关插件
 	gate.Install(s,
 		gate.With.TCPAddress("0.0.0.0:9090"),

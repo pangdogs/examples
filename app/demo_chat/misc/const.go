@@ -27,3 +27,7 @@ const (
 const (
 	User = "user"
 )
+
+const (
+	GlobalChannel = "global"
+)

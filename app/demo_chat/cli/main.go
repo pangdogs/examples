@@ -20,6 +20,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"git.golaxy.org/examples/app/demo_chat/misc"
@@ -30,6 +31,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -57,7 +60,7 @@ func main() {
 		np = cli.WebSocket
 	}
 
-	logger, _ := zap.NewDevelopment()
+	logger, _ := zap.NewDevelopment(zap.IncreaseLevel(zap.InfoLevel))
 	proc := &MainProc{}
 
 	rpcli, err := rpcli.BuildRPCli().
@@ -89,7 +92,7 @@ func main() {
 		panic(err)
 	}
 
-	go proc.MainLoop()
+	go proc.Console()
 
 	<-rpcli.Done()
 
@@ -102,21 +105,86 @@ type MainProc struct {
 	rpcli.Procedure
 }
 
-func (p *MainProc) MainLoop() {
+func (p *MainProc) Console() {
 	go func() {
-		for {
-			var txt string
-			fmt.Scanln(&txt)
+		scanner := bufio.NewScanner(os.Stdin)
 
-			sendTs := time.Now()
-			ret := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_Input", txt)).Extract()
-			if ret != nil {
-				p.GetCli().GetLogger().Infof("input failed, delay:%dms, %s", time.Now().Sub(sendTs).Milliseconds(), ret.Error)
+		for {
+			fmt.Printf("> ")
+
+			if !scanner.Scan() {
+				break
+			}
+
+			text := strings.TrimSpace(scanner.Text())
+
+			fields := strings.Fields(text)
+			if len(fields) < 1 {
 				continue
 			}
 
-			p.GetCli().GetLogger().Infof("input ok, delay:%dms", time.Now().Sub(sendTs).Milliseconds())
+			switch strings.ToLower(fields[0]) {
+			case "create":
+				if len(fields) < 2 {
+					continue
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
+					p.GetCli().GetLogger().Debugf("create channel %s failed, %s", channel, err)
+					continue
+				}
+				p.GetCli().GetLogger().Debugf("create channel %s ok", channel)
+			case "remove":
+				if len(fields) < 2 {
+					continue
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
+					p.GetCli().GetLogger().Debugf("remove channel %s failed, %s", channel, err)
+					continue
+				}
+				p.GetCli().GetLogger().Debugf("remove channel %s ok", channel)
+			case "join":
+				if len(fields) < 2 {
+					continue
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
+					p.GetCli().GetLogger().Debugf("join channel %s failed, %s", channel, err)
+					continue
+				}
+				p.GetCli().GetLogger().Debugf("join channel %s ok", channel)
+			case "leave":
+				if len(fields) < 2 {
+					continue
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
+					p.GetCli().GetLogger().Debugf("leave channel %s failed, %s", channel, err)
+					continue
+				}
+				p.GetCli().GetLogger().Debugf("leave channel %s ok", channel)
+			case "switch":
+				if len(fields) < 2 {
+					continue
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_SwitchChannel", channel)).Extract(); err != nil {
+					p.GetCli().GetLogger().Debugf("switch channel %s failed, %s", channel, err)
+					continue
+				}
+				p.GetCli().GetLogger().Debugf("switch channel %s ok", channel)
+			default:
+				if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", text)).Extract(); err != nil {
+					p.GetCli().GetLogger().Debugf("input %s failed, %s", text, err)
+					continue
+				}
+				p.GetCli().GetLogger().Debugf("input %s ok", text)
+			}
 		}
 	}()
+}
 
+func (p *MainProc) OutputText(ts int64, channel, userId, text string) {
+	fmt.Printf("[%s][%s] %s: %s\n", time.Unix(ts, 0).Format(time.RFC3339), channel, userId, text)
 }
