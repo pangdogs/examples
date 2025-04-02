@@ -63,7 +63,7 @@ func (c *ChatChannelComp) C_CreateChannel(channelName string) {
 	}
 
 	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("create channel %s", channelName))
-	//c.C_JoinChannel(channelName)
+	c.C_JoinChannel(channelName)
 }
 
 func (c *ChatChannelComp) C_RemoveChannel(channelName string) {
