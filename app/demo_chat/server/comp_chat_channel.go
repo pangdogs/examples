@@ -21,6 +21,7 @@ package main
 
 import (
 	"fmt"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/examples/app/demo_chat/misc"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/log"
@@ -96,7 +97,9 @@ func (c *ChatChannelComp) C_JoinChannel(channelName string) {
 		return
 	}
 
-	c.SendToChannel(channelName, "joined")
+	c.Await(c.TimeAfterAsync(time.Second)).AnyVoid(func(async.Ret, ...any) {
+		c.SendToChannel(channelName, "joined")
+	})
 }
 
 func (c *ChatChannelComp) C_LeaveChannel(channelName string) {
@@ -114,7 +117,9 @@ func (c *ChatChannelComp) C_LeaveChannel(channelName string) {
 		return
 	}
 
-	c.SendToChannel(channelName, "leaved")
+	c.Await(c.TimeAfterAsync(time.Second)).AnyVoid(func(async.Ret, ...any) {
+		c.SendToChannel(channelName, "leaved")
+	})
 }
 
 func (c *ChatChannelComp) SendToChannel(channelName, text string) {
