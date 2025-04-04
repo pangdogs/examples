@@ -3,8 +3,8 @@ module git.golaxy.org/examples
 go 1.23.0
 
 require (
-	git.golaxy.org/core v0.4.6
-	git.golaxy.org/framework v0.3.31
+	git.golaxy.org/core v0.4.7
+	git.golaxy.org/framework v0.3.32
 	github.com/peterh/liner v1.2.2
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.9.1
