@@ -22,15 +22,21 @@ package main
 import (
 	"context"
 	"fmt"
+	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/examples/app/demo_chat/misc"
 	"git.golaxy.org/framework/addins/gate/cli"
 	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcli"
 	"git.golaxy.org/framework/net/gtp"
-	"github.com/peterh/liner"
+	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/viewport"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"hash/fnv"
 	"strings"
 	"time"
 )
@@ -59,7 +65,7 @@ func main() {
 		np = cli.WebSocket
 	}
 
-	logger, _ := zap.NewDevelopment(zap.IncreaseLevel(zap.InfoLevel))
+	logger := zap.NewNop()
 	proc := &MainProc{}
 
 	rpcli, err := rpcli.BuildRPCli().
@@ -100,90 +106,130 @@ func main() {
 	}
 }
 
+const (
+	gap = "\n\n"
+)
+
 type MainProc struct {
 	rpcli.Procedure
+	viewport viewport.Model
+	textarea textarea.Model
+	messages []string
 }
 
-func (p *MainProc) Console() {
-	line := liner.NewLiner()
-	defer line.Close()
+func (m *MainProc) Init() tea.Cmd {
+	return textarea.Blink
+}
 
-	curChannel := misc.GlobalChannel
+func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		tiCmd tea.Cmd
+		vpCmd tea.Cmd
+	)
 
-	for {
-		text, err := line.Prompt(fmt.Sprintf("%s > ", curChannel))
-		if err != nil {
-			return
+	m.textarea, tiCmd = m.textarea.Update(msg)
+	m.viewport, vpCmd = m.viewport.Update(msg)
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.viewport.Width = msg.Width
+		m.textarea.SetWidth(msg.Width)
+		m.viewport.Height = msg.Height - m.textarea.Height() - lipgloss.Height(gap)
+		m.viewport.GotoBottom()
+
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			m.GetCli().Close(fmt.Errorf("console: %s", msg.Type))
+			return m, tea.Quit
+		case tea.KeyEnter:
+			if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", m.textarea.Value())).Extract(); err != nil {
+				m.GetCli().GetLogger().Errorf("console: input %s failed, %s", m.textarea.Value(), err)
+				break
+			}
+			m.textarea.Reset()
 		}
 
-		fields := strings.Fields(text)
-		if len(fields) < 1 {
-			continue
-		}
-		line.AppendHistory(text)
+	case error:
+		m.GetCli().GetLogger().Errorf("console: %s", msg)
+		return m, nil
+	}
 
-		switch strings.ToLower(fields[0]) {
-		case "create":
-			if len(fields) < 2 {
-				continue
-			}
-			channel := fields[1]
-			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
-				p.GetCli().GetLogger().Debugf("create channel %s failed, %s", channel, err)
-				continue
-			}
-			p.GetCli().GetLogger().Debugf("create channel %s ok", channel)
-		case "remove":
-			if len(fields) < 2 {
-				continue
-			}
-			channel := fields[1]
-			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
-				p.GetCli().GetLogger().Debugf("remove channel %s failed, %s", channel, err)
-				continue
-			}
-			p.GetCli().GetLogger().Debugf("remove channel %s ok", channel)
-		case "join":
-			if len(fields) < 2 {
-				continue
-			}
-			channel := fields[1]
-			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
-				p.GetCli().GetLogger().Debugf("join channel %s failed, %s", channel, err)
-				continue
-			}
-			p.GetCli().GetLogger().Debugf("join channel %s ok", channel)
-		case "leave":
-			if len(fields) < 2 {
-				continue
-			}
-			channel := fields[1]
-			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
-				p.GetCli().GetLogger().Debugf("leave channel %s failed, %s", channel, err)
-				continue
-			}
-			p.GetCli().GetLogger().Debugf("leave channel %s ok", channel)
-		case "switch":
-			if len(fields) < 2 {
-				continue
-			}
-			channel := fields[1]
-			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_SwitchChannel", channel)).Extract(); err != nil {
-				p.GetCli().GetLogger().Debugf("switch channel %s failed, %s", channel, err)
-				continue
-			}
-			p.GetCli().GetLogger().Debugf("switch channel %s ok", channel)
-			curChannel = channel
-		default:
-			if err := rpc.ResultVoid(<-p.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", text)).Extract(); err != nil {
-				p.GetCli().GetLogger().Debugf("input %s failed, %s", text, err)
-				continue
-			}
-			p.GetCli().GetLogger().Debugf("input %s ok", text)
-		}
+	return m, tea.Batch(tiCmd, vpCmd)
+}
+
+func (m *MainProc) View() string {
+	return fmt.Sprintf(
+		"%s%s%s",
+		m.viewport.View(),
+		gap,
+		m.textarea.View(),
+	)
+}
+
+func (m *MainProc) Console() {
+	ta := textarea.New()
+	ta.Placeholder = "Send a message..."
+	ta.Focus()
+
+	ta.Prompt = "┃ "
+	ta.CharLimit = 280
+
+	ta.SetWidth(150)
+	ta.SetHeight(3)
+
+	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
+
+	ta.ShowLineNumbers = false
+
+	vp := viewport.New(150, 5)
+	vp.SetContent(`Type a message and press Enter to send.`)
+
+	ta.KeyMap.InsertNewline.SetEnabled(false)
+
+	m.textarea = ta
+	m.viewport = vp
+
+	if _, err := tea.NewProgram(m, tea.WithContext(m.GetCli())).Run(); err != nil {
+		m.GetCli().GetLogger().Errorf("console: %s", err)
+		return
 	}
 }
 
-func (p *MainProc) OutputText(ts int64, channel, userId, text string) {
-	fmt.Printf("[%s][%s] %s: %s\n", time.Unix(ts, 0).Format(time.RFC3339), channel, userId, text)
+func (m *MainProc) OutputText(ts int64, channel, userId, text string) {
+	strToColor := func(str string) colorful.Color {
+		hash := fnv.New32()
+		hash.Write([]byte(str))
+		hv := hash.Sum32()
+
+		hue := float64(hv%360) / 360.0
+		saturation := 0.7 + 0.2*float64((hv/360)%3)
+		value := 0.8 + 0.1*float64((hv/1080)%2)
+
+		return colorful.Hsv(hue*360, saturation, value)
+	}
+
+	channelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(strToColor(channel).Hex()))
+	userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(strToColor(userId).Hex()))
+
+	var you string
+
+	if uid.Id(userId) == m.GetCli().GetSessionId() {
+		you = "(YOU)"
+	}
+
+	msg := fmt.Sprintf("[%s][%s]%s: %s",
+		time.Unix(ts, 0).Format(time.TimeOnly),
+		channelStyle.Render(channel),
+		userStyle.Render(userId+you),
+		text,
+	)
+
+	if len(m.messages) > 100 {
+		m.messages = m.messages[1:]
+	}
+	m.messages = append(m.messages, msg)
+
+	m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
+	m.viewport.GotoBottom()
 }
