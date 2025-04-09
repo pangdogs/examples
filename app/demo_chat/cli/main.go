@@ -114,6 +114,7 @@ type MainProc struct {
 	rpcli.Procedure
 	viewport viewport.Model
 	textarea textarea.Model
+	channel  string
 	messages []string
 }
 
@@ -123,29 +124,91 @@ func (m *MainProc) Init() tea.Cmd {
 
 func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
-		tiCmd tea.Cmd
 		vpCmd tea.Cmd
+		tiCmd tea.Cmd
 	)
 
-	m.textarea, tiCmd = m.textarea.Update(msg)
 	m.viewport, vpCmd = m.viewport.Update(msg)
+	m.textarea, tiCmd = m.textarea.Update(msg)
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.viewport.Width = msg.Width
-		m.textarea.SetWidth(msg.Width)
 		m.viewport.Height = msg.Height - m.textarea.Height() - lipgloss.Height(gap)
 		m.viewport.GotoBottom()
+		m.textarea.SetWidth(msg.Width)
 
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			m.GetCli().Close(fmt.Errorf("console: %s", msg.Type))
 			return m, tea.Quit
+
 		case tea.KeyEnter:
-			if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", m.textarea.Value())).Extract(); err != nil {
-				m.GetCli().GetLogger().Errorf("console: input %s failed, %s", m.textarea.Value(), err)
+			line := m.textarea.Value()
+
+			fields := strings.Fields(line)
+			if len(fields) < 1 {
 				break
+			}
+
+			switch strings.ToLower(fields[0]) {
+			case "create":
+				if len(fields) < 2 {
+					break
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
+					m.GetCli().GetLogger().Errorf("create channel %s failed, %s", channel, err)
+					break
+				}
+			case "remove":
+				if len(fields) < 2 {
+					break
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
+					m.GetCli().GetLogger().Errorf("remove channel %s failed, %s", channel, err)
+					break
+				}
+			case "join":
+				if len(fields) < 2 {
+					break
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
+					m.GetCli().GetLogger().Errorf("join channel %s failed, %s", channel, err)
+					break
+				}
+			case "leave":
+				if len(fields) < 2 {
+					break
+				}
+				channel := fields[1]
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
+					m.GetCli().GetLogger().Errorf("leave channel %s failed, %s", channel, err)
+					break
+				}
+			case "switch":
+				if len(fields) < 2 {
+					break
+				}
+				channel := fields[1]
+				b, err := rpc.Result1[bool](<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_InChannel", channel)).Extract()
+				if err != nil {
+					m.GetCli().GetLogger().Errorf("switch channel %s failed, %s", channel, err)
+					break
+				}
+				if !b {
+					m.GetCli().GetLogger().Errorf("switch channel %s failed, not in channel", channel)
+					break
+				}
+				m.setChannel(channel)
+			default:
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Extract(); err != nil {
+					m.GetCli().GetLogger().Errorf("console: input %s failed, %s", line, err)
+					break
+				}
 			}
 			m.textarea.Reset()
 		}
@@ -168,27 +231,21 @@ func (m *MainProc) View() string {
 }
 
 func (m *MainProc) Console() {
+	vp := viewport.New(0, 0)
+
 	ta := textarea.New()
-	ta.Placeholder = "Send a message..."
+	ta.SetHeight(1)
+	ta.Placeholder = "Command: create|remove|join|leave|switch <channel> (Other inputs will be sent as messages.)  "
+	ta.CharLimit = 140
+	ta.ShowLineNumbers = false
+	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	ta.KeyMap.InsertNewline.SetEnabled(false)
 	ta.Focus()
 
-	ta.Prompt = "┃ "
-	ta.CharLimit = 280
-
-	ta.SetWidth(150)
-	ta.SetHeight(3)
-
-	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
-
-	ta.ShowLineNumbers = false
-
-	vp := viewport.New(150, 5)
-	vp.SetContent(`Type a message and press Enter to send.`)
-
-	ta.KeyMap.InsertNewline.SetEnabled(false)
-
-	m.textarea = ta
 	m.viewport = vp
+	m.textarea = ta
+
+	m.setChannel(misc.GlobalChannel)
 
 	if _, err := tea.NewProgram(m, tea.WithContext(m.GetCli())).Run(); err != nil {
 		m.GetCli().GetLogger().Errorf("console: %s", err)
@@ -197,20 +254,8 @@ func (m *MainProc) Console() {
 }
 
 func (m *MainProc) OutputText(ts int64, channel, userId, text string) {
-	strToColor := func(str string) colorful.Color {
-		hash := fnv.New32()
-		hash.Write([]byte(str))
-		hv := hash.Sum32()
-
-		hue := float64(hv%360) / 360.0
-		saturation := 0.7 + 0.2*float64((hv/360)%3)
-		value := 0.8 + 0.1*float64((hv/1080)%2)
-
-		return colorful.Hsv(hue*360, saturation, value)
-	}
-
-	channelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(strToColor(channel).Hex()))
-	userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(strToColor(userId).Hex()))
+	channelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(channel).Hex()))
+	userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(userId).Hex()))
 
 	var you string
 
@@ -218,18 +263,41 @@ func (m *MainProc) OutputText(ts int64, channel, userId, text string) {
 		you = "(YOU)"
 	}
 
-	msg := fmt.Sprintf("[%s][%s]%s: %s",
+	msg := fmt.Sprintf("%s %s %s: %s",
 		time.Unix(ts, 0).Format(time.TimeOnly),
 		channelStyle.Render(channel),
 		userStyle.Render(userId+you),
 		text,
 	)
 
-	if len(m.messages) > 100 {
+	if len(m.messages) > 256 {
 		m.messages = m.messages[1:]
 	}
 	m.messages = append(m.messages, msg)
 
 	m.viewport.SetContent(lipgloss.NewStyle().Width(m.viewport.Width).Render(strings.Join(m.messages, "\n")))
 	m.viewport.GotoBottom()
+}
+
+func (m *MainProc) ChannelKickOut(channel string) {
+	if m.channel == channel {
+		m.setChannel(misc.GlobalChannel)
+	}
+}
+
+func (m *MainProc) setChannel(channel string) {
+	m.channel = channel
+	m.textarea.Prompt = lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(channel).Hex())).Render(channel) + " > "
+}
+
+func StrToColor(str string) colorful.Color {
+	hash := fnv.New32()
+	hash.Write([]byte(str))
+	hv := hash.Sum32()
+
+	hue := float64(hv%360) / 360.0
+	saturation := 0.7 + 0.2*float64((hv/360)%3)
+	value := 0.8 + 0.1*float64((hv/1080)%2)
+
+	return colorful.Hsv(hue*360, saturation, value)
 }

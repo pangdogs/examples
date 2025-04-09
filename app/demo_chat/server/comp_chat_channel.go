@@ -36,14 +36,7 @@ type ChatChannelComp struct {
 }
 
 func (c *ChatChannelComp) Start() {
-	channel, ok := router.Using(c.GetService()).GetGroup(c, misc.GlobalChannel)
-	if !ok {
-		log.Panicf(c, "gate user %s get channel %s failed", c.GetId(), misc.GlobalChannel)
-	}
-
-	if err := channel.Add(c, c.GetId()); err != nil {
-		log.Panicf(c, "gate user %s join channel %s failed, %s", c.GetId(), misc.GlobalChannel, err)
-	}
+	c.JoinChannel(misc.GlobalChannel)
 }
 
 func (c *ChatChannelComp) Shut() {
@@ -57,13 +50,13 @@ func (c *ChatChannelComp) C_CreateChannel(channelName string) {
 		return
 	}
 
-	_, err := router.Using(c.GetService()).AddGroup(c, channelName)
-	if err != nil {
+	if _, err := router.Using(c.GetService()).AddGroup(c, channelName); err != nil {
 		log.Errorf(c, "gate user %s create channel %s failed, %s", c.GetId(), channelName, err)
 		return
 	}
+	log.Infof(c, "gate user %s create channel %s ok", c.GetId(), channelName)
 
-	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("create channel %s", channelName))
+	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("channel %s created", channelName))
 	c.C_JoinChannel(channelName)
 }
 
@@ -72,34 +65,24 @@ func (c *ChatChannelComp) C_RemoveChannel(channelName string) {
 		return
 	}
 
-	_, ok := router.Using(c.GetService()).GetGroup(c, channelName)
-	if !ok {
+	if _, ok := router.Using(c.GetService()).GetGroup(c, channelName); !ok {
 		log.Errorf(c, "gate user %s get channel %s failed", c.GetId(), channelName)
 		return
 	}
+
+	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("channel %s removed", channelName))
+	rpcutil.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "ChannelKickOut", channelName)
+
 	router.Using(c.GetService()).DeleteGroup(c, channelName)
 
-	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("remove channel %s", channelName))
+	log.Infof(c, "gate user %s remove channel %s ok", c.GetId(), channelName)
 }
 
 func (c *ChatChannelComp) C_JoinChannel(channelName string) {
 	if channelName == misc.GlobalChannel {
 		return
 	}
-
-	channel, ok := router.Using(c.GetService()).GetGroup(c, channelName)
-	if !ok {
-		log.Errorf(c, "gate user %s get channel %s failed", c.GetId(), channelName)
-		return
-	}
-	if err := channel.Add(c, c.GetId()); err != nil {
-		log.Errorf(c, "gate user %s join channel %s failed, %s", c.GetId(), channelName, err)
-		return
-	}
-
-	c.Await(c.TimeAfterAsync(time.Second)).AnyVoid(func(async.Ret, ...any) {
-		c.SendToChannel(channelName, "joined")
-	})
+	c.JoinChannel(channelName)
 }
 
 func (c *ChatChannelComp) C_LeaveChannel(channelName string) {
@@ -112,14 +95,30 @@ func (c *ChatChannelComp) C_LeaveChannel(channelName string) {
 		log.Errorf(c, "gate user %s get channel %s failed", c.GetId(), channelName)
 		return
 	}
+
+	c.SendToChannel(channelName, "leaved")
+	c.CliOnewayRPC(rpcli.Main, "ChannelKickOut", channelName)
+
 	if err := channel.Remove(c, c.GetId()); err != nil {
-		log.Errorf(c, "gate user %s join channel %s failed, %s", c.GetId(), channelName, err)
+		log.Errorf(c, "gate user %s leave channel %s failed, %s", c.GetId(), channelName, err)
 		return
 	}
 
-	c.Await(c.TimeAfterAsync(time.Second)).AnyVoid(func(async.Ret, ...any) {
-		c.SendToChannel(channelName, "leaved")
+	log.Infof(c, "gate user %s leave channel %s ok", c.GetId(), channelName)
+}
+
+func (c *ChatChannelComp) C_InChannel(channelName string) bool {
+	b := false
+
+	router.Using(c.GetService()).RangeGroups(nil, c.GetId(), func(channel router.IGroup) bool {
+		if channelName == channel.GetName() {
+			b = true
+			return false
+		}
+		return true
 	})
+
+	return b
 }
 
 func (c *ChatChannelComp) SendToChannel(channelName, text string) {
@@ -129,4 +128,27 @@ func (c *ChatChannelComp) SendToChannel(channelName, text string) {
 		return
 	}
 	log.Infof(c, "gate user %s send %q to channel %s ok", c.GetId(), text, channelName)
+}
+
+func (c *ChatChannelComp) JoinChannel(channelName string) {
+	if c.C_InChannel(channelName) {
+		return
+	}
+
+	channel, ok := router.Using(c.GetService()).GetGroup(c, channelName)
+	if !ok {
+		log.Errorf(c, "gate user %s get channel %s failed", c.GetId(), channelName)
+		return
+	}
+
+	if err := channel.Add(c, c.GetId()); err != nil {
+		log.Errorf(c, "gate user %s join channel %s failed, %s", c.GetId(), channelName, err)
+		return
+	}
+
+	c.Await(c.TimeAfterAsync(time.Second)).AnyVoid(func(async.Ret, ...any) {
+		c.SendToChannel(channelName, "joined")
+	})
+
+	log.Infof(c, "gate user %s join channel %s ok", c.GetId(), channelName)
 }

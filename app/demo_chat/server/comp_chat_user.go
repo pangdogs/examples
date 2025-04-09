@@ -28,24 +28,14 @@ import (
 
 type ChatUserComp struct {
 	framework.ComponentBehavior
-	channelName string
 }
 
-func (c *ChatUserComp) Awake() {
-	c.channelName = misc.GlobalChannel
-}
-
-func (c *ChatUserComp) C_SwitchChannel(channelName string) {
-	c.channelName = channelName
-	log.Infof(c, "chat user %s switch channel %s ok", c.GetId(), channelName)
-}
-
-func (c *ChatUserComp) C_InputText(text string) {
-	if err := rpc.ResultVoid(<-c.RPC(misc.Gate, "ChatChannelComp", "SendToChannel", c.channelName, text)).Extract(); err != nil {
-		log.Errorf(c, "chat user %s send %q to channel %s failed, %s", c.GetId(), text, c.channelName, err)
+func (c *ChatUserComp) C_InputText(channelName, text string) {
+	if err := rpc.ResultVoid(<-c.RPC(misc.Gate, "ChatChannelComp", "SendToChannel", channelName, text)).Extract(); err != nil {
+		log.Errorf(c, "chat user %s send %q to channel %s failed, %s", c.GetId(), text, channelName, err)
 		return
 	}
-	log.Infof(c, "chat user %s send %q to channel %s ok", c.GetId(), text, c.channelName)
+	log.Infof(c, "chat user %s send %q to channel %s ok", c.GetId(), text, channelName)
 }
 
 func (c *ChatUserComp) Dispose() {
