@@ -1,0 +1,25 @@
+name: chat
+services:
+  app:
+    build: .
+    ports:
+      - "9090:9090"
+    environment:
+      - TZ=Asia/Shanghai
+      - ETCD_ADDR=etcd:2379
+      - NATS_ADDR=nats:4222
+    depends_on:
+      - nats
+      - etcd
+
+  nats:
+    image: nats:2.10.25
+    environment:
+      - TZ=Asia/Shanghai
+      
+  etcd:
+    image: bitnami/etcd:3.3.11
+    environment:        
+      - TZ=Asia/Shanghai
+      - ALLOW_NONE_AUTHENTICATION=yes 
+      - ETCD_AUTO_COMPACTION_RETENTION=1
