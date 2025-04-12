@@ -24,5 +24,4 @@ RUN go build -o ../bin/cli
 
 WORKDIR /app/bin
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["./server", "--etcd.address=${ETCD_ADDR}", "--nats.address=${NATS_ADDR}"]
+ENTRYPOINT ["./server", "--etcd.address=${ETCD_ADDR}", "--nats.address=${NATS_ADDR}"]
