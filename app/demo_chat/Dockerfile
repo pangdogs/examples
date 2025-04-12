@@ -5,21 +5,21 @@ ENV GOPROXY=https://goproxy.cn,direct
 WORKDIR /app
 
 COPY ./bin ./bin
-COPY ./server ./src
+COPY ./cli ./cli
+COPY ./server ./server
 
-RUN echo -e '#!/bin/sh\n\
-set -e\n\
-cd /app/src\n\
-go mod init chat\n\
-go mod tidy\n\
-go build -o ../bin/server\n\
-cd /app/bin\n\
-./server --etcd.address=${ETCD_ADDR} --nats.address=${NATS_ADDR} &\n\
-wait -n\n\
-exit $?\n\
-'> ./bin/start.sh
+WORKDIR /app/server
 
-RUN chmod +x ./bin/start.sh
-RUN dos2unix ./bin/start.sh
+RUN go mod init server
+RUN go mod tidy
+RUN go build -o ../bin/server
 
-ENTRYPOINT ["/app/bin/start.sh"]
+WORKDIR /app/cli
+
+RUN go mod init cli
+RUN go mod tidy
+RUN go build -o ../bin/cli
+
+WORKDIR /app/bin
+
+ENTRYPOINT ["./server", "--etcd.address=${ETCD_ADDR}", "--nats.address=${NATS_ADDR}"]
