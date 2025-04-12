@@ -24,4 +24,9 @@ RUN go build -o ../bin/cli
 
 WORKDIR /app/bin
 
-ENTRYPOINT ["./server", "--etcd.address=${ETCD_ADDR}", "--nats.address=${NATS_ADDR}"]
+RUN echo -e '#!/bin/sh\n\
+exec ./server --etcd.address=${ETCD_ADDR} --nats.address=${NATS_ADDR}\n\
+'> ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
