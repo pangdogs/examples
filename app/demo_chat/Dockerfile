@@ -1,6 +1,8 @@
 FROM golang:1.23-alpine
 
 ENV GOPROXY=https://goproxy.cn,direct
+ENV ETCD_ADDR=${ETCD_ADDR}
+ENV NATS_ADDR=${NATS_ADDR}
 
 WORKDIR /app
 
@@ -22,4 +24,5 @@ RUN go build -o ../bin/cli
 
 WORKDIR /app/bin
 
-ENTRYPOINT ["./server", "--etcd.address=${ETCD_ADDR}", "--nats.address=${NATS_ADDR}"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["./server", "--etcd.address=${ETCD_ADDR}", "--nats.address=${NATS_ADDR}"]
