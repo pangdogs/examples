@@ -204,6 +204,13 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				m.setChannel(channel)
+			case "rtt":
+				respTime := <-m.GetCli().RequestTime(nil)
+				if respTime.Error != nil {
+					m.GetCli().GetLogger().Errorf("rtt failed, %s", respTime.Error)
+					break
+				}
+				m.OutputText(time.Now().Unix(), m.channel, m.GetCli().GetSessionId().String(), fmt.Sprintf("RTT:%fs", respTime.Value.RTT().Seconds()))
 			default:
 				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("console: input %s failed, %s", line, err)
