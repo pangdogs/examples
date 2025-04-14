@@ -242,7 +242,7 @@ func (m *MainProc) Console() {
 
 	ta := textarea.New()
 	ta.SetHeight(1)
-	ta.Placeholder = "Command: create|remove|join|leave|switch <channel> (Other inputs will be sent as messages.)  "
+	ta.Placeholder = "Command: create|remove|join|leave|switch <channel>, rtt (Other inputs will be sent as messages.)"
 	ta.CharLimit = 140
 	ta.ShowLineNumbers = false
 	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
