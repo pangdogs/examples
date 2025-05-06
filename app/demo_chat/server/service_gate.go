@@ -22,7 +22,6 @@ package main
 import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/examples/app/demo_chat/misc"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/gate"
@@ -125,7 +124,7 @@ func (s *GateService) onSessionStateChanged(session gate.ISession, curState, las
 	// 创建用户实体
 	user, err := s.BuildEntityAsync(misc.User).
 		SetPersistId(session.GetId()).
-		SetMeta(meta.BuildMeta().Add("session", session).Get()).
+		SetMeta(map[string]any{"session": session}).
 		New()
 	if err != nil {
 		log.Errorf(s, "create gate user %s failed, %s", session.GetId(), err)
