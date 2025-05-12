@@ -29,7 +29,6 @@ import (
 	"git.golaxy.org/framework/addins/router"
 	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcpcsr"
-	"git.golaxy.org/framework/addins/rpc/rpcutil"
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/net/gtp"
 	"git.golaxy.org/framework/net/gtp/transport"
@@ -111,7 +110,7 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 		rpc.With.Processors(
 			rpcpcsr.NewServiceProcessor(nil, true),
 			rpcpcsr.NewGateProcessor(gap.DefaultMsgCreator()),
-			rpcpcsr.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcutil.CliRPCPermValidator), true),
+			rpcpcsr.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
 		),
 	)
 }

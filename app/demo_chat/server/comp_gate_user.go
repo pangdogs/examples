@@ -26,7 +26,6 @@ import (
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/router"
 	"git.golaxy.org/framework/addins/rpc"
-	"git.golaxy.org/framework/addins/rpc/rpcutil"
 )
 
 type GateUserComp struct {
@@ -42,7 +41,7 @@ func (c *GateUserComp) Start() {
 		log.Panicf(c, "mapping gate user %s to session %s failed, %s", c.GetId(), session.GetId(), err)
 	}
 
-	err = rpc.ResultVoid(<-rpcutil.ProxyService(c.GetService(), misc.Chat).BalanceRPC(rpcutil.NoAddIn, "WakeUpUser", c.GetId())).Extract()
+	err = rpc.ResultVoid(<-rpc.ProxyService(c, misc.Chat).BalanceRPC(rpc.ServiceSelf, "WakeUpUser", c.GetId())).Extract()
 	if err != nil {
 		log.Panicf(c, "wakeup chat user %s failed, %s", c.GetId(), err)
 	}

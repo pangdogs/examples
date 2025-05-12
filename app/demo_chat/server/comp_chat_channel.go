@@ -26,8 +26,8 @@ import (
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/router"
+	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcli"
-	"git.golaxy.org/framework/addins/rpc/rpcutil"
 	"time"
 )
 
@@ -71,7 +71,7 @@ func (c *ChatChannelComp) C_RemoveChannel(channelName string) {
 	}
 
 	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("channel %s removed", channelName))
-	rpcutil.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "ChannelKickOut", channelName)
+	rpc.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "ChannelKickOut", channelName)
 
 	router.Using(c.GetService()).DeleteGroup(c, channelName)
 
@@ -122,7 +122,7 @@ func (c *ChatChannelComp) C_InChannel(channelName string) bool {
 }
 
 func (c *ChatChannelComp) SendToChannel(channelName, text string) {
-	err := rpcutil.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "OutputText", time.Now().Unix(), channelName, c.GetId(), text)
+	err := rpc.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "OutputText", time.Now().Unix(), channelName, c.GetId(), text)
 	if err != nil {
 		log.Errorf(c, "gate user %s send %q to channel %s failed, %s", c.GetId(), text, channelName, err)
 		return
