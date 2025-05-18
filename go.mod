@@ -10,7 +10,6 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/segmentio/ksuid v1.0.4
-	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
 	go.uber.org/zap v1.27.0

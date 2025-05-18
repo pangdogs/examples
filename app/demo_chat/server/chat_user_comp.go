@@ -20,7 +20,7 @@
 package main
 
 import (
-	"git.golaxy.org/examples/app/demo_chat/misc"
+	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/rpc"
@@ -31,7 +31,7 @@ type ChatUserComp struct {
 }
 
 func (c *ChatUserComp) C_InputText(channelName, text string) {
-	if err := rpc.ResultVoid(<-c.RPC(misc.Gate, "GateChatChannelComp", "SendToChannel", channelName, text)).Extract(); err != nil {
+	if err := rpc.ResultVoid(<-c.RPC(consts.Gate, "GateChatChannelComp", "SendToChannel", channelName, text)).Extract(); err != nil {
 		log.Errorf(c, "chat user %s send %q to channel %s failed, %s", c.GetId(), text, channelName, err)
 		return
 	}

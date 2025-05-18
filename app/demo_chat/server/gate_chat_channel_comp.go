@@ -22,7 +22,7 @@ package main
 import (
 	"fmt"
 	"git.golaxy.org/core/utils/async"
-	"git.golaxy.org/examples/app/demo_chat/misc"
+	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/router"
@@ -36,7 +36,7 @@ type GateChatChannelComp struct {
 }
 
 func (c *GateChatChannelComp) Start() {
-	c.JoinChannel(misc.GlobalChannel)
+	c.JoinChannel(consts.GlobalChannel)
 }
 
 func (c *GateChatChannelComp) Shut() {
@@ -46,7 +46,7 @@ func (c *GateChatChannelComp) Shut() {
 }
 
 func (c *GateChatChannelComp) C_CreateChannel(channelName string) {
-	if channelName == misc.GlobalChannel {
+	if channelName == consts.GlobalChannel {
 		return
 	}
 
@@ -56,12 +56,12 @@ func (c *GateChatChannelComp) C_CreateChannel(channelName string) {
 	}
 	log.Infof(c, "gate user %s create channel %s ok", c.GetId(), channelName)
 
-	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("channel %s created", channelName))
+	c.SendToChannel(consts.GlobalChannel, fmt.Sprintf("channel %s created", channelName))
 	c.C_JoinChannel(channelName)
 }
 
 func (c *GateChatChannelComp) C_RemoveChannel(channelName string) {
-	if channelName == misc.GlobalChannel {
+	if channelName == consts.GlobalChannel {
 		return
 	}
 
@@ -70,7 +70,7 @@ func (c *GateChatChannelComp) C_RemoveChannel(channelName string) {
 		return
 	}
 
-	c.SendToChannel(misc.GlobalChannel, fmt.Sprintf("channel %s removed", channelName))
+	c.SendToChannel(consts.GlobalChannel, fmt.Sprintf("channel %s removed", channelName))
 	rpc.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "ChannelKickOut", channelName)
 
 	router.Using(c.GetService()).DeleteGroup(c, channelName)
@@ -79,14 +79,14 @@ func (c *GateChatChannelComp) C_RemoveChannel(channelName string) {
 }
 
 func (c *GateChatChannelComp) C_JoinChannel(channelName string) {
-	if channelName == misc.GlobalChannel {
+	if channelName == consts.GlobalChannel {
 		return
 	}
 	c.JoinChannel(channelName)
 }
 
 func (c *GateChatChannelComp) C_LeaveChannel(channelName string) {
-	if channelName == misc.GlobalChannel {
+	if channelName == consts.GlobalChannel {
 		return
 	}
 

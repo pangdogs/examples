@@ -20,7 +20,7 @@
 package main
 
 import (
-	"git.golaxy.org/examples/app/demo_chat/misc"
+	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
@@ -41,7 +41,7 @@ func (c *GateUserComp) Start() {
 		log.Panicf(c, "mapping gate user %s to session %s failed, %s", c.GetId(), session.GetId(), err)
 	}
 
-	err = rpc.ResultVoid(<-rpc.ProxyService(c, misc.Chat).BalanceRPC(rpc.ServiceSelf, "WakeUpUser", c.GetId())).Extract()
+	err = rpc.ResultVoid(<-rpc.ProxyService(c, consts.Chat).BalanceRPC(rpc.ServiceSelf, "WakeUpUser", c.GetId())).Extract()
 	if err != nil {
 		log.Panicf(c, "wakeup chat user %s failed, %s", c.GetId(), err)
 	}
@@ -53,7 +53,7 @@ func (c *GateUserComp) Start() {
 }
 
 func (c *GateUserComp) Shut() {
-	<-c.RPC(misc.Chat, "ChatUserComp", "DestroySelf")
+	<-c.RPC(consts.Chat, "ChatUserComp", "DestroySelf")
 }
 
 func (c *GateUserComp) Dispose() {

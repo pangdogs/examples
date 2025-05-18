@@ -22,7 +22,7 @@ package main
 import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/examples/app/demo_chat/misc"
+	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
@@ -42,7 +42,7 @@ type GateService struct {
 
 func (s *GateService) Built(svc framework.IService) {
 	// 定义用户实体原型
-	s.BuildEntityPT(misc.User).
+	s.BuildEntityPT(consts.User).
 		SetScope(ec.Scope_Global).
 		AddComponent(&GateUserComp{}).
 		AddComponent(&GateChatChannelComp{}).
@@ -50,8 +50,8 @@ func (s *GateService) Built(svc framework.IService) {
 }
 
 func (s *GateService) Started(svc framework.IService) {
-	if _, err := router.Using(s).AddGroup(s, misc.GlobalChannel); err != nil {
-		log.Panicf(s, "create channel %s failed, %s", misc.GlobalChannel, err)
+	if _, err := router.Using(s).AddGroup(s, consts.GlobalChannel); err != nil {
+		log.Panicf(s, "create channel %s failed, %s", consts.GlobalChannel, err)
 	}
 }
 
@@ -110,7 +110,7 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 		rpc.With.Processors(
 			rpcpcsr.NewServiceProcessor(nil, true),
 			rpcpcsr.NewGateProcessor(gap.DefaultMsgCreator()),
-			rpcpcsr.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
+			rpcpcsr.NewForwardProcessor(consts.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
 		),
 	)
 }
@@ -121,7 +121,7 @@ func (s *GateService) onSessionStateChanged(session gate.ISession, curState, las
 	}
 
 	// 创建用户实体
-	user, err := s.BuildEntityAsync(misc.User).
+	user, err := s.BuildEntityAsync(consts.User).
 		SetPersistId(session.GetId()).
 		SetMeta(map[string]any{"session": session}).
 		New()

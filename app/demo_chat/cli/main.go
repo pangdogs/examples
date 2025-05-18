@@ -23,7 +23,7 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/core/utils/uid"
-	"git.golaxy.org/examples/app/demo_chat/misc"
+	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework/addins/gate/cli"
 	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcli"
@@ -158,7 +158,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("create channel %s failed, %s", channel, err)
 					break
 				}
@@ -167,7 +167,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("remove channel %s failed, %s", channel, err)
 					break
 				}
@@ -176,7 +176,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("join channel %s failed, %s", channel, err)
 					break
 				}
@@ -185,7 +185,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("leave channel %s failed, %s", channel, err)
 					break
 				}
@@ -194,7 +194,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				b, err := rpc.Result1[bool](<-m.GetCli().RPC(misc.Gate, "ChatChannelComp", "C_InChannel", channel)).Extract()
+				b, err := rpc.Result1[bool](<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_InChannel", channel)).Extract()
 				if err != nil {
 					m.GetCli().GetLogger().Errorf("switch channel %s failed, %s", channel, err)
 					break
@@ -212,7 +212,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.OutputText(time.Now().Unix(), m.channel, m.GetCli().GetSessionId().String(), fmt.Sprintf("RTT:%fs", respTime.Value.RTT().Seconds()))
 			default:
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(misc.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("console: input %s failed, %s", line, err)
 					break
 				}
@@ -252,7 +252,7 @@ func (m *MainProc) Console() {
 	m.viewport = vp
 	m.textarea = ta
 
-	m.setChannel(misc.GlobalChannel)
+	m.setChannel(consts.GlobalChannel)
 
 	if _, err := tea.NewProgram(m, tea.WithContext(m.GetCli())).Run(); err != nil {
 		m.GetCli().GetLogger().Errorf("console: %s", err)
@@ -288,7 +288,7 @@ func (m *MainProc) OutputText(ts int64, channel, userId, text string) {
 
 func (m *MainProc) ChannelKickOut(channel string) {
 	if m.channel == channel {
-		m.setChannel(misc.GlobalChannel)
+		m.setChannel(consts.GlobalChannel)
 	}
 }
 

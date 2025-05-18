@@ -23,7 +23,7 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
-	"git.golaxy.org/examples/app/demo_chat/misc"
+	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/rpc"
@@ -41,14 +41,14 @@ func (s *ChatService) InstallRPC(svc framework.IService) {
 	rpc.Install(s,
 		rpc.With.Processors(
 			rpcpcsr.NewServiceProcessor(nil, true),
-			rpcpcsr.NewForwardProcessor(misc.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
+			rpcpcsr.NewForwardProcessor(consts.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
 		),
 	)
 }
 
 func (s *ChatService) Built(svc framework.IService) {
 	// 定义用户实体原型
-	s.BuildEntityPT(misc.User).
+	s.BuildEntityPT(consts.User).
 		SetScope(ec.Scope_Global).
 		AddComponent(&ChatUserComp{}).
 		Declare()
@@ -56,7 +56,7 @@ func (s *ChatService) Built(svc framework.IService) {
 
 func (s *ChatService) WakeUpUser(userId uid.Id) {
 	// 创建用户实体
-	user, err := s.BuildEntityAsync(misc.User).
+	user, err := s.BuildEntityAsync(consts.User).
 		SetPersistId(userId).
 		New()
 	if err != nil {
