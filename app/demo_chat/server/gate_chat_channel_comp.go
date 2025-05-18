@@ -31,21 +31,21 @@ import (
 	"time"
 )
 
-type ChatChannelComp struct {
+type GateChatChannelComp struct {
 	framework.ComponentBehavior
 }
 
-func (c *ChatChannelComp) Start() {
+func (c *GateChatChannelComp) Start() {
 	c.JoinChannel(misc.GlobalChannel)
 }
 
-func (c *ChatChannelComp) Shut() {
+func (c *GateChatChannelComp) Shut() {
 	router.Using(c.GetService()).EachGroups(nil, c.GetId(), func(channel router.IGroup) {
 		channel.Remove(nil, c.GetId())
 	})
 }
 
-func (c *ChatChannelComp) C_CreateChannel(channelName string) {
+func (c *GateChatChannelComp) C_CreateChannel(channelName string) {
 	if channelName == misc.GlobalChannel {
 		return
 	}
@@ -60,7 +60,7 @@ func (c *ChatChannelComp) C_CreateChannel(channelName string) {
 	c.C_JoinChannel(channelName)
 }
 
-func (c *ChatChannelComp) C_RemoveChannel(channelName string) {
+func (c *GateChatChannelComp) C_RemoveChannel(channelName string) {
 	if channelName == misc.GlobalChannel {
 		return
 	}
@@ -78,14 +78,14 @@ func (c *ChatChannelComp) C_RemoveChannel(channelName string) {
 	log.Infof(c, "gate user %s remove channel %s ok", c.GetId(), channelName)
 }
 
-func (c *ChatChannelComp) C_JoinChannel(channelName string) {
+func (c *GateChatChannelComp) C_JoinChannel(channelName string) {
 	if channelName == misc.GlobalChannel {
 		return
 	}
 	c.JoinChannel(channelName)
 }
 
-func (c *ChatChannelComp) C_LeaveChannel(channelName string) {
+func (c *GateChatChannelComp) C_LeaveChannel(channelName string) {
 	if channelName == misc.GlobalChannel {
 		return
 	}
@@ -107,7 +107,7 @@ func (c *ChatChannelComp) C_LeaveChannel(channelName string) {
 	log.Infof(c, "gate user %s leave channel %s ok", c.GetId(), channelName)
 }
 
-func (c *ChatChannelComp) C_InChannel(channelName string) bool {
+func (c *GateChatChannelComp) C_InChannel(channelName string) bool {
 	b := false
 
 	router.Using(c.GetService()).RangeGroups(nil, c.GetId(), func(channel router.IGroup) bool {
@@ -121,7 +121,7 @@ func (c *ChatChannelComp) C_InChannel(channelName string) bool {
 	return b
 }
 
-func (c *ChatChannelComp) SendToChannel(channelName, text string) {
+func (c *GateChatChannelComp) SendToChannel(channelName, text string) {
 	err := rpc.ProxyGroup(c, channelName).CliOnewayRPC(rpcli.Main, "OutputText", time.Now().Unix(), channelName, c.GetId(), text)
 	if err != nil {
 		log.Errorf(c, "gate user %s send %q to channel %s failed, %s", c.GetId(), text, channelName, err)
@@ -130,7 +130,7 @@ func (c *ChatChannelComp) SendToChannel(channelName, text string) {
 	log.Infof(c, "gate user %s send %q to channel %s ok", c.GetId(), text, channelName)
 }
 
-func (c *ChatChannelComp) JoinChannel(channelName string) {
+func (c *GateChatChannelComp) JoinChannel(channelName string) {
 	if c.C_InChannel(channelName) {
 		return
 	}

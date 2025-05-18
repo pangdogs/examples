@@ -45,7 +45,7 @@ func (s *GateService) Built(svc framework.IService) {
 	s.BuildEntityPT(misc.User).
 		SetScope(ec.Scope_Global).
 		AddComponent(&GateUserComp{}).
-		AddComponent(&ChatChannelComp{}).
+		AddComponent(&GateChatChannelComp{}).
 		Declare()
 }
 
@@ -57,13 +57,13 @@ func (s *GateService) Started(svc framework.IService) {
 
 func (s *GateService) InstallRPC(svc framework.IService) {
 	// 加载客户端签名公钥
-	cliPubKey, err := gtp.LoadPublicKeyFile(s.GetStartupConf().GetString("cli_pub_key"))
+	cliPubKey, err := gtp.LoadPublicKeyFile(s.GetAppConf().GetString("cli_pub_key"))
 	if err != nil {
 		panic(err)
 	}
 
 	// 加载服务器签名私钥
-	servPrivKey, err := gtp.LoadPrivateKeyFile(s.GetStartupConf().GetString("serv_priv_key"))
+	servPrivKey, err := gtp.LoadPrivateKeyFile(s.GetAppConf().GetString("serv_priv_key"))
 	if err != nil {
 		panic(err)
 	}
@@ -98,10 +98,10 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 
 	// 安装路由插件
 	router.Install(s,
-		router.With.CustomAddresses(s.GetStartupConf().GetString("etcd.address")),
+		router.With.CustomAddresses(s.GetAppConf().GetString("etcd.address")),
 		router.With.CustomAuth(
-			s.GetStartupConf().GetString("etcd.username"),
-			s.GetStartupConf().GetString("etcd.password"),
+			s.GetAppConf().GetString("etcd.username"),
+			s.GetAppConf().GetString("etcd.password"),
 		),
 	)
 
