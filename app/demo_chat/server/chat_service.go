@@ -33,7 +33,7 @@ import (
 
 // ChatService 聊天服务
 type ChatService struct {
-	framework.Service
+	framework.ServiceBehavior
 }
 
 func (s *ChatService) InstallRPC(svc framework.IService) {

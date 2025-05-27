@@ -37,7 +37,7 @@ import (
 
 // GateService 网关服务
 type GateService struct {
-	framework.Service
+	framework.ServiceBehavior
 }
 
 func (s *GateService) Built(svc framework.IService) {

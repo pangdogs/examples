@@ -54,7 +54,7 @@ func (comp *HelloWorldComp) Start() {
 	textMutex.RLock()
 	defer textMutex.RUnlock()
 
-	err := comp.session.GetSettings().RecvDataHandler(generic.CastDelegate2(comp.onRecvData)).Change()
+	err := comp.session.GetSettings().SetRecvDataHandler(generic.CastDelegate2(comp.onRecvData)).Change()
 	if err != nil {
 		log.Panic(runtime.Current(comp), err)
 	}

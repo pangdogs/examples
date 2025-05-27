@@ -11,7 +11,7 @@ var (
 )
 
 type HelloWorldService struct {
-	framework.Service
+	framework.ServiceBehavior
 }
 
 func (s *HelloWorldService) Built(svc framework.IService) {

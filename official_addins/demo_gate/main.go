@@ -25,7 +25,6 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/log/zap_log"
@@ -72,7 +71,7 @@ func main() {
 }
 
 func onSessionStateChanged(session gate.ISession, curState, lastState gate.SessionState) {
-	svcCtx := session.GetContext()
+	svcCtx := session.GetServiceContext()
 
 	switch curState {
 	case gate.SessionState_Confirmed:
@@ -86,7 +85,7 @@ func onSessionStateChanged(session gate.ISession, curState, lastState gate.Sessi
 		core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
 			entity, err := core.BuildEntity(rtCtx, "helloworld").
 				SetPersistId(session.GetId()).
-				SetMeta(meta.BuildMeta().Add("session", session).Get()).
+				SetMeta(map[string]any{"session": session}).
 				New()
 			if err != nil {
 				log.Panic(svcCtx, err)
