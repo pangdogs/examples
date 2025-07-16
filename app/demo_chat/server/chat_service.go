@@ -24,6 +24,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/examples/app/demo_chat/consts"
+	"git.golaxy.org/examples/app/demo_chat/server/behavior"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/rpc"
@@ -50,7 +51,7 @@ func (s *ChatService) Built(svc framework.IService) {
 	// 定义用户实体原型
 	s.BuildEntityPT(consts.User).
 		SetScope(ec.Scope_Global).
-		AddComponent(&ChatUserComp{}).
+		AddComponent(&behavior.ChatUserComp{}).
 		Declare()
 }
 

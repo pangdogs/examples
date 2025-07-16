@@ -17,27 +17,45 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package main
+package behavior
 
 import (
 	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
+	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
+	"git.golaxy.org/framework/addins/router"
 	"git.golaxy.org/framework/addins/rpc"
 )
 
-type ChatUserComp struct {
+type GateUserComp struct {
 	framework.ComponentBehavior
+	chatChannel *GateChatChannelComp
 }
 
-func (c *ChatUserComp) C_InputText(channelName, text string) {
-	if err := rpc.ResultVoid(<-c.RPC(consts.Gate, "GateChatChannelComp", "SendToChannel", channelName, text)).Extract(); err != nil {
-		log.Errorf(c, "chat user %s send %q to channel %s failed, %s", c.GetId(), text, channelName, err)
-		return
+func (c *GateUserComp) Start() {
+	session := c.GetEntity().GetMeta().Value("session").(gate.ISession)
+
+	mapping, err := router.Using(c.GetService()).Mapping(c.GetId(), session.GetId())
+	if err != nil {
+		log.Panicf(c, "mapping gate user %s to session %s failed, %s", c.GetId(), session.GetId(), err)
 	}
-	log.Infof(c, "chat user %s send %q to channel %s ok", c.GetId(), text, channelName)
+
+	err = rpc.ResultVoid(<-rpc.ProxyService(c, consts.Chat).BalanceRPC(rpc.ServiceSelf, "WakeUpUser", c.GetId())).Extract()
+	if err != nil {
+		log.Panicf(c, "wakeup chat user %s failed, %s", c.GetId(), err)
+	}
+
+	go func() {
+		<-mapping.Done()
+		<-c.GetRuntime().Terminate()
+	}()
 }
 
-func (c *ChatUserComp) Dispose() {
-	log.Infof(c, "chat user %s destroyed", c.GetId())
+func (c *GateUserComp) Shut() {
+	<-c.RPC(consts.Chat, "ChatUserComp", "DestroySelf")
+}
+
+func (c *GateUserComp) Dispose() {
+	log.Infof(c, "gate user %s destroyed", c.GetId())
 }

@@ -158,7 +158,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("create channel %s failed, %s", channel, err)
 					break
 				}
@@ -167,7 +167,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("remove channel %s failed, %s", channel, err)
 					break
 				}
@@ -176,7 +176,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("join channel %s failed, %s", channel, err)
 					break
 				}
@@ -185,7 +185,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
+				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
 					m.GetCli().GetLogger().Errorf("leave channel %s failed, %s", channel, err)
 					break
 				}
@@ -194,7 +194,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				b, err := rpc.Result1[bool](<-m.GetCli().RPC(consts.Gate, "ChatChannelComp", "C_InChannel", channel)).Extract()
+				b, err := rpc.Result1[bool](<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_InChannel", channel)).Extract()
 				if err != nil {
 					m.GetCli().GetLogger().Errorf("switch channel %s failed, %s", channel, err)
 					break

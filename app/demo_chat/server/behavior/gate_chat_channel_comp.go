@@ -17,7 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package main
+package behavior
 
 import (
 	"fmt"
