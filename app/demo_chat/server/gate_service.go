@@ -23,7 +23,7 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/examples/app/demo_chat/consts"
-	"git.golaxy.org/examples/app/demo_chat/server/behavior"
+	"git.golaxy.org/examples/app/demo_chat/server/behaviors"
 	"git.golaxy.org/framework"
 	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
@@ -45,8 +45,8 @@ func (s *GateService) Built(svc framework.IService) {
 	// 定义用户实体原型
 	s.BuildEntityPT(consts.User).
 		SetScope(ec.Scope_Global).
-		AddComponent(&behavior.GateUserComp{}).
-		AddComponent(&behavior.GateChatChannelComp{}).
+		AddComponent(&behaviors.GateUserComp{}).
+		AddComponent(&behaviors.GateChatChannelComp{}).
 		Declare()
 }
 
