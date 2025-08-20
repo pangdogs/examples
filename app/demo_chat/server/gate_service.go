@@ -82,7 +82,7 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 			SymmetricEncryption: gtp.SymmetricEncryption_AES,
 			BlockCipherMode:     gtp.BlockCipherMode_GCM,
 			PaddingMode:         gtp.PaddingMode_Pkcs7,
-			MACHash:             gtp.Hash_Fnv1a64,
+			HMAC:                gtp.Hash_BLAKE2b,
 		}),
 		gate.With.EncSignatureAlgorithm(gtp.SignatureAlgorithm{
 			AsymmetricEncryption: gtp.AsymmetricEncryption_RSA256,
