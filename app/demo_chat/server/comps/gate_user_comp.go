@@ -51,9 +51,9 @@ func (c *GateUserComp) Start() {
 }
 
 func (c *GateUserComp) Shut() {
-	err := rpc.ResultVoid(c.RPC(consts.Chat, "ChatUserComp", "Destroy")).Error
+	err := rpc.ResultVoid(c.RPC(consts.Chat, "", "Destroy")).Error
 	if err != nil {
-		c.L().Error("RPC::ChatUserComp.Destroy failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
+		c.L().Error("RPC::Destroy failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
 		return
 	}
 }

@@ -43,4 +43,5 @@ func (c *ChatUserComp) C_InputText(channelName, text string) {
 
 func (c *ChatUserComp) Dispose() {
 	c.L().Info("user disposed")
+	c.Runtime().Terminate()
 }
