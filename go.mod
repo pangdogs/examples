@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	git.golaxy.org/core v0.4.27-0.20260407090430-dd9fb94ed020
-	git.golaxy.org/framework v0.3.68-0.20260407093941-dbb5160c77a6
+	git.golaxy.org/framework v0.3.68-0.20260407100935-182e2a58cc78
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
