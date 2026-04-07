@@ -29,6 +29,7 @@ import (
 	"git.golaxy.org/framework"
 	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/gate"
+	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/rpc/rpcpcsr"
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/net/gtp"
@@ -128,12 +129,12 @@ func (s *GateService) handleSessionEstablished(session gate.ISession) {
 		SetPersistId(session.Id()).
 		New()
 	if err != nil {
-		s.L().Panic("create user failed", zap.Any("session", session), zap.Error(err))
+		s.L().Panic("create user failed", log.JSONRawStringer("session", session), zap.Error(err))
 		session.Close(&transport.RstError{
 			Code:    gtp.Code_Reject,
 			Message: err.Error(),
 		})
 		return
 	}
-	s.L().Info("user created", zap.Any("session", session), zap.Any("user", user))
+	s.L().Info("user created", log.JSONRawStringer("session", session), log.JSONRawStringer("user", user))
 }

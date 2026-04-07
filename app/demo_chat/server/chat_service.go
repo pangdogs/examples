@@ -27,6 +27,7 @@ import (
 	"git.golaxy.org/examples/app/demo_chat/server/comps"
 	"git.golaxy.org/framework"
 	. "git.golaxy.org/framework/addins"
+	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcpcsr"
 	"git.golaxy.org/framework/net/gap"
@@ -62,8 +63,8 @@ func (s *ChatService) WakeUpUser(userId uid.Id) {
 		SetPersistId(userId).
 		New()
 	if err != nil {
-		s.L().Panic("create user failed", zap.Any("user", user), zap.Error(err))
+		s.L().Panic("create user failed", log.JSONRawStringer("user", user), zap.Error(err))
 		return
 	}
-	s.L().Info("user created", zap.Any("user", user))
+	s.L().Info("user created", log.JSONRawStringer("user", user))
 }

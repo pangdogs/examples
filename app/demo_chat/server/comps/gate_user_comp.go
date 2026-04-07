@@ -23,6 +23,7 @@ import (
 	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	. "git.golaxy.org/framework/addins"
+	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/addins/rpc"
 	"go.uber.org/zap"
 )
@@ -35,12 +36,12 @@ type GateUserComp struct {
 func (c *GateUserComp) Start() {
 	mapping, err := Router.Require(c.Service()).Map(c.Id(), c.Id())
 	if err != nil {
-		c.L().Panic("mapping failed", zap.Any("user", c.Entity()), zap.Error(err))
+		c.L().Panic("mapping failed", log.JSON("user", c.Entity()), zap.Error(err))
 	}
 
 	err = rpc.ResultVoid(rpc.ProxyService(c).BalanceRPC(consts.Chat, "", "WakeUpUser", c.Id())).Error
 	if err != nil {
-		c.L().Panic("RPC::WakeUpUser failed", zap.Any("user", c.Entity()), zap.Error(err))
+		c.L().Panic("RPC::WakeUpUser failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
 	}
 
 	go func() {
@@ -52,7 +53,7 @@ func (c *GateUserComp) Start() {
 func (c *GateUserComp) Shut() {
 	err := rpc.ResultVoid(c.RPC(consts.Chat, "ChatUserComp", "Destroy")).Error
 	if err != nil {
-		c.L().Error("RPC::ChatUserComp.Destroy failed", zap.Any("user", c.Entity()), zap.Error(err))
+		c.L().Error("RPC::ChatUserComp.Destroy failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
 		return
 	}
 }

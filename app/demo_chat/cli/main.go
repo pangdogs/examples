@@ -210,12 +210,12 @@ func (m *MainScript) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.setChannel(channel)
 			case "rtt":
-				respTime, err := rpc.Result1[*cli.ResponseTime](m.Cli().RequestTime()).Extract()
-				if err != nil {
-					m.Cli().L().Error("rtt failed", zap.Error(err))
+				respTime := m.Cli().RequestTime().Wait(nil)
+				if respTime.Error != nil {
+					m.Cli().L().Error("rtt failed", zap.Error(respTime.Error))
 					break
 				}
-				m.OutputText(time.Now().Unix(), m.channel, m.Cli().SessionId().String(), fmt.Sprintf("RTT:%fs", respTime.RTT().Seconds()))
+				m.OutputText(time.Now().Unix(), m.channel, m.Cli().SessionId().String(), fmt.Sprintf("RTT:%fs", respTime.Value.(*cli.ResponseTime).RTT().Seconds()))
 			default:
 				if err := rpc.ResultVoid(m.Cli().RPC(consts.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Error; err != nil {
 					m.Cli().L().Error("RPC::ChatUserComp.C_InputText failed", zap.String("channel", m.channel), zap.Error(err))
