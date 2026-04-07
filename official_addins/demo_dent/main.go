@@ -26,8 +26,8 @@ import "git.golaxy.org/framework"
  */
 func main() {
 	framework.NewApp().
-		Setup("helloworld1", HelloWorldService{}).
-		Setup("helloworld2", HelloWorldService{}).
-		Setup("helloworld3", HelloWorldService{}).
+		SetAssembler("helloworld1", HelloWorldService{}).
+		SetAssembler("helloworld2", HelloWorldService{}).
+		SetAssembler("helloworld3", HelloWorldService{}).
 		Run()
 }

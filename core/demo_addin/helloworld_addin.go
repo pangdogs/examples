@@ -20,19 +20,16 @@
 package main
 
 import (
+	"log"
+
 	"git.golaxy.org/core/define"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"log"
 )
 
 // 定义HelloWorld插件
 var (
-	self      = define.ServiceAddIn(func(...any) IHelloWorldAddIn { return &HelloWorldAddIn{} })
-	Name      = self.Name
-	Using     = self.Using
-	Install   = self.Install
-	Uninstall = self.Uninstall
+	addin = define.ServiceAddIn(func(...any) IHelloWorldAddIn { return &HelloWorldAddIn{} })
 )
 
 // IHelloWorldAddIn HelloWorld插件接口
@@ -47,16 +44,16 @@ type HelloWorldAddIn struct {
 
 // Init 初始化插件
 func (h *HelloWorldAddIn) Init(svcCtx service.Context, _ runtime.Context) {
-	log.Printf("init add-in %s", Name)
+	log.Printf("init add-in %s", addin.Name)
 	h.svcCtx = svcCtx
 }
 
 // Shut 关闭插件
 func (h *HelloWorldAddIn) Shut(ctx service.Context, _ runtime.Context) {
-	log.Printf("shut add-in %s", Name)
+	log.Printf("shut add-in %s", addin.Name)
 }
 
 // HelloWorld 打印HelloWorld
 func (h *HelloWorldAddIn) HelloWorld() {
-	log.Printf("add-in %s say hello world", Name)
+	log.Printf("add-in %s say hello world", addin.Name)
 }

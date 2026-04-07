@@ -21,15 +21,18 @@ package main
 
 import (
 	"context"
+	"math/rand"
+	"time"
+
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/dsync"
 	"git.golaxy.org/framework/addins/log"
-	"math/rand"
-	"time"
+	"go.uber.org/zap"
 )
 
 // HelloWorldComp HelloWorld组件
@@ -39,20 +42,20 @@ type HelloWorldComp struct {
 
 // Start 组件开始
 func (comp *HelloWorldComp) Start() {
-	core.Await(runtime.Current(comp),
+	core.Await(comp.Entity(),
 		core.TimeTickAsync(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
-	).Foreach(func(ctx runtime.Context, _ async.Ret, _ ...any) {
-		mutex := dsync.Using(service.Current(comp)).NewMutex("helloworld", dsync.With.Expiry(10*time.Second), dsync.With.TimeoutFactor(0.5))
+	).Foreach(func(ctx runtime.Context, _ async.Result, _ ...any) {
+		mutex := Dsync.Require(service.Current(comp)).NewMutex("helloworld", dsync.With.Expiry(10*time.Second), dsync.With.TimeoutFactor(0.5))
 		if err := mutex.Lock(context.Background()); err != nil {
-			log.Errorf(service.Current(comp), "[%s] lock failed: %s", comp.GetId(), err)
+			log.L(service.Current(comp)).Panic("lock failed", zap.Error(err))
 			return
 		}
 		defer mutex.Unlock(context.Background())
 
-		log.Infof(service.Current(comp), "[%s] locked", comp.GetId())
+		log.L(service.Current(comp)).Info("locked")
 
 		time.Sleep(time.Duration(rand.Int63n(200)) * time.Millisecond)
 
-		log.Infof(service.Current(comp), "[%s] unlocked", comp.GetId())
+		log.L(service.Current(comp)).Info("unlocked")
 	})
 }

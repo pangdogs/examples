@@ -29,11 +29,11 @@ import (
  */
 func main() {
 	framework.NewApp().
-		Setup(consts.Gate, &GateService{}).
-		Setup(consts.Chat, &ChatService{}).
+		SetAssembler(consts.Gate, &GateService{}).
+		SetAssembler(consts.Chat, &ChatService{}).
 		InitCB(func(app *framework.App) {
-			app.GetStartupCmd().PersistentFlags().String("cli_pub_key", "cli.pub", "client public key for verify sign")
-			app.GetStartupCmd().PersistentFlags().String("serv_priv_key", "serv.pem", "service private key for sign")
+			app.Cmd().PersistentFlags().String("cli_pub_key", "cli.pub", "client public key for verify sign")
+			app.Cmd().PersistentFlags().String("serv_priv_key", "serv.pem", "service private key for sign")
 		}).
 		Run()
 }

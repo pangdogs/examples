@@ -22,12 +22,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/framework/addins/gate/cli"
 	"git.golaxy.org/framework/net/gtp"
 	"go.uber.org/zap"
-	"os"
-	"time"
 )
 
 func main() {
@@ -37,45 +38,51 @@ func main() {
 		endpoint = os.Args[1]
 	}
 
-	zaplogger, _ := zap.NewDevelopment()
-	log := zaplogger.Sugar()
+	logger, _ := zap.NewDevelopment()
 
-	cli, err := cli.Connect(context.Background(), endpoint,
-		cli.With.RecvDataHandler(generic.CastDelegate1(func(data []byte) error {
-			log.Infoln(string(data))
-			return nil
-		})),
+	client, err := cli.Connect(context.Background(), endpoint,
 		cli.With.EncCipherSuite(gtp.CipherSuite{
 			SecretKeyExchange:   gtp.SecretKeyExchange_ECDHE,
-			SymmetricEncryption: gtp.SymmetricEncryption_XChaCha20,
+			SymmetricEncryption: gtp.SymmetricEncryption_ChaCha20_Poly1305,
 			BlockCipherMode:     gtp.BlockCipherMode_None,
 			PaddingMode:         gtp.PaddingMode_None,
-			MACHash:             gtp.Hash_Fnv1a64,
+			HMAC:                gtp.Hash_None,
 		}),
-		cli.With.CompressedSize(128),
+		cli.With.CompressionThreshold(128),
 		cli.With.IOTimeout(3*time.Second),
 		cli.With.IOBufferCap(1024*1024*5),
 		cli.With.AutoReconnect(true),
-		cli.With.ZapLogger(zaplogger),
+		cli.With.Logger(logger),
 	)
 	if err != nil {
-		panic(err)
+		logger.Panic("connect failed", zap.Error(err))
 	}
-	defer cli.Close(nil)
+	defer client.Close(nil)
 
-	log.Infoln("this console is", cli.GetSessionId())
+	err = client.DataIO().Listen(nil, generic.CastDelegateVoid1(func(data []byte) {
+		client.Logger().Info("[echo]", zap.String("text", string(data)))
+	}))
+	if err != nil {
+		client.Logger().Panic("listen data failed", zap.Error(err))
+	}
 
 	for {
-		respTime := <-cli.RequestTime(context.Background())
-		if respTime.Error != nil {
-			log.Infof("sync time: %s", respTime.Error)
-		} else {
-			log.Infof("sync time: %s, rtt: %s, raw: %+v\n", respTime.Value.SyncTime(), respTime.Value.RTT(), respTime.Value)
+		future := <-client.RequestTime().Chan()
+		if future.Error != nil {
+			client.Logger().Panic("sync time failed", zap.Error(future.Error))
 		}
+
+		respTime := future.Value.(*cli.ResponseTime)
+
+		client.Logger().Info("sync time",
+			zap.Time("time", respTime.NowTime()),
+			zap.Duration("rtt", respTime.RTT()))
+
 		var text string
 		fmt.Scanln(&text)
-		if err := cli.SendData([]byte(text)); err != nil {
-			log.Infoln("send data err:", err)
+		if err := client.DataIO().Send([]byte(text)); err != nil {
+			client.Logger().Panic("send data failed", zap.Error(err))
 		}
+		client.Logger().Info("[send]", zap.String("text", text))
 	}
 }

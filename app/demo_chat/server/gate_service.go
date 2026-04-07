@@ -20,20 +20,20 @@
 package main
 
 import (
+	"time"
+
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/examples/app/demo_chat/consts"
-	"git.golaxy.org/examples/app/demo_chat/server/behaviors"
+	"git.golaxy.org/examples/app/demo_chat/server/comps"
 	"git.golaxy.org/framework"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/gate"
-	"git.golaxy.org/framework/addins/log"
-	"git.golaxy.org/framework/addins/router"
-	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcpcsr"
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/net/gtp"
 	"git.golaxy.org/framework/net/gtp/transport"
-	"time"
+	"go.uber.org/zap"
 )
 
 // GateService 网关服务
@@ -41,71 +41,80 @@ type GateService struct {
 	framework.ServiceBehavior
 }
 
-func (s *GateService) Built(svc framework.IService) {
+func (s *GateService) OnBuilt(svc framework.IService) {
 	// 定义用户实体原型
 	s.BuildEntityPT(consts.User).
 		SetScope(ec.Scope_Global).
-		AddComponent(&behaviors.GateUserComp{}).
-		AddComponent(&behaviors.GateChatChannelComp{}).
+		AddComponent(&comps.GateUserComp{}).
+		AddComponent(&comps.GateChatChannelComp{}).
 		Declare()
 }
 
-func (s *GateService) Started(svc framework.IService) {
-	if _, err := router.Using(s).AddGroup(s, consts.GlobalChannel); err != nil {
-		log.Panicf(s, "create channel %s failed, %s", consts.GlobalChannel, err)
+func (s *GateService) OnStarted(svc framework.IService) {
+	_, err := Gate.Require(s).Watch(s, generic.CastDelegateVoid1(s.handleSessionEstablished))
+	if err != nil {
+		s.L().Panic("watch session established failed", zap.Error(err))
+	}
+
+	group, err := Router.Require(s).AddGroup(s, consts.GlobalChannel, nil, 15*time.Second)
+	if err != nil {
+		s.L().Panic("create channel failed", zap.String("channel", consts.GlobalChannel), zap.Error(err))
+	}
+	_, err = group.KeepAliveContinuous(s.Terminated().Context(nil))
+	if err != nil {
+		s.L().Panic("keep alive channel failed", zap.String("channel", consts.GlobalChannel), zap.Error(err))
 	}
 }
 
 func (s *GateService) InstallRPC(svc framework.IService) {
 	// 加载客户端签名公钥
-	cliPubKey, err := gtp.LoadPublicKeyFile(s.GetAppConf().GetString("cli_pub_key"))
+	cliPubKey, err := gtp.LoadPublicKeyFile(s.AppConf().GetString("cli_pub_key"))
 	if err != nil {
-		panic(err)
+		s.L().Panic("load cli public key failed", zap.Error(err))
 	}
 
 	// 加载服务器签名私钥
-	servPrivKey, err := gtp.LoadPrivateKeyFile(s.GetAppConf().GetString("serv_priv_key"))
+	servPrivKey, err := gtp.LoadPrivateKeyFile(s.AppConf().GetString("serv_priv_key"))
 	if err != nil {
-		panic(err)
+		s.L().Panic("load serv private key failed", zap.Error(err))
 	}
 
 	// 安装网关插件
-	gate.Install(s,
-		gate.With.TCPAddress("0.0.0.0:9090"),
-		gate.With.WebSocketURL("ws://0.0.0.0:8080"),
-		gate.With.IOTimeout(10*time.Second),
-		gate.With.IOBufferCap(1024*1024*5),
-		gate.With.AgreeClientEncryptionProposal(true),
-		gate.With.AgreeClientCompressionProposal(true),
-		gate.With.EncCipherSuite(gtp.CipherSuite{
+	Gate.Install(s,
+		GateWith.TCPAddress("0.0.0.0:9090"),
+		GateWith.WebSocketURL("ws://0.0.0.0:8080"),
+		GateWith.IOTimeout(10*time.Second),
+		GateWith.IOBufferCap(1024*1024*5),
+		GateWith.AgreeClientEncryptionProposal(true),
+		GateWith.AgreeClientCompressionProposal(true),
+		GateWith.EncCipherSuite(gtp.CipherSuite{
 			SecretKeyExchange:   gtp.SecretKeyExchange_ECDHE,
 			SymmetricEncryption: gtp.SymmetricEncryption_XChaCha20_Poly1305,
 		}),
-		gate.With.EncSignatureAlgorithm(gtp.SignatureAlgorithm{
+		GateWith.EncSignatureAlgorithm(gtp.SignatureAlgorithm{
 			AsymmetricEncryption: gtp.AsymmetricEncryption_RSA,
 			PaddingMode:          gtp.PaddingMode_Pkcs1v15,
 			Hash:                 gtp.Hash_SHA256,
 		}),
-		gate.With.EncSignaturePrivateKey(servPrivKey),
-		gate.With.EncVerifyClientSignature(true),
-		gate.With.EncVerifySignaturePublicKey(cliPubKey),
-		gate.With.CompressedSize(128),
-		gate.With.SessionInactiveTimeout(time.Minute),
-		gate.With.SessionStateChangedHandler(generic.CastAction3(s.onSessionStateChanged).ToDelegate()),
+		GateWith.EncSignaturePrivateKey(servPrivKey),
+		GateWith.EncVerifyClientSignature(true),
+		GateWith.EncVerifySignaturePublicKey(cliPubKey),
+		GateWith.CompressionThreshold(128),
+		GateWith.SessionInactiveTimeout(15*time.Second),
 	)
 
 	// 安装路由插件
-	router.Install(s,
-		router.With.CustomAddresses(s.GetAppConf().GetString("etcd.address")),
-		router.With.CustomAuth(
-			s.GetAppConf().GetString("etcd.username"),
-			s.GetAppConf().GetString("etcd.password"),
+	Router.Install(s,
+		RouterWith.CustomAddresses(s.AppConf().GetString("etcd.address")),
+		RouterWith.CustomAuth(
+			s.AppConf().GetString("etcd.username"),
+			s.AppConf().GetString("etcd.password"),
 		),
 	)
 
 	// 安装RPC插件
-	rpc.Install(s,
-		rpc.With.Processors(
+	RPC.Install(s,
+		RPCWith.Processors(
 			rpcpcsr.NewServiceProcessor(nil, true),
 			rpcpcsr.NewGateProcessor(gap.DefaultMsgCreator()),
 			rpcpcsr.NewForwardProcessor(consts.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
@@ -113,24 +122,18 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 	)
 }
 
-func (s *GateService) onSessionStateChanged(session gate.ISession, curState, lastState gate.SessionState) {
-	if curState != gate.SessionState_Confirmed {
-		return
-	}
-
+func (s *GateService) handleSessionEstablished(session gate.ISession) {
 	// 创建用户实体
-	user, err := s.BuildEntityAsync(consts.User).
-		SetPersistId(session.GetId()).
-		SetMeta(map[string]any{"session": session}).
+	user, err := s.BuildEntity(consts.User).
+		SetPersistId(session.Id()).
 		New()
 	if err != nil {
-		log.Errorf(s, "create gate user %s failed, %s", session.GetId(), err)
+		s.L().Panic("create user failed", zap.Any("session", session), zap.Error(err))
 		session.Close(&transport.RstError{
 			Code:    gtp.Code_Reject,
 			Message: err.Error(),
 		})
 		return
 	}
-
-	log.Infof(s, "create gate user %s ok", user.GetId())
+	s.L().Info("user created", zap.Any("session", session), zap.Any("user", user))
 }

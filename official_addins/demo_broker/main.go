@@ -23,9 +23,9 @@ import (
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/framework/addins/broker/nats_broker"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/log"
-	"git.golaxy.org/framework/addins/log/zap_log"
+	"go.uber.org/zap"
 )
 
 /*
@@ -34,28 +34,25 @@ import (
 func main() {
 	// 创建服务并开始运行
 	<-core.NewService(service.NewContext(
-		service.With.RunningStatusChangedCB(func(svcCtx service.Context, state service.RunningStatus, _ ...any) {
-			switch state {
-			case service.RunningStatus_Starting:
+		service.With.RunningEventCB(func(svcCtx service.Context, runningEvent service.RunningEvent, _ ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
 				// 声明实体原型
 				core.BuildEntityPT(svcCtx, "helloworld").
 					AddComponent(HelloWorldComp{}).
 					Declare()
 
 				// 安装日志插件
-				zap_log.Install(svcCtx)
+				Log.Install(svcCtx)
 
 				// 安装broker插件
-				nats_broker.Install(svcCtx)
+				BrokerNats.Install(svcCtx)
 
-			case service.RunningStatus_Started:
+			case service.RunningEvent_Started:
 				// 创建运行时并开始运行
 				rt := core.NewRuntime(
 					runtime.NewContext(svcCtx),
-					core.With.Runtime.Frame(runtime.NewFrame(
-						runtime.With.Frame.TotalFrames(10),
-						runtime.With.Frame.TargetFPS(1),
-					)),
+					core.With.Runtime.Frame(core.With.Frame.TotalFrames(10), core.With.Frame.TargetFPS(1)),
 					core.With.Runtime.AutoRun(true),
 				)
 
@@ -63,22 +60,22 @@ func main() {
 				core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
 					entity, err := core.BuildEntity(rtCtx, "helloworld").New()
 					if err != nil {
-						log.Panic(svcCtx, err)
+						log.L(svcCtx).Panic("create entity failed", zap.Error(err))
 					}
-					log.Infof(svcCtx, "[%s] entity created.", entity.GetId())
+					log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.Id().String()))
 
 					go func() {
-						<-entity.Terminated()
-						log.Infof(svcCtx, "[%s] entity destroyed.", entity.GetId())
-						<-svcCtx.Terminate()
+						<-entity.Terminated().Done()
+						log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
+						<-svcCtx.Terminate().Done()
 					}()
 				})
 
-				log.Info(svcCtx, "service started.")
+				log.L(svcCtx).Info("service started")
 
-			case service.RunningStatus_Terminated:
-				log.Info(svcCtx, "service terminated.")
+			case service.RunningEvent_Terminated:
+				log.L(svcCtx).Info("service terminated")
 			}
 		}),
-	)).Run()
+	)).Run().Done()
 }

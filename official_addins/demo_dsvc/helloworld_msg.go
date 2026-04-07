@@ -20,10 +20,11 @@
 package main
 
 import (
+	"io"
+
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/net/gap/variant"
 	"git.golaxy.org/framework/utils/binaryutil"
-	"io"
 )
 
 func init() {
@@ -97,7 +98,7 @@ func (m *MsgHelloWorld) Write(p []byte) (int, error) {
 
 // Size 大小
 func (m MsgHelloWorld) Size() int {
-	return binaryutil.SizeofVarint(int64(m.Int)) + binaryutil.SizeofDouble() + binaryutil.SizeofString(m.Str) + m.Map.Size() + m.Array.Size()
+	return binaryutil.SizeofVarint(int64(m.Int)) + binaryutil.SizeofDouble + binaryutil.SizeofString(m.Str) + m.Map.Size() + m.Array.Size()
 }
 
 // MsgId 消息Id

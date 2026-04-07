@@ -21,7 +21,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"hash/fnv"
+	"strings"
+	"time"
+
 	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework/addins/gate/cli"
@@ -36,9 +41,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"hash/fnv"
-	"strings"
-	"time"
 )
 
 func main() {
@@ -65,9 +67,6 @@ func main() {
 		np = cli.WebSocket
 	}
 
-	logger := zap.NewNop()
-	proc := &MainProc{}
-
 	rpcli, err := rpcli.BuildRPCli().
 		SetNetProtocol(np).
 		SetIOTimeout(10*time.Second).
@@ -84,22 +83,31 @@ func main() {
 		SetGTPEncSignaturePrivateKey(cliPrivKey).
 		SetGTPEncVerifyServerSignature(true).
 		SetGTPEncVerifySignaturePublicKey(servPubKey).
+		SetGTPEncVerifyServerSignature(true).
 		SetGTPCompression(gtp.Compression_Brotli).
-		SetGTPCompressedSize(0).
 		SetGTPAutoReconnectRetryTimes(0).
-		SetZapLogger(logger).
-		SetMainProcedure(proc).
+		SetScripts(map[string]rpcli.IScript{"": &MainScript{}}).
 		Connect(context.Background(), viper.GetString("endpoint"))
 	if err != nil {
 		panic(err)
 	}
 
-	go proc.Console()
+	mainScr, ok := rpcli.GetScript("")
+	if !ok {
+		panic("main script not found")
+	}
+
+	console, ok := mainScr.(*MainScript)
+	if !ok {
+		panic(fmt.Sprintf("unexpected main script type %T", mainScr))
+	}
+
+	go console.Console()
 
 	<-rpcli.Done()
 
 	if err := context.Cause(rpcli); err != nil {
-		rpcli.GetLogger().Infof("close cause:%s", err)
+		rpcli.L().Info("close cause", zap.Error(err))
 	}
 }
 
@@ -107,19 +115,19 @@ const (
 	gap = "\n\n"
 )
 
-type MainProc struct {
-	rpcli.Procedure
+type MainScript struct {
+	rpcli.ScriptBehavior
 	viewport viewport.Model
 	textarea textarea.Model
 	channel  string
 	messages []string
 }
 
-func (m *MainProc) Init() tea.Cmd {
+func (m *MainScript) Init() tea.Cmd {
 	return textarea.Blink
 }
 
-func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MainScript) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		vpCmd tea.Cmd
 		tiCmd tea.Cmd
@@ -138,7 +146,7 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			m.GetCli().Close(fmt.Errorf("console: %s", msg.Type))
+			m.Cli().Close(fmt.Errorf("console: %s", msg.Type))
 			return m, tea.Quit
 
 		case tea.KeyEnter:
@@ -155,8 +163,8 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_CreateChannel", channel)).Extract(); err != nil {
-					m.GetCli().GetLogger().Errorf("create channel %s failed, %s", channel, err)
+				if err := rpc.ResultVoid(m.Cli().RPC(consts.Gate, "GateChatChannelComp", "C_CreateChannel", channel)).Error; err != nil {
+					m.Cli().L().Error("RPC::GateChatChannelComp.C_CreateChannel failed", zap.String("channel", channel), zap.Error(err))
 					break
 				}
 			case "remove":
@@ -164,8 +172,8 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_RemoveChannel", channel)).Extract(); err != nil {
-					m.GetCli().GetLogger().Errorf("remove channel %s failed, %s", channel, err)
+				if err := rpc.ResultVoid(m.Cli().RPC(consts.Gate, "GateChatChannelComp", "C_RemoveChannel", channel)).Error; err != nil {
+					m.Cli().L().Error("RPC::GateChatChannelComp.C_RemoveChannel failed", zap.String("channel", channel), zap.Error(err))
 					break
 				}
 			case "join":
@@ -173,8 +181,8 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_JoinChannel", channel)).Extract(); err != nil {
-					m.GetCli().GetLogger().Errorf("join channel %s failed, %s", channel, err)
+				if err := rpc.ResultVoid(m.Cli().RPC(consts.Gate, "GateChatChannelComp", "C_JoinChannel", channel)).Error; err != nil {
+					m.Cli().L().Error("RPC::GateChatChannelComp.C_JoinChannel failed", zap.String("channel", channel), zap.Error(err))
 					break
 				}
 			case "leave":
@@ -182,8 +190,8 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_LeaveChannel", channel)).Extract(); err != nil {
-					m.GetCli().GetLogger().Errorf("leave channel %s failed, %s", channel, err)
+				if err := rpc.ResultVoid(m.Cli().RPC(consts.Gate, "GateChatChannelComp", "C_LeaveChannel", channel)).Error; err != nil {
+					m.Cli().L().Error("RPC::GateChatChannelComp.C_LeaveChannel failed", zap.String("channel", channel), zap.Error(err))
 					break
 				}
 			case "switch":
@@ -191,26 +199,26 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				channel := fields[1]
-				b, err := rpc.Result1[bool](<-m.GetCli().RPC(consts.Gate, "GateChatChannelComp", "C_InChannel", channel)).Extract()
+				b, err := rpc.Result1[bool](m.Cli().RPC(consts.Gate, "GateChatChannelComp", "C_InChannel", channel)).Extract()
 				if err != nil {
-					m.GetCli().GetLogger().Errorf("switch channel %s failed, %s", channel, err)
+					m.Cli().L().Error("RPC::GateChatChannelComp.C_InChannel failed", zap.String("channel", channel), zap.Error(err))
 					break
 				}
 				if !b {
-					m.GetCli().GetLogger().Errorf("switch channel %s failed, not in channel", channel)
+					m.Cli().L().Error("RPC::GateChatChannelComp.C_InChannel failed", zap.String("channel", channel), zap.Error(errors.New("not in channel")))
 					break
 				}
 				m.setChannel(channel)
 			case "rtt":
-				respTime := <-m.GetCli().RequestTime(nil)
-				if respTime.Error != nil {
-					m.GetCli().GetLogger().Errorf("rtt failed, %s", respTime.Error)
+				respTime, err := rpc.Result1[*cli.ResponseTime](m.Cli().RequestTime()).Extract()
+				if err != nil {
+					m.Cli().L().Error("rtt failed", zap.Error(err))
 					break
 				}
-				m.OutputText(time.Now().Unix(), m.channel, m.GetCli().GetSessionId().String(), fmt.Sprintf("RTT:%fs", respTime.Value.RTT().Seconds()))
+				m.OutputText(time.Now().Unix(), m.channel, m.Cli().SessionId().String(), fmt.Sprintf("RTT:%fs", respTime.RTT().Seconds()))
 			default:
-				if err := rpc.ResultVoid(<-m.GetCli().RPC(consts.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Extract(); err != nil {
-					m.GetCli().GetLogger().Errorf("console: input %s failed, %s", line, err)
+				if err := rpc.ResultVoid(m.Cli().RPC(consts.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Error; err != nil {
+					m.Cli().L().Error("RPC::ChatUserComp.C_InputText failed", zap.String("channel", m.channel), zap.Error(err))
 					break
 				}
 			}
@@ -218,14 +226,14 @@ func (m *MainProc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case error:
-		m.GetCli().GetLogger().Errorf("console: %s", msg)
+		m.Cli().L().Error("console error", zap.Error(msg))
 		return m, nil
 	}
 
 	return m, tea.Batch(tiCmd, vpCmd)
 }
 
-func (m *MainProc) View() string {
+func (m *MainScript) View() string {
 	return fmt.Sprintf(
 		"%s%s%s",
 		m.viewport.View(),
@@ -234,7 +242,7 @@ func (m *MainProc) View() string {
 	)
 }
 
-func (m *MainProc) Console() {
+func (m *MainScript) Console() {
 	vp := viewport.New(0, 0)
 
 	ta := textarea.New()
@@ -251,19 +259,19 @@ func (m *MainProc) Console() {
 
 	m.setChannel(consts.GlobalChannel)
 
-	if _, err := tea.NewProgram(m, tea.WithContext(m.GetCli())).Run(); err != nil {
-		m.GetCli().GetLogger().Errorf("console: %s", err)
+	if _, err := tea.NewProgram(m, tea.WithContext(m.Cli())).Run(); err != nil {
+		m.Cli().L().Error("console error", zap.Error(err))
 		return
 	}
 }
 
-func (m *MainProc) OutputText(ts int64, channel, userId, text string) {
+func (m *MainScript) OutputText(ts int64, channel, userId, text string) {
 	channelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(channel).Hex()))
 	userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(userId).Hex()))
 
 	var you string
 
-	if uid.Id(userId) == m.GetCli().GetSessionId() {
+	if uid.Id(userId) == m.Cli().SessionId() {
 		you = "(YOU)"
 	}
 
@@ -283,13 +291,13 @@ func (m *MainProc) OutputText(ts int64, channel, userId, text string) {
 	m.viewport.GotoBottom()
 }
 
-func (m *MainProc) ChannelKickOut(channel string) {
+func (m *MainScript) ChannelKickOut(channel string) {
 	if m.channel == channel {
 		m.setChannel(consts.GlobalChannel)
 	}
 }
 
-func (m *MainProc) setChannel(channel string) {
+func (m *MainScript) setChannel(channel string) {
 	m.channel = channel
 	m.textarea.Prompt = lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(channel).Hex())).Render(channel) + " > "
 }

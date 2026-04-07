@@ -24,12 +24,13 @@ import (
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/examples/app/demo_chat/consts"
-	"git.golaxy.org/examples/app/demo_chat/server/behaviors"
+	"git.golaxy.org/examples/app/demo_chat/server/comps"
 	"git.golaxy.org/framework"
-	"git.golaxy.org/framework/addins/log"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcpcsr"
 	"git.golaxy.org/framework/net/gap"
+	"go.uber.org/zap"
 )
 
 // ChatService 聊天服务
@@ -37,9 +38,17 @@ type ChatService struct {
 	framework.ServiceBehavior
 }
 
+func (s *ChatService) OnBuilt(svc framework.IService) {
+	// 定义用户实体原型
+	s.BuildEntityPT(consts.User).
+		SetScope(ec.Scope_Global).
+		AddComponent(&comps.ChatUserComp{}).
+		Declare()
+}
+
 func (s *ChatService) InstallRPC(svc framework.IService) {
 	// 安装RPC插件
-	rpc.Install(s,
+	RPC.Install(s,
 		rpc.With.Processors(
 			rpcpcsr.NewServiceProcessor(nil, true),
 			rpcpcsr.NewForwardProcessor(consts.Gate, gap.DefaultMsgCreator(), generic.CastDelegate2(rpcpcsr.DefaultValidateCliPermission), true),
@@ -47,23 +56,14 @@ func (s *ChatService) InstallRPC(svc framework.IService) {
 	)
 }
 
-func (s *ChatService) Built(svc framework.IService) {
-	// 定义用户实体原型
-	s.BuildEntityPT(consts.User).
-		SetScope(ec.Scope_Global).
-		AddComponent(&behaviors.ChatUserComp{}).
-		Declare()
-}
-
 func (s *ChatService) WakeUpUser(userId uid.Id) {
 	// 创建用户实体
-	user, err := s.BuildEntityAsync(consts.User).
+	user, err := s.BuildEntity(consts.User).
 		SetPersistId(userId).
 		New()
 	if err != nil {
-		log.Errorf(s, "create chat user %s failed, %s", userId, err)
+		s.L().Panic("create user failed", zap.Any("user", user), zap.Error(err))
 		return
 	}
-
-	log.Infof(s, "create chat user %s ok", user.GetId())
+	s.L().Info("user created", zap.Any("user", user))
 }

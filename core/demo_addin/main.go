@@ -20,10 +20,11 @@
 package main
 
 import (
+	"log"
+
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"log"
 )
 
 /*
@@ -32,25 +33,22 @@ import (
 func main() {
 	// 创建服务并开始运行
 	<-core.NewService(service.NewContext(
-		service.With.RunningStatusChangedCB(func(svcCtx service.Context, state service.RunningStatus, _ ...any) {
-			switch state {
-			case service.RunningStatus_Starting:
+		service.With.RunningEventCB(func(svcCtx service.Context, runningEvent service.RunningEvent, _ ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
 				// 声明实体原型
 				core.BuildEntityPT(svcCtx, "helloworld").
 					AddComponent(HelloWorldComp{}).
 					Declare()
 
 				// 安装插件
-				Install(svcCtx)
+				addin.Install(svcCtx)
 
-			case service.RunningStatus_Started:
+			case service.RunningEvent_Started:
 				// 创建运行时并开始运行
 				rt := core.NewRuntime(
 					runtime.NewContext(svcCtx),
-					core.With.Runtime.Frame(runtime.NewFrame(
-						runtime.With.Frame.TotalFrames(10),
-						runtime.With.Frame.TargetFPS(1),
-					)),
+					core.With.Runtime.Frame(core.With.Frame.TotalFrames(10), core.With.Frame.TargetFPS(1)),
 					core.With.Runtime.AutoRun(true),
 				)
 
@@ -60,20 +58,20 @@ func main() {
 					if err != nil {
 						log.Panic(err)
 					}
-					log.Printf("[%s] entity created.", entity.GetId())
+					log.Printf("[%s] entity created", entity.Id())
 
 					go func() {
-						<-entity.Terminated()
-						log.Printf("[%s] entity destroyed.", entity.GetId())
-						<-svcCtx.Terminate()
+						<-entity.Terminated().Done()
+						log.Printf("[%s] entity destroyed", entity.Id())
+						<-svcCtx.Terminate().Done()
 					}()
 				})
 
-				log.Println("service started.")
+				log.Println("service started")
 
-			case service.RunningStatus_Terminated:
-				log.Println("service terminated.")
+			case service.RunningEvent_Terminated:
+				log.Println("service terminated")
 			}
 		}),
-	)).Run()
+	)).Run().Done()
 }

@@ -22,55 +22,64 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/broker"
 	"git.golaxy.org/framework/addins/log"
-	"math/rand"
-	"time"
+	"go.uber.org/zap"
 )
 
 // HelloWorldComp HelloWorld组件
 type HelloWorldComp struct {
 	ec.ComponentBehavior
-	sub      broker.ISubscriber
 	sequence int
 }
 
 // Start 组件开始
 func (comp *HelloWorldComp) Start() {
-	log.Infof(service.Current(comp), "max payload: %d", broker.Using(service.Current(comp)).GetMaxPayload())
+	log.L(service.Current(comp)).Info("starting...",
+		zap.String("entity_id", comp.Entity().Id().String()),
+		zap.Int64("max_payload", Broker.Require(service.Current(comp)).MaxPayload()))
 
-	sub, err := broker.Using(service.Current(comp)).Subscribe(context.Background(), "helloworld.>",
-		broker.With.EventHandler(generic.CastDelegate1(func(e broker.IEvent) error {
-			log.Infof(service.Current(comp), "=>[receive] pattern:%s, topic:%s, msg:%s", e.Pattern(), e.Topic(), string(e.Message()))
-			return nil
-		})))
+	_, err := Broker.Require(service.Current(comp)).SubscribeHandler(comp.Entity(), "helloworld.>", "",
+		generic.CastDelegateVoid1(func(e broker.Event) {
+			log.L(service.Current(comp)).Info("[receive]",
+				zap.String("pattern", e.Pattern),
+				zap.String("topic", e.Topic),
+				zap.ByteString("msg", e.Message))
+		}),
+	)
 	if err != nil {
-		log.Panic(service.Current(comp), err)
+		log.L(service.Current(comp)).Panic("subscribe error", zap.Error(err))
 	}
-	comp.sub = sub
 
-	core.Await(runtime.Current(comp),
-		core.TimeTickAsync(runtime.Current(comp), time.Duration(rand.Int63n(3000))*time.Millisecond),
-	).Foreach(func(ctx runtime.Context, _ async.Ret, _ ...any) {
+	core.Await(comp.Entity(),
+		core.TimeTickAsync(comp.Entity(), time.Duration(rand.Int63n(3000))*time.Millisecond),
+	).Foreach(func(ctx runtime.Context, _ async.Result, _ ...any) {
 		topic := "helloworld.testing"
-		msg := fmt.Sprintf("%s-%d", comp.GetId(), comp.sequence)
+		msg := fmt.Sprintf("%s/%d", comp.Entity().Id(), comp.sequence)
 
-		if err := broker.Using(service.Current(comp)).Publish(context.Background(), topic, []byte(msg)); err != nil {
-			log.Panic(service.Current(comp), err)
+		if err := Broker.Require(service.Current(comp)).Publish(context.Background(), topic, []byte(msg)); err != nil {
+			log.L(service.Current(comp)).Panic("publish error", zap.Error(err))
 		}
 
-		log.Infof(service.Current(comp), "[send]=> topic:%s, msg:%s", topic, msg)
+		log.L(service.Current(comp)).Info("[publish]",
+			zap.String("topic", topic),
+			zap.String("msg", msg))
+
 		comp.sequence++
 	})
 }
 
 // Shut 组件结束
 func (comp *HelloWorldComp) Shut() {
-	comp.sub.Unsubscribe()
+	log.L(service.Current(comp)).Info("shutting...", zap.String("entity_id", comp.Entity().Id().String()))
 }

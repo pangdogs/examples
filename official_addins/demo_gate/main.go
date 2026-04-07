@@ -20,87 +20,91 @@
 package main
 
 import (
+	"time"
+
 	"git.golaxy.org/core"
-	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/iface"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
-	"git.golaxy.org/framework/addins/log/zap_log"
-	"time"
+	"go.uber.org/zap"
 )
 
 /*
- * 基于core层提供的支持，演示一个简单的网关服务，约10秒后结束。
+ * 基于core层提供的支持，演示一个简单的网关服务。
  */
 func main() {
 	// 创建服务并开始运行
 	<-core.NewService(service.NewContext(
 		service.With.Name("helloworld"),
-		service.With.RunningStatusChangedCB(func(svcCtx service.Context, state service.RunningStatus, _ ...any) {
-			switch state {
-			case service.RunningStatus_Starting:
+		service.With.InstanceFace(iface.NewFaceT[service.Context](&HelloWorldService{})),
+		service.With.RunningEventCB(func(svcCtx service.Context, runningEvent service.RunningEvent, _ ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
 				// 声明实体原型
 				core.BuildEntityPT(svcCtx, "helloworld").
 					AddComponent(HelloWorldComp{}).
 					Declare()
 
 				// 安装日志插件
-				zap_log.Install(svcCtx)
+				Log.Install(svcCtx)
 
 				// 安装网关插件
-				gate.Install(svcCtx,
-					gate.With.IOTimeout(3*time.Second),
-					gate.With.IOBufferCap(1024*1024*5),
-					gate.With.AgreeClientEncryptionProposal(true),
-					gate.With.AgreeClientCompressionProposal(true),
-					gate.With.CompressedSize(128),
-					gate.With.SessionInactiveTimeout(time.Hour),
-					gate.With.SessionStateChangedHandler(generic.CastDelegateVoid3(onSessionStateChanged)),
+				Gate.Install(svcCtx,
+					GateWith.IOTimeout(3*time.Second),
+					GateWith.IOBufferCap(1024*1024*5),
+					GateWith.AgreeClientEncryptionProposal(true),
+					GateWith.AgreeClientCompressionProposal(true),
+					GateWith.CompressionThreshold(128),
+					GateWith.SessionInactiveTimeout(10*time.Second),
 				)
 
-			case service.RunningStatus_Started:
-				log.Info(svcCtx, "service started.")
+			case service.RunningEvent_Started:
+				s := svcCtx.(*HelloWorldService)
 
-			case service.RunningStatus_Terminated:
-				log.Info(svcCtx, "service terminated.")
+				_, err := Gate.Require(svcCtx).Watch(svcCtx, generic.CastDelegateVoid1(s.handleSessionEstablished))
+				if err != nil {
+					log.L(svcCtx).Panic("watch session established failed", zap.Error(err))
+				}
+
+				log.L(svcCtx).Info("service started")
+
+			case service.RunningEvent_Terminated:
+				log.L(svcCtx).Info("service terminated")
 			}
 		}),
-	)).Run()
+	)).Run().Done()
 }
 
-func onSessionStateChanged(session gate.ISession, curState, lastState gate.SessionState) {
-	svcCtx := session.GetServiceContext()
+type HelloWorldService struct {
+	service.ContextBehavior
+}
 
-	switch curState {
-	case gate.SessionState_Confirmed:
-		// 创建运行时并开始运行
-		rt := core.NewRuntime(
-			runtime.NewContext(svcCtx),
-			core.With.Runtime.AutoRun(true),
-		)
+func (s *HelloWorldService) handleSessionEstablished(session gate.ISession) {
+	// 创建运行时并开始运行
+	rt := core.NewRuntime(
+		runtime.NewContext(s),
+		core.With.Runtime.AutoRun(true),
+	)
 
-		// 在运行时中创建实体
-		core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
-			entity, err := core.BuildEntity(rtCtx, "helloworld").
-				SetPersistId(session.GetId()).
-				SetMeta(map[string]any{"session": session}).
-				New()
-			if err != nil {
-				log.Panic(svcCtx, err)
-			}
-			log.Infof(svcCtx, "[%s] entity created.", entity.GetId())
+	// 在运行时中创建实体
+	core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
+		entity, err := core.BuildEntity(rtCtx, "helloworld").
+			SetPersistId(session.Id()).
+			New()
+		if err != nil {
+			log.L(s).Panic("create entity failed", zap.Error(err))
+		}
+		log.L(s).Info("entity created", zap.String("entity_id", entity.Id().String()))
 
-			go func() {
-				<-entity.Terminated()
-				log.Infof(svcCtx, "[%s] entity destroyed.", entity.GetId())
-			}()
-		}).Wait(svcCtx)
-
-	case gate.SessionState_Death:
-		svcCtx.CallVoidAsync(session.GetId(), func(entity ec.Entity, _ ...any) {
-			entity.DestroySelf()
-		})
-	}
+		go func() {
+			<-session.Closed().Done()
+			core.CallVoidAsync(entity, func(runtime.Context, ...any) { entity.Destroy() })
+			<-entity.Terminated().Done()
+			log.L(s).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
+		}()
+	})
 }

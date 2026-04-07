@@ -20,11 +20,12 @@
 package main
 
 import (
-	"git.golaxy.org/core/utils/async"
-	"git.golaxy.org/framework"
-	"git.golaxy.org/framework/addins/log"
 	"math/rand"
 	"time"
+
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/framework"
+	"go.uber.org/zap"
 )
 
 // HelloWorldComp HelloWorld组件
@@ -34,16 +35,24 @@ type HelloWorldComp struct {
 
 func (comp *HelloWorldComp) Start() {
 	// 每隔3秒，测试广播单程RPC
-	comp.Await(comp.TimeTickAsync(3 * time.Second)).Foreach(func(async.Ret, ...any) {
-		comp.GlobalBroadcastOnewayRPC(true, comp.GetName(), "TestOnewayRPC", rand.Int31())
+	comp.Await(comp.TimeTickAsync(3 * time.Second)).Foreach(func(framework.IRuntime, async.Result, ...any) {
+		n := rand.Int31()
+		if err := comp.GlobalBroadcastOnewayRPC(true, comp.Name(), "TestOnewayRPC", n); err != nil {
+			comp.L().Panic("TestOnewayRPC failed", zap.Error(err))
+		}
+		comp.L().Info("[TestOnewayRPC] =>",
+			zap.Any("callChain", comp.Runtime().RPCStack().CallChain()),
+			zap.Int32("n", n))
 	})
 
 	// 10秒后销毁实体
-	comp.Await(comp.TimeAfterAsync(10 * time.Second)).Foreach(func(async.Ret, ...any) {
-		comp.GetEntity().DestroySelf()
+	comp.Await(comp.TimeAfterAsync(10 * time.Second)).Foreach(func(framework.IRuntime, async.Result, ...any) {
+		comp.Entity().Destroy()
 	})
 }
 
-func (comp *HelloWorldComp) TestOnewayRPC(a int) {
-	log.Infof(comp, "callChain: %+v => accept: %d", comp.GetRuntime().GetRPCStack().CallChain(), a)
+func (comp *HelloWorldComp) TestOnewayRPC(n int) {
+	comp.L().Info("=> [TestOnewayRPC]",
+		zap.Any("callChain", comp.Runtime().RPCStack().CallChain()),
+		zap.Int("n", n))
 }

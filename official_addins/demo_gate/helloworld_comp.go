@@ -20,72 +20,41 @@
 package main
 
 import (
-	"fmt"
-	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/gate"
 	"git.golaxy.org/framework/addins/log"
-	"sync"
-	"time"
-)
-
-var (
-	textQueue []string
-	textMutex sync.RWMutex
+	"github.com/elliotchance/pie/v2"
+	"go.uber.org/zap"
 )
 
 // HelloWorldComp HelloWorld组件
 type HelloWorldComp struct {
 	ec.ComponentBehavior
-	session gate.ISession
-	pos     int
 }
 
 func (comp *HelloWorldComp) Awake() {
-	comp.session = comp.GetEntity().GetMeta().Value("session").(gate.ISession)
-	comp.pos = len(textQueue)
+	session, ok := Gate.Require(service.Current(comp)).Get(comp.Entity().Id())
+	if !ok {
+		log.L(service.Current(comp)).Panic("session not found")
+	}
+	err := session.DataIO().Listen(comp.Entity(), generic.CastDelegateVoid2(comp.handleData))
+	if err != nil {
+		log.L(service.Current(comp)).Panic("listen data failed", zap.Error(err))
+		return
+	}
 }
 
-func (comp *HelloWorldComp) Start() {
-	textMutex.RLock()
-	defer textMutex.RUnlock()
+func (comp *HelloWorldComp) handleData(session gate.ISession, data []byte) {
+	log.L(service.Current(comp)).Info("[receive]", zap.ByteString("data", data))
 
-	err := comp.session.GetSettings().SetRecvDataHandler(generic.CastDelegate2(comp.onRecvData)).Change()
+	echoData := pie.Reverse(data)
+	err := session.DataIO().Send(echoData)
 	if err != nil {
-		log.Panic(runtime.Current(comp), err)
+		log.L(service.Current(comp)).Panic("send data failed", zap.Error(err))
 	}
 
-	core.Await(runtime.Current(comp),
-		core.TimeTickAsync(runtime.Current(comp), time.Second),
-	).Foreach(func(ctx runtime.Context, ret async.Ret, _ ...any) {
-		textMutex.RLock()
-		defer textMutex.RUnlock()
-
-		for _, text := range textQueue[comp.pos:] {
-			if err := comp.session.SendData([]byte(text)); err != nil {
-				log.Error(service.Current(ctx), err)
-			}
-		}
-
-		comp.pos = len(textQueue)
-	})
-}
-
-func (comp *HelloWorldComp) Shut() {
-	runtime.Current(comp).Terminate()
-}
-
-func (comp *HelloWorldComp) onRecvData(session gate.ISession, data []byte) error {
-	textMutex.Lock()
-	defer textMutex.Unlock()
-
-	text := fmt.Sprintf("[%s]:%s", comp.session.GetId(), string(data))
-	textQueue = append(textQueue, text)
-
-	log.Infof(service.Current(comp), text)
-	return nil
+	log.L(service.Current(comp)).Info("[send]", zap.ByteString("data", echoData))
 }

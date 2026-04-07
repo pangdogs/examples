@@ -20,27 +20,19 @@
 package main
 
 import (
+	"math/rand"
+	"time"
+
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
-	"git.golaxy.org/core/utils/uid"
-	"git.golaxy.org/framework/addins/dsvc"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/log"
-	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/callpath"
-	"git.golaxy.org/framework/utils/concurrent"
-	"math/rand"
-	"time"
+	"go.uber.org/zap"
 )
-
-type DstEntity struct {
-	Id   uid.Id
-	Addr string
-}
-
-var entities = concurrent.MakeLockedSlice[*DstEntity](0, 0)
 
 // HelloWorldComp HelloWorld组件实现
 type HelloWorldComp struct {
@@ -48,53 +40,27 @@ type HelloWorldComp struct {
 }
 
 func (comp *HelloWorldComp) Start() {
-	entities.Append(&DstEntity{
-		Id:   comp.GetId(),
-		Addr: dsvc.Using(service.Current(comp)).GetNodeDetails().LocalAddr,
-	})
-
 	core.Await(runtime.Current(comp),
 		core.TimeTickAsync(runtime.Current(comp), 3*time.Second),
-	).Foreach(func(ctx runtime.Context, _ async.Ret, _ ...any) {
-		var dstEntity *DstEntity
-
-		entities.AutoRLock(func(es *[]*DstEntity) {
-			if len(*es) <= 0 {
-				return
-			}
-			dstEntity = (*es)[rand.Intn(len(*es))]
-		})
-
-		if dstEntity.Id == comp.GetId() {
-			return
-		}
-
+	).Foreach(func(ctx runtime.Context, _ async.Result, _ ...any) {
 		cp := callpath.CallPath{
-			Category: callpath.Entity,
-			Id:       dstEntity.Id,
-			Script:   "HelloWorldComp",
-			Method:   "TestRPC",
+			TargetKind: callpath.Entity,
+			ExcludeSrc: true,
+			Id:         entityId,
+			Script:     "HelloWorldComp",
+			Method:     "TestRPC",
 		}
 
-		a := rand.Uint32()
-
-		rv, err := rpc.Result1[int32](<-rpc.Using(service.Current(comp)).RPC(dstEntity.Addr, nil, cp, a)).Extract()
+		n := rand.Uint32()
+		err := RPC.Require(service.Current(comp)).OnewayRPC(Dsvc.Require(service.Current(comp)).NodeDetails().BalanceAddr, nil, cp, n)
 		if err != nil {
-			log.Errorf(service.Current(comp), "send: %d, result: %v", a, err)
-		} else {
-			log.Infof(service.Current(comp), "send: %d, result: %d", a, rv)
+			log.L(runtime.Current(comp)).Panic("oneway rpc failed", zap.Error(err))
 		}
+
+		log.L(runtime.Current(comp)).Info("[TestRPC] =>", zap.Uint32("n", n))
 	})
 }
 
-func (comp *HelloWorldComp) Shut() {
-	entities.DeleteOnce(func(entity *DstEntity) bool {
-		return entity.Id == comp.GetId()
-	})
-}
-
-func (comp *HelloWorldComp) TestRPC(a uint32) int32 {
-	n := rand.Int31()
-	log.Infof(service.Current(comp), "accept: %d, return: %d", a, n)
-	return n
+func (comp *HelloWorldComp) TestRPC(n uint32) {
+	log.L(runtime.Current(comp)).Info("=> [TestRPC]", zap.Uint32("n", n))
 }

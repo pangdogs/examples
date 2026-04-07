@@ -3,7 +3,7 @@ package main
 import (
 	"git.golaxy.org/core/utils/uid"
 	"git.golaxy.org/framework"
-	"git.golaxy.org/framework/addins/log"
+	"go.uber.org/zap"
 )
 
 var (
@@ -14,22 +14,22 @@ type HelloWorldService struct {
 	framework.ServiceBehavior
 }
 
-func (s *HelloWorldService) Built(svc framework.IService) {
+func (s *HelloWorldService) OnBuilt(svc framework.IService) {
 	s.BuildEntityPT("helloworld").
 		AddComponent(HelloWorldComp{}).
 		Declare()
 }
 
-func (s *HelloWorldService) Started(svc framework.IService) {
-	entity, err := s.BuildEntityAsync("helloworld").
+func (s *HelloWorldService) OnStarted(svc framework.IService) {
+	entity, err := s.BuildEntity("helloworld").
 		SetPersistId(entityId).
 		New()
 	if err != nil {
-		log.Panic(s, err)
+		s.L().Panic("create entity failed", zap.Error(err))
 	}
 
 	go func() {
-		<-entity.Terminated()
-		<-s.Terminate()
+		<-entity.Terminated().Done()
+		<-s.Terminate().Done()
 	}()
 }

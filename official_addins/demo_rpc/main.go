@@ -20,19 +20,20 @@
 package main
 
 import (
+	"sync"
+
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/framework/addins/broker/nats_broker"
-	"git.golaxy.org/framework/addins/discovery/etcd_discovery"
-	"git.golaxy.org/framework/addins/dsvc"
-	"git.golaxy.org/framework/addins/dsync/etcd_dsync"
+	"git.golaxy.org/core/utils/uid"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/log"
-	"git.golaxy.org/framework/addins/log/zap_log"
-	"git.golaxy.org/framework/addins/rpc"
 	"git.golaxy.org/framework/addins/rpc/rpcpcsr"
-	"git.golaxy.org/framework/addins/rpcstack"
-	"sync"
+	"go.uber.org/zap"
+)
+
+var (
+	entityId = uid.New()
 )
 
 /*
@@ -50,78 +51,71 @@ func main() {
 			// 创建服务并开始运行
 			<-core.NewService(service.NewContext(
 				service.With.Name("helloworld"),
-				service.With.RunningStatusChangedCB(func(svcCtx service.Context, state service.RunningStatus, _ ...any) {
-					switch state {
-					case service.RunningStatus_Starting:
+				service.With.RunningEventCB(func(svcCtx service.Context, runningEvent service.RunningEvent, _ ...any) {
+					switch runningEvent {
+					case service.RunningEvent_Birth:
 						// 声明实体原型
 						core.BuildEntityPT(svcCtx, "helloworld").
 							AddComponent(HelloWorldComp{}).
 							Declare()
 
 						// 安装日志插件
-						zap_log.Install(svcCtx)
+						Log.Install(svcCtx)
 
 						// 安装服务发现插件
-						etcd_discovery.Install(svcCtx)
+						DiscoveryEtcd.Install(svcCtx)
 
 						// 安装broker插件
-						nats_broker.Install(svcCtx)
+						BrokerNats.Install(svcCtx)
 
 						// 安装分布式同步插件
-						etcd_dsync.Install(svcCtx)
+						DsyncEtcd.Install(svcCtx)
 
 						// 安装分布式服务插件
-						dsvc.Install(svcCtx)
+						Dsvc.Install(svcCtx)
 
 						// 安装RPC插件
-						rpc.Install(svcCtx, rpc.With.Processors(rpcpcsr.NewServiceProcessor(nil, false)))
+						RPC.Install(svcCtx, RPCWith.Processors(rpcpcsr.NewServiceProcessor(nil, false)))
 
-					case service.RunningStatus_Started:
+					case service.RunningEvent_Started:
 						// 创建运行时并开始运行
-						rt := core.NewRuntime(
-							runtime.NewContext(svcCtx,
-								runtime.With.Context.RunningStatusChangedCB(
-									func(rtCtx runtime.Context, status runtime.RunningStatus, _ ...any) {
-										switch status {
-										case runtime.RunningStatus_Starting:
-											// 安装日志插件
-											zap_log.Install(rtCtx)
+						rt := core.NewRuntime(runtime.NewContext(svcCtx,
+							runtime.With.RunningEventCB(func(rtCtx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+								switch runningEvent {
+								case runtime.RunningEvent_Birth:
+									// 安装日志插件
+									Log.Install(rtCtx)
 
-											// 安装RPC栈插件
-											rpcstack.Install(rtCtx)
-										}
-									},
-								),
-							),
-							core.With.Runtime.Frame(runtime.NewFrame(
-								runtime.With.Frame.TotalFrames(10),
-								runtime.With.Frame.TargetFPS(1),
-							)),
+									// 安装RPC栈插件
+									RPCStack.Install(rtCtx)
+								}
+							})),
+							core.With.Runtime.Frame(core.With.Frame.TotalFrames(10), core.With.Frame.TargetFPS(1)),
 							core.With.Runtime.AutoRun(true),
 						)
 
 						// 在运行时中创建实体
 						core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
-							entity, err := core.BuildEntity(rtCtx, "helloworld").New()
+							entity, err := core.BuildEntity(rtCtx, "helloworld").SetPersistId(entityId).New()
 							if err != nil {
-								log.Panic(svcCtx, err)
+								log.L(svcCtx).Panic("create entity failed", zap.Error(err))
 							}
-							log.Infof(svcCtx, "[%s] entity created.", entity.GetId())
+							log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.Id().String()))
 
 							go func() {
-								<-entity.Terminated()
-								log.Infof(svcCtx, "[%s] entity destroyed.", entity.GetId())
-								<-svcCtx.Terminate()
+								<-entity.Terminated().Done()
+								log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
+								<-svcCtx.Terminate().Done()
 							}()
 						})
 
-						log.Info(svcCtx, "service started.")
+						log.L(svcCtx).Info("service started")
 
-					case service.RunningStatus_Terminated:
-						log.Info(svcCtx, "service terminated.")
+					case service.RunningEvent_Terminated:
+						log.L(svcCtx).Info("service terminated")
 					}
 				}),
-			)).Run()
+			)).Run().Done()
 		}()
 	}
 

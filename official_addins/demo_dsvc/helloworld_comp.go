@@ -20,21 +20,21 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
+	"math/rand"
+	"time"
+
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/framework/addins/dsvc"
+	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/log"
 	"git.golaxy.org/framework/net/gap"
 	"git.golaxy.org/framework/net/gap/variant"
 	"github.com/segmentio/ksuid"
-	"math/rand"
-	"time"
+	"go.uber.org/zap"
 )
 
 // HelloWorldComp HelloWorld组件
@@ -45,32 +45,25 @@ type HelloWorldComp struct {
 // Start 组件开始
 func (comp *HelloWorldComp) Start() {
 	// 监听消息
-	dsvc.Using(service.Current(comp)).WatchMsg(context.Background(), generic.CastDelegate2(
-		func(topic string, mp gap.MsgPacket) error {
-			data, _ := json.Marshal(mp)
-			log.Infof(service.Current(comp), "=>[receive] topic:%q, msg-packet:%s", topic, data)
-			return nil
+	Dsvc.Require(service.Current(comp)).Listen(comp.Entity(), generic.CastDelegateVoid2(
+		func(topic string, mp gap.MsgPacket) {
+			log.L(service.Current(comp)).Info("[receive]",
+				zap.String("topic", topic),
+				log.JSON("msg-packet", mp))
 		},
 	))
 
 	// 定时发送消息
-	core.Await(runtime.Current(comp), core.TimeTickAsync(runtime.Current(comp), time.Second)).
-		Foreach(func(ctx runtime.Context, ret async.Ret, _ ...any) {
-			details := dsvc.Using(service.Current(ctx)).GetNodeDetails()
+	core.Await(comp.Entity(), core.TimeTickAsync(comp.Entity(), time.Second)).
+		Foreach(func(ctx runtime.Context, ret async.Result, _ ...any) {
+			details := Dsvc.Require(service.Current(ctx)).NodeDetails()
 
-			m, err := variant.MakeReadonlyMapFromGoMap(map[string]int{
+			m, _ := variant.NewMapFromGoMap(map[string]int{
 				ksuid.New().String(): rand.Int(),
 				ksuid.New().String(): rand.Int(),
 				ksuid.New().String(): rand.Int(),
 			})
-			if err != nil {
-				log.Panic(service.Current(ctx), err)
-			}
-
-			arr, err := variant.MakeReadonlyArray([]int{rand.Int(), rand.Int(), rand.Int()})
-			if err != nil {
-				log.Panic(service.Current(ctx), err)
-			}
+			arr, _ := variant.NewArray([]int{rand.Int(), rand.Int(), rand.Int()})
 
 			msg := &MsgHelloWorld{
 				Int:    rand.Int(),
@@ -81,12 +74,13 @@ func (comp *HelloWorldComp) Start() {
 			}
 
 			// 广播消息
-			err = dsvc.Using(service.Current(ctx)).SendMsg(details.BroadcastAddr, msg)
+			err := Dsvc.Require(service.Current(ctx)).Send(details.BroadcastAddr, msg)
 			if err != nil {
-				log.Panic(service.Current(ctx), err)
+				log.L(service.Current(ctx)).Error("send failed", zap.Error(err))
 			}
 
-			data, _ := json.Marshal(msg)
-			log.Infof(service.Current(ctx), "[send]=> topic:%q, msg:%s", details.BroadcastAddr, data)
+			log.L(service.Current(comp)).Info("[send]",
+				zap.String("addr", details.BroadcastAddr),
+				log.JSON("msg", msg))
 		})
 }

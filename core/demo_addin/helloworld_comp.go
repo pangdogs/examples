@@ -32,5 +32,5 @@ type HelloWorldComp struct {
 // Update 组件更新
 func (comp *HelloWorldComp) Update() {
 	// 调用HelloWorld插件
-	Using(service.Current(comp)).HelloWorld()
+	addin.Require(service.Current(comp)).HelloWorld()
 }
