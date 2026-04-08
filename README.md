@@ -105,15 +105,13 @@ cd ../..
 ```bash
 go run ./app/demo_chat/server \
   --cli_pub_key ./app/demo_chat/bin/cli.pub \
-  --serv_priv_key ./app/demo_chat/bin/serv.pem \
-  --etcd.address localhost:2379
+  --serv_priv_key ./app/demo_chat/bin/serv.pem
 ```
 
 3. Start the client in another terminal:
 
 ```bash
 go run ./app/demo_chat/cli \
-  --endpoint localhost:9090 \
   --cli_priv_key ./app/demo_chat/bin/cli.pem \
   --serv_pub_key ./app/demo_chat/bin/serv.pub
 ```
