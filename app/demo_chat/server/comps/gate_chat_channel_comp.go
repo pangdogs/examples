@@ -59,10 +59,12 @@ func (c *GateChatChannelComp) C_CreateChannel(channelName string) {
 
 	group, err := Router.Require(c.Service()).AddGroup(c.Entity(), channelName, nil, 15*time.Second)
 	if err != nil {
-		c.L().Panic("create channel failed", zap.String("channel", channelName), zap.Error(err))
+		c.L().Error("create channel failed", zap.String("channel", channelName), zap.Error(err))
+		return
 	}
 	if _, err = group.KeepAliveContinuous(c.Entity()); err != nil {
-		c.L().Panic("keep alive channel failed", zap.String("channel", channelName), zap.Error(err))
+		c.L().Error("keep alive channel failed", zap.String("channel", channelName), zap.Error(err))
+		return
 	}
 	c.L().Info("channel created", zap.String("channel", channelName))
 
