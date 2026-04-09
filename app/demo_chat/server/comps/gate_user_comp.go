@@ -20,6 +20,7 @@
 package comps
 
 import (
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
 	. "git.golaxy.org/framework/addins"
@@ -44,10 +45,9 @@ func (c *GateUserComp) Start() {
 		c.L().Panic("RPC::WakeUpUser failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
 	}
 
-	go func() {
-		<-mapping.Unmapped().Done()
-		<-c.Runtime().Terminate().Done()
-	}()
+	c.Await(mapping.Unmapped()).AnyVoid(func(framework.IRuntime, async.Result, ...any) {
+		c.Entity().Destroy()
+	})
 }
 
 func (c *GateUserComp) Shut() {
