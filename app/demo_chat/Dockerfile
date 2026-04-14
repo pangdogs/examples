@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine
+FROM golang:1.25-alpine
 
 ENV GOPROXY=https://goproxy.cn,direct
 ENV ETCD_ADDR=${ETCD_ADDR}
