@@ -20,7 +20,9 @@ services:
 
   etcd:
     image: rancher/hardened-etcd:v3.6.7-k3s1-build20260512
+    command:
+      - /usr/local/bin/etcd
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
     environment:
       - TZ=Asia/Shanghai
-      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-      - ETCD_ADVERTISE_CLIENT_URLS=http://127.0.0.1:2379
