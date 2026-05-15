@@ -13,12 +13,14 @@ COPY ./server ./server
 WORKDIR /app/server
 
 RUN go mod init server
+RUN go get git.golaxy.org/examples@latest
 RUN go mod tidy
 RUN go build -o ../bin/server
 
 WORKDIR /app/cli
 
 RUN go mod init cli
+RUN go get git.golaxy.org/examples@latest
 RUN go mod tidy
 RUN go build -o ../bin/cli
 
