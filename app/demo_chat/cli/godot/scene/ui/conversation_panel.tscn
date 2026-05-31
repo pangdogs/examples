@@ -1,0 +1,67 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://script/ui/conversation_panel.gd" id="1_conversation"]
+
+[node name="ConversationPanel" type="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+script = ExtResource("1_conversation")
+
+[node name="MessagesPanel" type="PanelContainer" parent="." unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="MessagesPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Body" type="VBoxContainer" parent="MessagesPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MessagesScroll" type="ScrollContainer" parent="MessagesPanel/Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MessagesBox" type="VBoxContainer" parent="MessagesPanel/Margin/Body/MessagesScroll" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="InputPanel" type="PanelContainer" parent="." unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="InputPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Body" type="VBoxContainer" parent="InputPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InputRow" type="HBoxContainer" parent="InputPanel/Margin/Body"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MessageInput" type="LineEdit" parent="InputPanel/Margin/Body/InputRow" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type message"
+clear_button_enabled = true
+
+[node name="SendButton" type="Button" parent="InputPanel/Margin/Body/InputRow" unique_name_in_owner=true]
+custom_minimum_size = Vector2(110, 40)
+layout_mode = 2
+text = "Send"

@@ -1,0 +1,28 @@
+# Godot 4+ specific ignores
+.godot/
+.nomedia
+/android/
+/dist/*
+!/dist/.gdignore
+!/dist/windows/
+!/dist/windows/.gitkeep
+!/dist/web/
+!/dist/web/.gitkeep
+
+# Godot-specific ignores
+.import/
+export.cfg
+export_credentials.cfg
+*.tmp
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Editor/IDE
+.idea/
+.vscode/

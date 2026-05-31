@@ -1,0 +1,176 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://script/ui/login_page.gd" id="1_login"]
+
+[node name="LoginPage" type="MarginContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+script = ExtResource("1_login")
+
+[node name="LoginCenter" type="CenterContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LoginPanel" type="PanelContainer" parent="LoginCenter" unique_name_in_owner=true]
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="LoginCenter/LoginPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Body" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="LoginTitle" type="Label" parent="LoginCenter/LoginPanel/Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+text = "Lightship Demo Chat"
+horizontal_alignment = 1
+
+[node name="LoginSubtitle" type="Label" parent="LoginCenter/LoginPanel/Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+text = "GTP RPC CONNECT"
+horizontal_alignment = 1
+
+[node name="LoginGrid" type="GridContainer" parent="LoginCenter/LoginPanel/Margin/Body"]
+layout_mode = 2
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="EndpointField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="EndpointLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/EndpointField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Endpoint"
+
+[node name="EndpointInput" type="LineEdit" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/EndpointField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "ws://localhost:8080"
+placeholder_text = "ws://localhost:8080"
+clear_button_enabled = true
+
+[node name="ProtocolField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ProtocolLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/ProtocolField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Protocol"
+
+[node name="ProtocolOption" type="OptionButton" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/ProtocolField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="UserIdField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="UserIdLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/UserIdField" unique_name_in_owner=true]
+layout_mode = 2
+text = "User ID"
+
+[node name="UserIdInput" type="LineEdit" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/UserIdField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+placeholder_text = "optional"
+clear_button_enabled = true
+
+[node name="TokenField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="TokenLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/TokenField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Token"
+
+[node name="TokenInput" type="LineEdit" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/TokenField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+placeholder_text = "optional"
+secret = true
+clear_button_enabled = true
+
+[node name="TimeoutField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="TimeoutLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/TimeoutField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Timeout MS"
+
+[node name="TimeoutInput" type="LineEdit" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/TimeoutField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "5000"
+placeholder_text = "milliseconds"
+clear_button_enabled = true
+
+[node name="ReconnectAttemptsField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ReconnectAttemptsLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/ReconnectAttemptsField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Reconnect Attempts"
+
+[node name="ReconnectAttemptsInput" type="LineEdit" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/ReconnectAttemptsField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "3"
+placeholder_text = "0 means disabled"
+clear_button_enabled = true
+
+[node name="ReconnectDelayField" type="VBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ReconnectDelayLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/ReconnectDelayField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Reconnect Delay MS"
+
+[node name="ReconnectDelayInput" type="LineEdit" parent="LoginCenter/LoginPanel/Margin/Body/LoginGrid/ReconnectDelayField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "1000"
+placeholder_text = "milliseconds"
+clear_button_enabled = true
+
+[node name="ConnectRow" type="HBoxContainer" parent="LoginCenter/LoginPanel/Margin/Body"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ConnectButton" type="Button" parent="LoginCenter/LoginPanel/Margin/Body/ConnectRow" unique_name_in_owner=true]
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+text = "Connect"
+
+[node name="LoginStatusLabel" type="Label" parent="LoginCenter/LoginPanel/Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3

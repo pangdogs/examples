@@ -1,0 +1,86 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://script/ui/channel_panel.gd" id="1_channel"]
+
+[node name="ChannelPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(310, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_channel")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Body" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ChannelsTitle" type="Label" parent="Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+text = "Channels"
+
+[node name="ActiveChannelField" type="VBoxContainer" parent="Margin/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ActiveChannelFieldLabel" type="Label" parent="Margin/Body/ActiveChannelField" unique_name_in_owner=true]
+layout_mode = 2
+text = "Active Channel"
+
+[node name="ChannelInput" type="LineEdit" parent="Margin/Body/ActiveChannelField" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "global"
+placeholder_text = "channel"
+clear_button_enabled = true
+
+[node name="ChannelButtonGrid" type="GridContainer" parent="Margin/Body"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="CreateChannelButton" type="Button" parent="Margin/Body/ChannelButtonGrid" unique_name_in_owner=true]
+custom_minimum_size = Vector2(92, 38)
+layout_mode = 2
+text = "Create"
+
+[node name="JoinChannelButton" type="Button" parent="Margin/Body/ChannelButtonGrid" unique_name_in_owner=true]
+custom_minimum_size = Vector2(92, 38)
+layout_mode = 2
+text = "Join"
+
+[node name="SwitchChannelButton" type="Button" parent="Margin/Body/ChannelButtonGrid" unique_name_in_owner=true]
+custom_minimum_size = Vector2(92, 38)
+layout_mode = 2
+text = "Switch"
+
+[node name="LeaveChannelButton" type="Button" parent="Margin/Body/ChannelButtonGrid" unique_name_in_owner=true]
+custom_minimum_size = Vector2(92, 38)
+layout_mode = 2
+text = "Leave"
+
+[node name="RemoveChannelButton" type="Button" parent="Margin/Body/ChannelButtonGrid" unique_name_in_owner=true]
+custom_minimum_size = Vector2(92, 38)
+layout_mode = 2
+text = "Remove"
+
+[node name="RttButton" type="Button" parent="Margin/Body/ChannelButtonGrid" unique_name_in_owner=true]
+custom_minimum_size = Vector2(92, 38)
+layout_mode = 2
+text = "RTT"
+
+[node name="ChannelsList" type="ItemList" parent="Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ChatStatusLabel" type="Label" parent="Margin/Body" unique_name_in_owner=true]
+layout_mode = 2
+autowrap_mode = 3

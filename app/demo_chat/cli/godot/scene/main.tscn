@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://d3ihbnlacfxl6"]
+
+[ext_resource type="Script" uid="uid://bttc06tq6qgys" path="res://script/bootstrap.gd" id="1_bootstrap"]
+[ext_resource type="Script" path="res://script/ui/background.gd" id="2_background"]
+[ext_resource type="PackedScene" path="res://scene/ui/login_page.tscn" id="2_login"]
+[ext_resource type="PackedScene" path="res://scene/ui/chat_page.tscn" id="3_chat"]
+
+[node name="DemoChat" type="Control" unique_id=749758748]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bootstrap")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_background")
+
+[node name="LoginPage" parent="." instance=ExtResource("2_login")]
+
+[node name="ChatPage" parent="." instance=ExtResource("3_chat")]
+visible = false

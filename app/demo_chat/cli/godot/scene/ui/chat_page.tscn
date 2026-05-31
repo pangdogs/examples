@@ -1,0 +1,81 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://script/ui/chat_page.gd" id="1_chat"]
+[ext_resource type="PackedScene" path="res://scene/ui/channel_panel.tscn" id="2_channel"]
+[ext_resource type="PackedScene" path="res://scene/ui/conversation_panel.tscn" id="3_conversation"]
+
+[node name="ChatPage" type="MarginContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+script = ExtResource("1_chat")
+
+[node name="Page" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeaderPanel" type="PanelContainer" parent="Page" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="Page/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Body" type="VBoxContainer" parent="Page/HeaderPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="Page/HeaderPanel/Margin/Body"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeaderLeft" type="VBoxContainer" parent="Page/HeaderPanel/Margin/Body/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleRow" type="HBoxContainer" parent="Page/HeaderPanel/Margin/Body/HeaderRow/HeaderLeft"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ChatTitle" type="Label" parent="Page/HeaderPanel/Margin/Body/HeaderRow/HeaderLeft/TitleRow" unique_name_in_owner=true]
+layout_mode = 2
+text = "Demo Chat"
+
+[node name="OnlineBadge" type="Label" parent="Page/HeaderPanel/Margin/Body/HeaderRow/HeaderLeft/TitleRow" unique_name_in_owner=true]
+layout_mode = 2
+
+[node name="ActiveChannelLabel" type="Label" parent="Page/HeaderPanel/Margin/Body/HeaderRow/HeaderLeft" unique_name_in_owner=true]
+layout_mode = 2
+
+[node name="SessionLabel" type="Label" parent="Page/HeaderPanel/Margin/Body/HeaderRow/HeaderLeft" unique_name_in_owner=true]
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="ClockLabel" type="Label" parent="Page/HeaderPanel/Margin/Body/HeaderRow/HeaderLeft" unique_name_in_owner=true]
+layout_mode = 2
+
+[node name="DisconnectButton" type="Button" parent="Page/HeaderPanel/Margin/Body/HeaderRow" unique_name_in_owner=true]
+custom_minimum_size = Vector2(130, 42)
+layout_mode = 2
+text = "Disconnect"
+
+[node name="Workspace" type="HBoxContainer" parent="Page"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="ChannelPanel" parent="Page/Workspace" instance=ExtResource("2_channel")]
+
+[node name="ConversationPanel" parent="Page/Workspace" instance=ExtResource("3_conversation")]
