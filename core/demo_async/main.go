@@ -20,63 +20,76 @@
 package main
 
 import (
+	"context"
+	"log"
+	"time"
+
 	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	. "git.golaxy.org/framework/addins"
-	"git.golaxy.org/framework/addins/log"
-	"go.uber.org/zap"
+	"git.golaxy.org/core/utils/async"
 )
 
-/*
- * 基于core层提供的支持，演示一个简单的官方broker插件案例，连接本地nats，约10秒后结束。
- */
+type LoaderComp struct {
+	ec.ComponentBehavior
+	value string
+}
+
+func (comp *LoaderComp) Start() {
+	load := core.Spawn(comp, func(ctx context.Context, _ ...any) async.Result {
+		timer := time.NewTimer(250 * time.Millisecond)
+		defer timer.Stop()
+
+		select {
+		case <-timer.C:
+			return async.NewResult("loaded outside the Runtime", nil)
+		case <-ctx.Done():
+			return async.NewResult(nil, ctx.Err())
+		}
+	})
+
+	core.ContinueOnVoid(comp, load, func(_ runtime.Context, ret async.Result, _ ...any) {
+		if ret.Error != nil {
+			log.Printf("load failed: %v", ret.Error)
+			comp.Entity().Destroy()
+			return
+		}
+
+		comp.value = ret.Value.(string)
+		log.Printf("result applied on Runtime: %s", comp.value)
+		comp.Entity().Destroy()
+	})
+}
+
 func main() {
-	// 创建服务并开始运行
 	<-core.NewService(service.NewContext(
 		service.With.RunningEventCB(func(svcCtx service.Context, runningEvent service.RunningEvent, _ ...any) {
 			switch runningEvent {
 			case service.RunningEvent_Birth:
-				// 声明实体原型
-				core.BuildEntityPT(svcCtx, "helloworld").
-					AddComponent(HelloWorldComp{}).
+				core.BuildEntityPT(svcCtx, "loader").
+					AddComponent(LoaderComp{}).
 					Declare()
 
-				// 安装日志插件
-				Log.Install(svcCtx)
-
-				// 安装broker插件
-				BrokerNats.Install(svcCtx)
-
 			case service.RunningEvent_Started:
-				// 创建运行时并开始运行
 				rt := core.NewRuntime(
 					runtime.NewContext(svcCtx),
-					core.With.Runtime.Frame(core.With.Frame.TotalFrames(10), core.With.Frame.TargetFPS(1)),
 					core.With.Runtime.AutoRun(true),
 				)
 
-				// 在运行时中创建实体
 				if err := core.Post(rt, func(rtCtx runtime.Context, _ ...any) {
-					entity, err := core.BuildEntity(rtCtx, "helloworld").New()
+					entity, err := core.BuildEntity(rtCtx, "loader").New()
 					if err != nil {
-						log.L(svcCtx).Panic("create entity failed", zap.Error(err))
+						log.Panic(err)
 					}
-					log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.Id().String()))
 
 					go func() {
 						<-entity.Terminated().Done()
-						log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
 						<-svcCtx.Terminate().Done()
 					}()
 				}); err != nil {
-					log.L(svcCtx).Panic("enqueue entity creation failed", zap.Error(err))
+					log.Panicf("enqueue entity creation failed: %v", err)
 				}
-
-				log.L(svcCtx).Info("service started")
-
-			case service.RunningEvent_Terminated:
-				log.L(svcCtx).Info("service terminated")
 			}
 		}),
 	)).Run().Done()

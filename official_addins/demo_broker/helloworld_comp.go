@@ -20,7 +20,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -61,22 +60,31 @@ func (comp *HelloWorldComp) Start() {
 		log.L(service.Current(comp)).Panic("subscribe error", zap.Error(err))
 	}
 
-	core.Await(comp.Entity(),
-		core.TimeTickAsync(comp.Entity(), time.Duration(rand.Int63n(3000))*time.Millisecond),
-	).Foreach(func(ctx runtime.Context, _ async.Result, _ ...any) {
-		topic := "helloworld.testing"
-		msg := fmt.Sprintf("%s/%d", comp.Entity().Id(), comp.sequence)
+	comp.schedulePublish(time.Duration(rand.Int63n(3000)+1) * time.Millisecond)
+}
 
-		if err := Broker.Require(service.Current(comp)).Publish(context.Background(), topic, []byte(msg)); err != nil {
-			log.L(service.Current(comp)).Panic("publish error", zap.Error(err))
-		}
+func (comp *HelloWorldComp) schedulePublish(interval time.Duration) {
+	core.ContinueOnVoid(comp,
+		core.After(comp.AsyncScope().Context(), interval),
+		func(_ runtime.Context, ret async.Result, _ ...any) {
+			if ret.Error != nil {
+				return
+			}
 
-		log.L(service.Current(comp)).Info("[publish]",
-			zap.String("topic", topic),
-			zap.String("msg", msg))
+			topic := "helloworld.testing"
+			msg := fmt.Sprintf("%s/%d", comp.Entity().Id(), comp.sequence)
 
-		comp.sequence++
-	})
+			if err := Broker.Require(service.Current(comp)).Publish(comp.AsyncScope().Context(), topic, []byte(msg)); err != nil {
+				log.L(service.Current(comp)).Panic("publish error", zap.Error(err))
+			}
+
+			log.L(service.Current(comp)).Info("[publish]",
+				zap.String("topic", topic),
+				zap.String("msg", msg))
+
+			comp.sequence++
+			comp.schedulePublish(interval)
+		})
 }
 
 // Shut 组件结束

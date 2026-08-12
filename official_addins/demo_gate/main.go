@@ -91,7 +91,7 @@ func (s *HelloWorldService) handleSessionEstablished(session gate.ISession) {
 	)
 
 	// 在运行时中创建实体
-	core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
+	if err := core.Post(rt, func(rtCtx runtime.Context, _ ...any) {
 		entity, err := core.BuildEntity(rtCtx, "helloworld").
 			SetPersistId(session.Id()).
 			New()
@@ -102,9 +102,14 @@ func (s *HelloWorldService) handleSessionEstablished(session gate.ISession) {
 
 		go func() {
 			<-session.Closed().Done()
-			core.CallVoidAsync(entity, func(runtime.Context, ...any) { entity.Destroy() })
+			if err := core.Post(entity, func(runtime.Context, ...any) { entity.Destroy() }); err != nil {
+				log.L(s).Error("enqueue entity destroy failed", zap.String("entity_id", entity.Id().String()), zap.Error(err))
+				return
+			}
 			<-entity.Terminated().Done()
 			log.L(s).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
 		}()
-	})
+	}); err != nil {
+		log.L(s).Error("enqueue entity creation failed", zap.String("session_id", session.Id().String()), zap.Error(err))
+	}
 }

@@ -40,25 +40,34 @@ type HelloWorldComp struct {
 }
 
 func (comp *HelloWorldComp) Start() {
-	core.Await(runtime.Current(comp),
-		core.TimeTickAsync(runtime.Current(comp), 3*time.Second),
-	).Foreach(func(ctx runtime.Context, _ async.Result, _ ...any) {
-		cp := callpath.CallPath{
-			TargetKind: callpath.Entity,
-			ExcludeSrc: true,
-			Id:         entityId,
-			Script:     "HelloWorldComp",
-			Method:     "TestRPC",
-		}
+	comp.scheduleRPC(3 * time.Second)
+}
 
-		n := rand.Uint32()
-		err := RPC.Require(service.Current(comp)).OnewayRPC(Dsvc.Require(service.Current(comp)).NodeDetails().BalanceAddr, nil, cp, n)
-		if err != nil {
-			log.L(runtime.Current(comp)).Panic("oneway rpc failed", zap.Error(err))
-		}
+func (comp *HelloWorldComp) scheduleRPC(interval time.Duration) {
+	core.ContinueOnVoid(comp,
+		core.After(comp.AsyncScope().Context(), interval),
+		func(ctx runtime.Context, ret async.Result, _ ...any) {
+			if ret.Error != nil {
+				return
+			}
 
-		log.L(runtime.Current(comp)).Info("[TestRPC] =>", zap.Uint32("n", n))
-	})
+			cp := callpath.CallPath{
+				TargetKind: callpath.Entity,
+				ExcludeSrc: true,
+				Id:         entityId,
+				Script:     "HelloWorldComp",
+				Method:     "TestRPC",
+			}
+
+			n := rand.Uint32()
+			err := RPC.Require(service.Current(comp)).OnewayRPC(Dsvc.Require(service.Current(comp)).NodeDetails().BalanceAddr, nil, cp, n)
+			if err != nil {
+				log.L(runtime.Current(comp)).Panic("oneway rpc failed", zap.Error(err))
+			}
+
+			log.L(runtime.Current(comp)).Info("[TestRPC] =>", zap.Uint32("n", n))
+			comp.scheduleRPC(interval)
+		})
 }
 
 func (comp *HelloWorldComp) TestRPC(n uint32) {

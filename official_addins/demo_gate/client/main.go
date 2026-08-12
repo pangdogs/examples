@@ -60,29 +60,30 @@ func main() {
 	defer client.Close(nil)
 
 	err = client.DataIO().Listen(nil, generic.CastDelegateVoid1(func(data []byte) {
-		client.Logger().Info("[echo]", zap.String("text", string(data)))
+		client.L().Info("[echo]", zap.String("text", string(data)))
 	}))
 	if err != nil {
-		client.Logger().Panic("listen data failed", zap.Error(err))
+		client.L().Panic("listen data failed", zap.Error(err))
 	}
 
 	for {
-		future := <-client.RequestTime().Chan()
-		if future.Error != nil {
-			client.Logger().Panic("sync time failed", zap.Error(future.Error))
+		result := client.ProbeTime().Wait(client)
+		if result.Error != nil {
+			client.L().Panic("probe time failed", zap.Error(result.Error))
 		}
 
-		respTime := future.Value.(*cli.ResponseTime)
+		timeSample := result.Value.(*cli.TimeSample)
 
-		client.Logger().Info("sync time",
-			zap.Time("time", respTime.NowTime()),
-			zap.Duration("rtt", respTime.RTT()))
+		client.L().Info("time sample",
+			zap.Time("remote_time", timeSample.RemoteTime()),
+			zap.Duration("rtt", timeSample.RTT()),
+			zap.Duration("offset", timeSample.Offset()))
 
 		var text string
 		fmt.Scanln(&text)
 		if err := client.DataIO().Send([]byte(text)); err != nil {
-			client.Logger().Panic("send data failed", zap.Error(err))
+			client.L().Panic("send data failed", zap.Error(err))
 		}
-		client.Logger().Info("[send]", zap.String("text", text))
+		client.L().Info("[send]", zap.String("text", text))
 	}
 }

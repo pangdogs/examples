@@ -54,8 +54,17 @@ func (comp *HelloWorldComp) Start() {
 	))
 
 	// 定时发送消息
-	core.Await(comp.Entity(), core.TimeTickAsync(comp.Entity(), time.Second)).
-		Foreach(func(ctx runtime.Context, ret async.Result, _ ...any) {
+	comp.scheduleSend(time.Second)
+}
+
+func (comp *HelloWorldComp) scheduleSend(interval time.Duration) {
+	core.ContinueOnVoid(comp,
+		core.After(comp.AsyncScope().Context(), interval),
+		func(ctx runtime.Context, ret async.Result, _ ...any) {
+			if ret.Error != nil {
+				return
+			}
+
 			details := Dsvc.Require(service.Current(ctx)).NodeDetails()
 
 			m, _ := variant.NewMapFromGoMap(map[string]int{
@@ -82,5 +91,7 @@ func (comp *HelloWorldComp) Start() {
 			log.L(service.Current(comp)).Info("[send]",
 				zap.String("addr", details.BroadcastAddr),
 				log.JSON("msg", msg))
+
+			comp.scheduleSend(interval)
 		})
 }

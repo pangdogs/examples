@@ -20,6 +20,10 @@
 package comps
 
 import (
+	"context"
+
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/examples/app/demo_chat/consts"
 	"git.golaxy.org/framework"
@@ -45,8 +49,13 @@ func (c *GateUserComp) Start() {
 		c.L().Panic("RPC::WakeUpUser failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
 	}
 
-	c.Await(mapping.Unmapped()).AnyVoid(func(framework.IRuntime, async.Result, ...any) {
-		c.Entity().Destroy()
+	waitUnmapped := core.Spawn(c, func(ctx context.Context, _ ...any) async.Result {
+		return async.NewResult(nil, mapping.Unmapped().Wait(ctx))
+	})
+	core.ContinueOnVoid(c, waitUnmapped, func(_ runtime.Context, ret async.Result, _ ...any) {
+		if ret.Error == nil {
+			c.Entity().Destroy()
+		}
 	})
 }
 

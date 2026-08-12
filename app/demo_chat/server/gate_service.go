@@ -61,7 +61,7 @@ func (s *GateService) OnStarted(svc framework.IService) {
 	if err != nil {
 		s.L().Panic("create channel failed", zap.String("channel", consts.GlobalChannel), zap.Error(err))
 	}
-	_, err = group.KeepAliveContinuous(s.Terminated().Context(nil))
+	_, err = group.KeepAliveContinuous(s)
 	if err != nil {
 		s.L().Panic("keep alive channel failed", zap.String("channel", consts.GlobalChannel), zap.Error(err))
 	}

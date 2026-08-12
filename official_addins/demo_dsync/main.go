@@ -68,7 +68,7 @@ func main() {
 						)
 
 						// 在运行时中创建实体
-						core.CallVoidAsync(rt, func(rtCtx runtime.Context, _ ...any) {
+						if err := core.Post(rt, func(rtCtx runtime.Context, _ ...any) {
 							entity, err := core.BuildEntity(rtCtx, "helloworld").New()
 							if err != nil {
 								log.L(svcCtx).Panic("create entity failed", zap.Error(err))
@@ -80,7 +80,9 @@ func main() {
 								log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
 								<-svcCtx.Terminate().Done()
 							}()
-						})
+						}); err != nil {
+							log.L(svcCtx).Panic("enqueue entity creation failed", zap.Error(err))
+						}
 
 						log.L(svcCtx).Info("service started")
 

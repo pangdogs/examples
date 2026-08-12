@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"time"
 
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
@@ -160,7 +162,11 @@ func (c *GateChatChannelComp) JoinChannel(channelName string) {
 
 	c.L().Info("join channel ok", zap.String("channel", channelName))
 
-	c.Await(c.TimeAfterAsync(time.Second)).AnyVoid(func(framework.IRuntime, async.Result, ...any) {
-		c.SendToChannel(channelName, "joined")
-	})
+	core.ContinueOnVoid(c,
+		core.After(c.AsyncScope().Context(), time.Second),
+		func(_ runtime.Context, ret async.Result, _ ...any) {
+			if ret.Error == nil {
+				c.SendToChannel(channelName, "joined")
+			}
+		})
 }

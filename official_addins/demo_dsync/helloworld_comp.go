@@ -26,9 +26,7 @@ import (
 
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/async"
 	. "git.golaxy.org/framework/addins"
 	"git.golaxy.org/framework/addins/dsync"
 	"git.golaxy.org/framework/addins/log"
@@ -42,20 +40,56 @@ type HelloWorldComp struct {
 
 // Start 组件开始
 func (comp *HelloWorldComp) Start() {
-	core.Await(comp.Entity(),
-		core.TimeTickAsync(context.Background(), time.Duration(rand.Int63n(1000))*time.Millisecond),
-	).Foreach(func(ctx runtime.Context, _ async.Result, _ ...any) {
-		mutex := Dsync.Require(service.Current(comp)).NewMutex("helloworld", dsync.With.Expiry(10*time.Second), dsync.With.TimeoutFactor(0.5))
-		if err := mutex.Lock(context.Background()); err != nil {
-			log.L(service.Current(comp)).Panic("lock failed", zap.Error(err))
-			return
+	svcCtx := service.Current(comp)
+	logger := log.L(svcCtx)
+	interval := time.Duration(rand.Int63n(1000)+1) * time.Millisecond
+
+	core.SpawnVoid(comp, func(ctx context.Context, _ ...any) {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+			}
+
+			mutex := Dsync.Require(svcCtx).NewMutex("helloworld", dsync.With.Expiry(10*time.Second), dsync.With.TimeoutFactor(0.5))
+			if err := mutex.Lock(ctx); err != nil {
+				if ctx.Err() != nil {
+					return
+				}
+				logger.Error("lock failed", zap.Error(err))
+				continue
+			}
+
+			logger.Info("locked")
+
+			hold := time.NewTimer(time.Duration(rand.Int63n(200)) * time.Millisecond)
+			select {
+			case <-hold.C:
+			case <-ctx.Done():
+				if !hold.Stop() {
+					select {
+					case <-hold.C:
+					default:
+					}
+				}
+			}
+
+			unlockCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			err := mutex.Unlock(unlockCtx)
+			cancel()
+			if err != nil {
+				logger.Error("unlock failed", zap.Error(err))
+			} else {
+				logger.Info("unlocked")
+			}
+
+			if ctx.Err() != nil {
+				return
+			}
 		}
-		defer mutex.Unlock(context.Background())
-
-		log.L(service.Current(comp)).Info("locked")
-
-		time.Sleep(time.Duration(rand.Int63n(200)) * time.Millisecond)
-
-		log.L(service.Current(comp)).Info("unlocked")
 	})
 }
