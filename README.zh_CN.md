@@ -1,107 +1,153 @@
-# Examples
-[English](./README.md) | [简体中文](./README.zh_CN.md)
+# Golaxy Examples
 
-## 简介
-`examples` 仓库收录了
-[**Golaxy 分布式服务开发框架**](https://github.com/pangdogs/framework)
-和 [**Golaxy Core**](https://github.com/pangdogs/core) 的可运行示例。
+[English](./README.md) | **简体中文**
 
-这个仓库主要解决一个实践问题：框架和核心模块在真实项目里应该如何组装。这里既包含 `core` 的底层执行模型示例，也包含 `framework` 提供的分布式服务、网关、路由、RPC 和基础设施 add-in 示例。
+本仓库提供 [Golaxy Core](https://github.com/pangdogs/core) 与 [Golaxy 分布式服务开发框架](https://github.com/pangdogs/framework) 的可运行参考示例，展示 Actor 风格 Runtime、Entity-Component 业务对象、结构化异步任务、分布式 add-in、网关和 RPC 如何组合成实际程序。
 
-这些项目属于功能演示，而不是完整产品。如果你需要更接近实际业务结构的工程，可以继续参考
-[SIMHA](https://github.com/pangdogs/simha) 和
-[scaffold](https://github.com/pangdogs/scaffold)。
+这些示例刻意保持精简，以清晰呈现控制流为主，不作为生产项目模板。需要更完整的工程结构和构建期工具时，请参考 [Golaxy Scaffold](https://github.com/pangdogs/scaffold)。
 
-## 这个仓库提供什么
-- 展示 service、runtime、entity、component 和 add-in 如何组合的端到端示例。
-- 针对单个官方 add-in 的小型独立示例，例如 broker、分布式实体、服务发现、分布式服务、分布式同步、网关和 RPC。
-- 一个把 `gate`、`router`、`dent`、`dsvc`、`rpc` 串起来的聊天示例。
-- 可直接运行的启动命令和本地依赖说明，便于快速验证。
+## 目录
 
-## 仓库结构
-仓库分为三个顶层区域：
+- [学习顺序](#学习顺序)
+- [示例总览](#示例总览)
+- [执行模型](#执行模型)
+- [快速开始](#快速开始)
+- [聊天应用](#聊天应用)
+- [开发与验证](#开发与验证)
+- [生态与许可证](#生态与许可证)
 
-- `app`：更接近应用形态的完整示例。
-- `core`：针对 Golaxy Core 执行模型的精简示例。
-- `official_addins`：针对单个 framework add-in 的精简示例。
+## 学习顺序
 
-### 目录说明
-| 路径 | 职责 |
-| --- | --- |
-| [`./app/demo_chat`](./app/demo_chat) | 匿名聊天示例，包含 gate 服务、chat 服务、分布式用户实体、频道路由和交互式 CLI。 |
-| [`./core/demo_addin`](./core/demo_addin) | 基于 Golaxy Core 的最小 add-in 示例。 |
-| [`./core/demo_ec`](./core/demo_ec) | 基于 Golaxy Core 的最小实体组件示例。 |
-| [`./official_addins/demo_broker`](./official_addins/demo_broker) | Broker add-in 示例。 |
-| [`./official_addins/demo_dent`](./official_addins/demo_dent) | 分布式实体注册与查询示例。 |
-| [`./official_addins/demo_discovery`](./official_addins/demo_discovery) | 服务发现示例。 |
-| [`./official_addins/demo_dsvc`](./official_addins/demo_dsvc) | 分布式服务寻址与消息传递示例。 |
-| [`./official_addins/demo_dsync`](./official_addins/demo_dsync) | 分布式同步示例。 |
-| [`./official_addins/demo_gate`](./official_addins/demo_gate) | 网关与客户端示例。 |
-| [`./official_addins/demo_rpc`](./official_addins/demo_rpc) | RPC 处理与转发示例。 |
+1. 从 [`core/demo_ec`](./core/demo_ec) 开始，理解 Service、Runtime、Entity、Component、帧循环和生命周期之间的关系。
+2. 阅读 [`core/demo_async`](./core/demo_async)，掌握绑定生命周期的后台任务与 Runtime 续体。
+3. 阅读 [`core/demo_addin`](./core/demo_addin)，了解 Service add-in 的声明、安装、访问和关闭。
+4. 根据所需基础设施能力，选择 [`official_addins`](./official_addins) 下的对应示例。
+5. 最后阅读 [`app/demo_chat`](./app/demo_chat)，观察执行模型与分布式 add-in 如何组合成完整应用。
 
-## 示例说明
-### `app/demo_chat`
-`demo_chat` 是这个仓库里最完整的样例。
+## 示例总览
 
-它主要演示：
+| 示例 | 演示内容 | 外部服务 | 退出方式 |
+| --- | --- | --- | --- |
+| [`core/demo_ec`](./core/demo_ec) | Runtime 帧循环与完整 Entity/Component 生命周期 | 无 | 约 10 秒 |
+| [`core/demo_async`](./core/demo_async) | 组件 `AsyncScope`、`Spawn`、Future、取消和 `ContinueOn` | 无 | 1 秒内 |
+| [`core/demo_addin`](./core/demo_addin) | Service add-in 的定义、安装、查找和关闭 | 无 | 约 10 秒 |
+| [`official_addins/demo_broker`](./official_addins/demo_broker) | 通过 broker add-in 使用 NATS 发布与订阅 | NATS | 约 10 秒 |
+| [`official_addins/demo_discovery`](./official_addins/demo_discovery) | ETCD 注册、租约保活和服务发现事件 | ETCD | 约 10 秒 |
+| [`official_addins/demo_dsvc`](./official_addins/demo_dsvc) | 分布式服务注册与消息传递 | ETCD、NATS | 约 10 秒 |
+| [`official_addins/demo_dsync`](./official_addins/demo_dsync) | 多个 ETCD 分布式锁竞争者，以及避免阻塞 Runtime 状态 | ETCD | 约 10 秒 |
+| [`official_addins/demo_dent`](./official_addins/demo_dent) | 全局 Entity 注册、查询和跨节点单向 RPC | ETCD、NATS | 约 10 秒 |
+| [`official_addins/demo_rpc`](./official_addins/demo_rpc) | 跨服务副本的 Entity RPC、转发和调用链传递 | ETCD、NATS | 约 10 秒 |
+| [`official_addins/demo_gate`](./official_addins/demo_gate) | GTP 网关、会话 Entity、回显、重连和时钟探测 | 无 | 手动停止 |
+| [`app/demo_chat`](./app/demo_chat) | Gate、Router、分布式实体/服务、RPC、群组及 Go/Godot 客户端 | ETCD、NATS | 手动停止 |
 
-- 在一个应用里启动多个服务
-- 在 `gate` 和 `chat` 上创建同一个全局用户实体
-- 通过 `router` 将 session 映射到实体
-- 通过 `dent` 查询分布式实体所在节点
-- 在 `gate` 和 `chat` 之间转发服务 RPC 与客户端 RPC
-- 使用 `rpcli` 和 Bubble Tea 构建终端交互客户端
+Core 示例直接展示底层 API；Framework 示例可能在相同 Core 原语之上增加便捷方法和生命周期检查。
 
-目录结构如下：
+## 执行模型
 
-| 路径 | 职责 |
-| --- | --- |
-| [`./app/demo_chat/server`](./app/demo_chat/server) | 服务启动入口和 service assembler。 |
-| [`./app/demo_chat/server/comps`](./app/demo_chat/server/comps) | gate 侧和 chat 侧的用户/频道组件。 |
-| [`./app/demo_chat/cli`](./app/demo_chat/cli) | 交互式终端客户端。 |
-| [`./app/demo_chat/consts`](./app/demo_chat/consts) | 共享服务名、实体名和频道常量。 |
-| [`./app/demo_chat/bin`](./app/demo_chat/bin) | 示例客户端和服务端使用的密钥文件。 |
-| [`./app/demo_chat/docker-compose.yaml`](./app/demo_chat/docker-compose.yaml) | ETCD 与 NATS 的本地依赖启动配置。 |
+每个 Runtime 都拥有一个 Actor 风格的串行执行域。Entity 和 Component 的业务状态只能在生命周期回调或该 Runtime 执行的任务中读写。
 
-### `core/*`
-`core` 下的示例刻意保持精简，适合在没有分布式基础设施干扰的情况下理解实体/组件生命周期和 add-in 装配方式。
-
-### `official_addins/*`
-`official_addins` 下的示例会把单个 add-in 独立出来，适合先理解某一项能力的启动方式、依赖和配置形态，再把它组合进更大的项目。
-
-## 快速开始
-### 环境要求
-- Go `1.25+`
-- 如果要运行依赖外部基础设施的示例，建议准备 Docker 和 Docker Compose
-- 使用服务发现、分布式实体、路由、分布式服务的示例需要 ETCD
-- 使用默认 broker 的示例需要 NATS
-
-### 运行 `demo_chat`
-1. 启动依赖：
-
-```bash
-cd app/demo_chat
-docker compose up -d etcd nats
-cd ../..
+```mermaid
+flowchart LR
+    Outside[外部 goroutine 或 I/O] -->|Post / Submit| Queue[Runtime 邮箱]
+    Queue --> Runtime[Runtime goroutine]
+    Runtime --> State[Entity 与 Component 状态]
+    Runtime -->|在 AsyncScope 中 Spawn| Worker[后台 goroutine]
+    Worker --> Future[Future 结果]
+    Future -->|ContinueOn| Queue
 ```
 
-2. 启动服务端：
+- `Post` 只进行邮箱投递，不创建结果 Future；只关心是否成功入队时使用它。
+- `Submit` 返回 Runtime 回调结果及执行错误对应的 Future。
+- `Spawn` 在绑定生命周期的 Scope 中执行阻塞或外部工作；宿主关闭时会取消传入的 `context.Context`。
+- `ContinueOn` 先把 Future 结果送回所属 Runtime，再修改业务状态。
+- Runtime 不允许同步等待必须依靠自身继续执行才能完成的 Future；Runtime goroutine 应保持非阻塞。
+
+[`core/demo_async`](./core/demo_async) 是这套执行边界的最小完整示例。
+
+## 快速开始
+
+### 环境要求
+
+- Go `1.25.0`，或与当前 [`go.mod`](./go.mod) 兼容的版本。
+- 运行 ETCD/NATS 相关示例时需要 Docker 和 Compose。
+- 运行图形聊天客户端时需要 Godot `4.6`。
+
+在仓库根目录下载依赖并运行不依赖外部服务的示例：
 
 ```bash
+go mod download
+go run ./core/demo_ec
+go run ./core/demo_async
+go run ./core/demo_addin
+```
+
+运行官方分布式示例前，先启动共享的本地基础设施：
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml up -d etcd nats
+go run ./official_addins/demo_rpc
+```
+
+Compose 会把 ETCD 发布到 `localhost:2379`，把 NATS 发布到 `localhost:4222`，与各精简示例的默认地址一致。停止基础设施：
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml down
+```
+
+### 网关示例
+
+分别在两个终端运行服务端和客户端：
+
+```bash
+go run ./official_addins/demo_gate
+```
+
+```bash
+go run ./official_addins/demo_gate/client localhost:9090
+```
+
+在客户端输入文本后，数据会经过 GTP 连接并以反转后的内容回显。
+
+## 聊天应用
+
+`demo_chat` 是端到端示例。一个进程同时装配 `gate` 和 `chat` 服务：Gate 接收 TCP/WebSocket 客户端，Router 管理会话映射和组播分组，分布式 Entity 发现负责定位用户状态，RPC 负责服务间及服务到客户端的调用转发。
+
+```mermaid
+flowchart LR
+    Client[Go CLI 或 Godot 客户端] <-->|基于 TCP 或 WebSocket 的 GTP| Gate[Gate 服务]
+    Gate <-->|Router 与 RPC| Infra[ETCD 与 NATS]
+    Infra <-->|分布式服务与 Entity 路由| Chat[Chat 服务]
+    Chat -->|客户端 RPC 与群组广播| Gate
+```
+
+### 使用 Compose 运行全部服务
+
+构建当前工作树，并启动聊天服务端、ETCD 和 NATS：
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml up --build -d
+```
+
+然后运行 Go 终端客户端：
+
+```bash
+go run ./app/demo_chat/cli \
+  --cli_priv_key ./app/demo_chat/bin/cli.pem \
+  --serv_pub_key ./app/demo_chat/bin/serv.pub
+```
+
+### 从 Go 源码运行服务端
+
+只通过 Compose 启动基础设施，再从当前工作树运行服务端：
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml up -d etcd nats
 go run ./app/demo_chat/server \
   --cli_pub_key ./app/demo_chat/bin/cli.pub \
   --serv_priv_key ./app/demo_chat/bin/serv.pem
 ```
 
-3. 在另一个终端启动客户端：
-
-```bash
-go run ./app/demo_chat/cli \  
-  --cli_priv_key ./app/demo_chat/bin/cli.pem \
-  --serv_pub_key ./app/demo_chat/bin/serv.pub
-```
-
-4. 在客户端控制台中使用：
+Go 客户端支持以下命令：
 
 - `create <channel>`
 - `remove <channel>`
@@ -109,28 +155,27 @@ go run ./app/demo_chat/cli \
 - `leave <channel>`
 - `switch <channel>`
 - `rtt`
-- 其他任意输入都会作为当前频道消息发送
+- 其他输入会作为消息发送到当前频道。
 
-### 运行更小的示例
-大多数精简示例可以直接通过 `go run` 启动，例如：
+图形客户端位于 [`app/demo_chat/cli/godot`](./app/demo_chat/cli/godot)，使用 Godot 4.6。打开 [`project.godot`](./app/demo_chat/cli/godot/project.godot) 并运行，然后连接默认地址 `ws://localhost:8080`。
 
-```bash
-go run ./core/demo_ec
-go run ./core/demo_addin
-go run ./official_addins/demo_rpc
-```
+> `app/demo_chat/bin` 中的密钥是公开的演示凭据。部署时不得复用，必须重新生成并妥善保管业务自己的密钥。
 
-如果示例依赖 ETCD、NATS 等外部服务，请先把对应依赖启动起来。
+## 开发与验证
 
-## 安装
-当前模块以 [`go.mod`](./go.mod) 中声明的 Go 版本为准。
+在模块根目录执行完整检查：
 
 ```bash
-go get git.golaxy.org/examples@latest
+go test ./...
+go vet ./...
 ```
 
-## 相关仓库
-- [Golaxy Core](https://github.com/pangdogs/core)
-- [Golaxy 分布式服务开发框架](https://github.com/pangdogs/framework)
-- [Golaxy 游戏服务器脚手架](https://github.com/pangdogs/scaffold)
-- [SIMHA](https://github.com/pangdogs/simha)
+`go test` 也会构建所有包含 `package main` 的目录。依赖基础设施的示例在没有 ETCD 或 NATS 时仍可编译，但实际运行时必须先启动对应服务。
+
+## 生态与许可证
+
+- [Golaxy Core](https://github.com/pangdogs/core)：EC 模型、Runtime、生命周期、事件和结构化异步执行。
+- [Golaxy Framework](https://github.com/pangdogs/framework)：服务装配、分布式 add-in、RPC、Gate 和协议栈。
+- [Golaxy Scaffold](https://github.com/pangdogs/scaffold)：游戏工程工具、代码生成和数据流水线。
+
+本仓库采用 [GNU Lesser General Public License v2.1](./LICENSE)。

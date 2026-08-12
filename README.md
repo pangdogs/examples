@@ -1,114 +1,134 @@
-# Examples
-[English](./README.md) | [简体中文](./README.zh_CN.md)
+# Golaxy Examples
 
-## Overview
-`examples` collects runnable sample projects for
-[**Golaxy Distributed Service Development Framework**](https://github.com/pangdogs/framework)
-and [**Golaxy Core**](https://github.com/pangdogs/core).
+**English** | [简体中文](./README.zh_CN.md)
 
-This repository is intended to answer a practical question: how the framework
-and core packages are meant to be assembled in real programs. The examples
-cover both the low-level execution model from `core` and the distributed
-service, gateway, routing, RPC, and infrastructure add-ins provided by
-`framework`.
+Runnable reference programs for [Golaxy Core](https://github.com/pangdogs/core) and the [Golaxy Distributed Service Development Framework](https://github.com/pangdogs/framework). The repository demonstrates how Actor-style Runtime domains, Entity-Component business objects, structured asynchronous work, distributed add-ins, gateways, and RPC fit together in real programs.
 
-The projects here are functional demos rather than full products. If you need a
-larger scaffold closer to production structure, see
-[SIMHA](https://github.com/pangdogs/simha) and
-[scaffold](https://github.com/pangdogs/scaffold).
+These projects are intentionally compact and favor visible control flow over production abstraction. For a larger project structure and build-time tooling, see [Golaxy Scaffold](https://github.com/pangdogs/scaffold).
 
-## What This Repository Provides
-- End-to-end examples that show how services, runtimes, entities, components,
-  and add-ins fit together.
-- Small focused demos for individual official add-ins such as broker,
-  distributed entities, discovery, distributed services, distributed sync,
-  gateway, and RPC.
-- A larger chat sample that combines `gate`, `router`, `dent`, `dsvc`, and
-  `rpc` in one workflow.
-- Reference startup commands and local dependency setup for trying the examples
-  directly.
+## Contents
 
-## Repository Layout
-The repository is organized into three top-level areas:
+- [Learning path](#learning-path)
+- [Example catalog](#example-catalog)
+- [Execution model](#execution-model)
+- [Quick start](#quick-start)
+- [Chat application](#chat-application)
+- [Development](#development)
+- [Ecosystem and license](#ecosystem-and-license)
 
-- `app`: more complete application-style examples.
-- `core`: focused examples for the Golaxy Core execution model.
-- `official_addins`: focused examples for individual framework add-ins.
+## Learning Path
 
-### Package Guide
-| Path | Responsibility |
-| --- | --- |
-| [`./app/demo_chat`](./app/demo_chat) | Anonymous chat demo with a gate service, a chat service, distributed user entities, channel routing, and an interactive CLI. |
-| [`./core/demo_addin`](./core/demo_addin) | Minimal add-in example built on Golaxy Core. |
-| [`./core/demo_ec`](./core/demo_ec) | Minimal entity-component example built on Golaxy Core. |
-| [`./official_addins/demo_broker`](./official_addins/demo_broker) | Broker add-in example. |
-| [`./official_addins/demo_dent`](./official_addins/demo_dent) | Distributed entity registry/query example. |
-| [`./official_addins/demo_discovery`](./official_addins/demo_discovery) | Service discovery example. |
-| [`./official_addins/demo_dsvc`](./official_addins/demo_dsvc) | Distributed service addressing and messaging example. |
-| [`./official_addins/demo_dsync`](./official_addins/demo_dsync) | Distributed synchronization example. |
-| [`./official_addins/demo_gate`](./official_addins/demo_gate) | Gateway and client example. |
-| [`./official_addins/demo_rpc`](./official_addins/demo_rpc) | RPC processor and forwarding example. |
+1. Start with [`core/demo_ec`](./core/demo_ec) to see Service, Runtime, Entity, Component, frame, and lifecycle relationships.
+2. Continue with [`core/demo_async`](./core/demo_async) to learn lifecycle-bound background work and Runtime continuations.
+3. Read [`core/demo_addin`](./core/demo_addin) for Service add-in declaration, installation, access, and shutdown.
+4. Choose a focused example under [`official_addins`](./official_addins) for the infrastructure capability you need.
+5. Finish with [`app/demo_chat`](./app/demo_chat), which composes the execution model and distributed add-ins into one application.
 
-## Example Notes
-### `app/demo_chat`
-`demo_chat` is the most complete sample in this repository.
+## Example Catalog
 
-It demonstrates:
+| Example | What it demonstrates | External services | Exit behavior |
+| --- | --- | --- | --- |
+| [`core/demo_ec`](./core/demo_ec) | Runtime frame loop and complete Entity/Component lifecycle | None | About 10 seconds |
+| [`core/demo_async`](./core/demo_async) | Component `AsyncScope`, `Spawn`, `Future`, cancellation, and `ContinueOn` | None | Less than 1 second |
+| [`core/demo_addin`](./core/demo_addin) | Service add-in definition, installation, lookup, and shutdown | None | About 10 seconds |
+| [`official_addins/demo_broker`](./official_addins/demo_broker) | NATS publish/subscribe through the broker add-in | NATS | About 10 seconds |
+| [`official_addins/demo_discovery`](./official_addins/demo_discovery) | ETCD registration, lease keepalive, and discovery events | ETCD | About 10 seconds |
+| [`official_addins/demo_dsvc`](./official_addins/demo_dsvc) | Distributed service registration and message delivery | ETCD, NATS | About 10 seconds |
+| [`official_addins/demo_dsync`](./official_addins/demo_dsync) | Concurrent ETCD distributed-lock contenders without blocking Runtime state | ETCD | About 10 seconds |
+| [`official_addins/demo_dent`](./official_addins/demo_dent) | Global Entity registration, lookup, and cross-node one-way RPC | ETCD, NATS | About 10 seconds |
+| [`official_addins/demo_rpc`](./official_addins/demo_rpc) | Entity RPC, forwarding, and call-chain propagation across service replicas | ETCD, NATS | About 10 seconds |
+| [`official_addins/demo_gate`](./official_addins/demo_gate) | GTP gateway, session-owned Entity, echo I/O, reconnect, and clock probing | None | Runs until stopped |
+| [`app/demo_chat`](./app/demo_chat) | Gate, Router, distributed entities/services, RPC, groups, and Go/Godot clients | ETCD, NATS | Runs until stopped |
 
-- bootstrapping multiple services in one application
-- creating global user entities on both `gate` and `chat`
-- mapping sessions to entities through `router`
-- querying distributed entity locations through `dent`
-- forwarding service and client RPC across `gate` and `chat`
-- running a terminal client with `rpcli` and Bubble Tea
+The Core examples expose the low-level APIs directly. Framework-based examples may add convenience methods and lifecycle checks around the same Core primitives.
 
-Directory structure:
+## Execution Model
 
-| Path | Responsibility |
-| --- | --- |
-| [`./app/demo_chat/server`](./app/demo_chat/server) | Service bootstrap and service assemblers. |
-| [`./app/demo_chat/server/comps`](./app/demo_chat/server/comps) | Gate-side and chat-side user/channel components. |
-| [`./app/demo_chat/cli`](./app/demo_chat/cli) | Interactive terminal client. |
-| [`./app/demo_chat/consts`](./app/demo_chat/consts) | Shared service names, entity names, and channel constants. |
-| [`./app/demo_chat/bin`](./app/demo_chat/bin) | Demo key files used by the sample client/server. |
-| [`./app/demo_chat/docker-compose.yaml`](./app/demo_chat/docker-compose.yaml) | Local dependency setup for ETCD and NATS. |
+Each Runtime owns an Actor-style serialized execution domain. Entity and Component business state should be read or mutated only from lifecycle callbacks or work executing on that Runtime.
 
-### `core/*`
-The `core` demos are intentionally small. They are useful when you want to
-understand entity/component lifecycle and add-in wiring without the extra
-distributed infrastructure.
+```mermaid
+flowchart LR
+    Outside[External goroutine or I/O] -->|Post / Submit| Queue[Runtime mailbox]
+    Queue --> Runtime[Runtime goroutine]
+    Runtime --> State[Entity and Component state]
+    Runtime -->|Spawn in AsyncScope| Worker[Background goroutine]
+    Worker --> Future[Future result]
+    Future -->|ContinueOn| Queue
+```
 
-### `official_addins/*`
-The `official_addins` demos isolate one add-in at a time. They are useful when
-you want to verify the startup model or configuration shape of a single
-capability before composing it into a larger project.
+- `Post` performs mailbox delivery without allocating a result Future. Use it when only enqueue success matters.
+- `Submit` returns a Future for the Runtime callback result and execution error.
+- `Spawn` runs blocking or external work in a lifecycle-bound Scope. Its `context.Context` is canceled when the owner shuts down.
+- `ContinueOn` returns a Future result to the owning Runtime before business state is changed.
+- Waiting synchronously on a Future whose completion depends on the same Runtime is rejected; keep the Runtime goroutine non-blocking.
+
+[`core/demo_async`](./core/demo_async) is the smallest complete example of this boundary.
 
 ## Quick Start
+
 ### Requirements
-- Go `1.25+`
-- Docker and Docker Compose if you want to run dependency-backed examples
-- ETCD for examples that use discovery, distributed entities, routing, or
-  distributed services
-- NATS for examples that use the default broker layer
 
-### Run `demo_chat`
-1. Start dependencies:
+- Go `1.25.0` or a version compatible with the current [`go.mod`](./go.mod).
+- Docker with Compose for ETCD/NATS-backed examples.
+- Godot `4.6` when running the graphical chat client.
+
+Download dependencies and run the standalone examples from the repository root:
 
 ```bash
-cd app/demo_chat
-docker compose up -d etcd nats
-cd ../..
+go mod download
+go run ./core/demo_ec
+go run ./core/demo_async
+go run ./core/demo_addin
 ```
 
-2. Start the server:
+Start the shared local infrastructure before running an official distributed example:
 
 ```bash
-go run ./app/demo_chat/server \
-  --cli_pub_key ./app/demo_chat/bin/cli.pub \
-  --serv_priv_key ./app/demo_chat/bin/serv.pem
+docker compose -f app/demo_chat/docker-compose.yaml up -d etcd nats
+go run ./official_addins/demo_rpc
 ```
 
-3. Start the client in another terminal:
+The Compose file publishes ETCD on `localhost:2379` and NATS on `localhost:4222`, matching the focused examples' defaults. Stop them with:
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml down
+```
+
+### Gateway Example
+
+Run the server and client in separate terminals:
+
+```bash
+go run ./official_addins/demo_gate
+```
+
+```bash
+go run ./official_addins/demo_gate/client localhost:9090
+```
+
+Enter text in the client to send it through the GTP connection and receive the reversed echo.
+
+## Chat Application
+
+`demo_chat` is the end-to-end example. One process assembles `gate` and `chat` services; Gate accepts TCP/WebSocket clients, Router maps sessions and multicast groups, distributed Entity discovery locates user state, and RPC forwards calls between services and clients.
+
+```mermaid
+flowchart LR
+    Client[Go CLI or Godot client] <-->|GTP over TCP or WebSocket| Gate[Gate service]
+    Gate <-->|Router and RPC| Infra[ETCD and NATS]
+    Infra <-->|Distributed service and Entity routing| Chat[Chat service]
+    Chat -->|Client RPC and group multicast| Gate
+```
+
+### Run Everything with Compose
+
+Build the current checkout and start the chat server, ETCD, and NATS:
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml up --build -d
+```
+
+Then run the Go terminal client:
 
 ```bash
 go run ./app/demo_chat/cli \
@@ -116,7 +136,18 @@ go run ./app/demo_chat/cli \
   --serv_pub_key ./app/demo_chat/bin/serv.pub
 ```
 
-4. Use the client console:
+### Run the Server from Go
+
+Start only the infrastructure with Compose, then run the server from the checkout:
+
+```bash
+docker compose -f app/demo_chat/docker-compose.yaml up -d etcd nats
+go run ./app/demo_chat/server \
+  --cli_pub_key ./app/demo_chat/bin/cli.pub \
+  --serv_priv_key ./app/demo_chat/bin/serv.pem
+```
+
+The Go client accepts these commands:
 
 - `create <channel>`
 - `remove <channel>`
@@ -124,29 +155,27 @@ go run ./app/demo_chat/cli \
 - `leave <channel>`
 - `switch <channel>`
 - `rtt`
-- any other input sends a chat message to the current channel
+- Any other input sends a message to the selected channel.
 
-### Run Smaller Demos
-Most smaller demos can be started directly with `go run`, for example:
+The graphical client is a Godot 4.6 project at [`app/demo_chat/cli/godot`](./app/demo_chat/cli/godot). Open [`project.godot`](./app/demo_chat/cli/godot/project.godot), run it, and connect to the default `ws://localhost:8080` endpoint.
 
-```bash
-go run ./core/demo_ec
-go run ./core/demo_addin
-go run ./official_addins/demo_rpc
-```
+> The key files under `app/demo_chat/bin` are public demo credentials. Never reuse them in a deployed environment; generate and protect application-specific keys.
 
-Dependency-backed demos usually need the corresponding service such as ETCD or
-NATS running first.
+## Development
 
-## Installation
-The module currently targets the Go version declared in [`go.mod`](./go.mod).
+Run the repository-wide checks from the module root:
 
 ```bash
-go get git.golaxy.org/examples@latest
+go test ./...
+go vet ./...
 ```
 
-## Related Repositories
-- [Golaxy Core](https://github.com/pangdogs/core)
-- [Golaxy Distributed Service Development Framework](https://github.com/pangdogs/framework)
-- [Golaxy Game Server Scaffold](https://github.com/pangdogs/scaffold)
-- [SIMHA](https://github.com/pangdogs/simha)
+Every directory containing `package main` is also built by `go test`. The infrastructure-backed examples compile without ETCD or NATS, but those services are required when the programs run.
+
+## Ecosystem and License
+
+- [Golaxy Core](https://github.com/pangdogs/core): EC model, Runtime, lifecycle, events, and structured asynchronous execution.
+- [Golaxy Framework](https://github.com/pangdogs/framework): service assembly, distributed add-ins, RPC, Gate, and protocol stack.
+- [Golaxy Scaffold](https://github.com/pangdogs/scaffold): game-project tooling, code generation, and data pipelines.
+
+This repository is licensed under the [GNU Lesser General Public License v2.1](./LICENSE).

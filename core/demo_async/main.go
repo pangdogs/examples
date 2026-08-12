@@ -36,7 +36,9 @@ type LoaderComp struct {
 	value string
 }
 
+// Start 将阻塞工作放到组件 Scope，再把结果送回 Runtime 更新组件状态。
 func (comp *LoaderComp) Start() {
+	// Spawn 中的函数运行在后台 goroutine，并在组件销毁时收到取消信号。
 	load := core.Spawn(comp, func(ctx context.Context, _ ...any) async.Result {
 		timer := time.NewTimer(250 * time.Millisecond)
 		defer timer.Stop()
@@ -49,6 +51,7 @@ func (comp *LoaderComp) Start() {
 		}
 	})
 
+	// ContinueOnVoid 的回调由组件所属 Runtime 串行执行，可以安全修改组件状态。
 	core.ContinueOnVoid(comp, load, func(_ runtime.Context, ret async.Result, _ ...any) {
 		if ret.Error != nil {
 			log.Printf("load failed: %v", ret.Error)

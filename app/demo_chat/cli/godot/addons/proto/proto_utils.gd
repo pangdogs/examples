@@ -30,20 +30,30 @@ const SIZEOF_FIXED64 := 8
 const SIZEOF_FLOAT32 := 4
 const SIZEOF_FLOAT64 := 8
 
+const UINT32_MASK := 0xFFFFFFFF
+const INT32_SIGN_BIT := 0x80000000
+const UINT32_MODULUS := 0x100000000
+const INT64_VALUE_MASK := 0x7FFFFFFFFFFFFFFF
+const MAX_FIELD_NUMBER := 0x1FFFFFFF
+const MAX_LENGTH := 0x7FFFFFFF
+
 const HASH_TAG_DICTIONARY := 19
 const HASH_TAG_ARRAY := 20
 
-#region Bool
+#region Boolean
+
 # Encodes a protobuf bool as a single varint byte.
 static func encode_bool(stream: ProtoOutputStream, value: bool) -> bool:
 	return stream.write_byte(int(value))
 
-# Decodes a protobuf bool from a varint byte.
+# Decodes a protobuf bool varint. Zero is false; any non-zero value is true.
 static func decode_bool(stream: ProtoInputStream) -> bool:
-	return stream.read_byte() != 0
+	return stream.read_varint() != 0
+
 #endregion
 
-#region Fixed32
+#region Fixed-width Integers
+
 # Encodes a 32-bit fixed-width integer.
 static func encode_fixed32(stream: ProtoOutputStream, value: int) -> bool:
 	return stream.write_fixed32(value)
@@ -51,9 +61,17 @@ static func encode_fixed32(stream: ProtoOutputStream, value: int) -> bool:
 # Decodes a 32-bit fixed-width integer.
 static func decode_fixed32(stream: ProtoInputStream) -> int:
 	return stream.read_fixed32()
-#endregion
 
-#region Fixed64
+# Encodes a signed 32-bit fixed-width integer.
+static func encode_sfixed32(stream: ProtoOutputStream, value: int) -> bool:
+	return stream.write_fixed32(value & UINT32_MASK)
+
+# Decodes a signed 32-bit fixed-width integer.
+static func decode_sfixed32(stream: ProtoInputStream) -> int:
+	var value := stream.read_fixed32()
+	if stream.get_error() != OK:
+		return 0
+	return _to_int32(value)
 # Encodes a 64-bit fixed-width integer.
 static func encode_fixed64(stream: ProtoOutputStream, value: int) -> bool:
 	return stream.write_fixed64(value)
@@ -61,9 +79,11 @@ static func encode_fixed64(stream: ProtoOutputStream, value: int) -> bool:
 # Decodes a 64-bit fixed-width integer.
 static func decode_fixed64(stream: ProtoInputStream) -> int:
 	return stream.read_fixed64()
+
 #endregion
 
-#region Varint
+#region Varint Integers
+
 # Returns the number of bytes required to encode value as a protobuf varint.
 static func sizeof_varint(value: int) -> int:
 	if value < 0:
@@ -81,9 +101,40 @@ static func encode_varint(stream: ProtoOutputStream, value: int) -> bool:
 # Decodes an integer from a protobuf varint.
 static func decode_varint(stream: ProtoInputStream) -> int:
 	return stream.read_varint()
+
+# Encodes a signed 32-bit integer after applying protobuf's truncation rules.
+static func encode_int32(stream: ProtoOutputStream, value: int) -> bool:
+	return stream.write_varint(_to_int32(value))
+
+# Decodes and sign-extends the low 32 bits of a varint.
+static func decode_int32(stream: ProtoInputStream) -> int:
+	var value := stream.read_varint()
+	if stream.get_error() != OK:
+		return 0
+	return _to_int32(value)
+
+# Encodes the low 32 bits of an unsigned integer.
+static func encode_uint32(stream: ProtoOutputStream, value: int) -> bool:
+	return stream.write_varint(value & UINT32_MASK)
+
+# Decodes the low 32 bits of a varint as an unsigned integer.
+static func decode_uint32(stream: ProtoInputStream) -> int:
+	var value := stream.read_varint()
+	if stream.get_error() != OK:
+		return 0
+	return value & UINT32_MASK
+
+# Enums use the same wire representation and truncation behavior as int32.
+static func encode_enum(stream: ProtoOutputStream, value: int) -> bool:
+	return encode_int32(stream, value)
+
+static func decode_enum(stream: ProtoInputStream) -> int:
+	return decode_int32(stream)
+
 #endregion
 
-#region Float
+#region Floating-point Numbers
+
 # Encodes a 32-bit floating-point value.
 static func encode_float(stream: ProtoOutputStream, value: float) -> bool:
 	return stream.write_float(value)
@@ -91,9 +142,6 @@ static func encode_float(stream: ProtoOutputStream, value: float) -> bool:
 # Decodes a 32-bit floating-point value.
 static func decode_float(stream: ProtoInputStream) -> float:
 	return stream.read_float()
-#endregion
-
-#region Double
 # Encodes a 64-bit floating-point value.
 static func encode_double(stream: ProtoOutputStream, value: float) -> bool:
 	return stream.write_double(value)
@@ -101,18 +149,20 @@ static func encode_double(stream: ProtoOutputStream, value: float) -> bool:
 # Decodes a 64-bit floating-point value.
 static func decode_double(stream: ProtoInputStream) -> float:
 	return stream.read_double()
+
 #endregion
 
-#region String
+#region Strings and Bytes
+
 # Encodes a UTF-8 string as a length-delimited protobuf field payload.
 static func encode_string(stream: ProtoOutputStream, value: String) -> bool:
 	var utf8_bytes := value.to_utf8_buffer()
 	var size := utf8_bytes.size()
-	return encode_varint(stream, size) and stream.write_bytes(utf8_bytes)
+	return stream.write_varint(size) and stream.write_bytes(utf8_bytes)
 
 # Decodes a UTF-8 string from a length-delimited protobuf field payload.
 static func decode_string(stream: ProtoInputStream) -> String:
-	var size := decode_varint(stream)
+	var size := decode_length(stream)
 	if stream.get_error() != OK or size <= 0:
 		return ""
 	var utf8_bytes := stream.read_bytes(size)
@@ -125,11 +175,11 @@ static func decode_string(stream: ProtoInputStream) -> String:
 static func encode_string_name(stream: ProtoOutputStream, value: StringName) -> bool:
 	var utf8_bytes := value.to_utf8_buffer()
 	var size := utf8_bytes.size()
-	return encode_varint(stream, size) and stream.write_bytes(utf8_bytes)
+	return stream.write_varint(size) and stream.write_bytes(utf8_bytes)
 
 # Decodes a UTF-8 StringName from a length-delimited protobuf field payload.
 static func decode_string_name(stream: ProtoInputStream) -> StringName:
-	var size := decode_varint(stream)
+	var size := decode_length(stream)
 	if stream.get_error() != OK or size <= 0:
 		return StringName()
 	var utf8_bytes := stream.read_bytes(size)
@@ -137,63 +187,84 @@ static func decode_string_name(stream: ProtoInputStream) -> StringName:
 		return StringName()
 	var value := utf8_bytes.get_string_from_utf8()
 	return StringName(value)
-#endregion
 
-#region Bytes
 # Encodes a byte array as a length-delimited protobuf field payload.
 static func encode_bytes(stream: ProtoOutputStream, value: PackedByteArray) -> bool:
-	return encode_varint(stream, value.size()) and stream.write_bytes(value)
+	return stream.write_varint(value.size()) and stream.write_bytes(value)
 
 # Decodes a byte array from a length-delimited protobuf field payload.
 static func decode_bytes(stream: ProtoInputStream) -> PackedByteArray:
-	var size := decode_varint(stream)
+	var size := decode_length(stream)
 	if stream.get_error() != OK or size <= 0:
 		return PackedByteArray()
 	return stream.read_bytes(size)
+
 #endregion
 
-#region Zigzag32
+#region Zigzag Integers
+
 # Encodes a signed 32-bit integer using protobuf zigzag encoding.
 static func encode_zigzag32(stream: ProtoOutputStream, value: int) -> bool:
+	value = _to_int32(value)
 	var zv := (value << 1) ^ (value >> 31)
-	return encode_varint(stream, zv)
+	return stream.write_varint(zv & UINT32_MASK)
 
 # Decodes a signed 32-bit integer using protobuf zigzag encoding.
 static func decode_zigzag32(stream: ProtoInputStream) -> int:
-	var zv := decode_varint(stream)
+	var zv := stream.read_varint()
 	if stream.get_error() != OK:
 		return 0
+	zv &= UINT32_MASK
 	return (zv >> 1) ^ -(zv & 1)
-#endregion
 
-#region Zigzag64
 # Encodes a signed 64-bit integer using protobuf zigzag encoding.
 static func encode_zigzag64(stream: ProtoOutputStream, value: int) -> bool:
 	var zv := (value << 1) ^ (value >> 63)
-	return encode_varint(stream, zv)
+	return stream.write_varint(zv)
 
 # Decodes a signed 64-bit integer using protobuf zigzag encoding.
 static func decode_zigzag64(stream: ProtoInputStream) -> int:
-	var zv := decode_varint(stream)
+	var zv := stream.read_varint()
 	if stream.get_error() != OK:
 		return 0
-	return (zv >> 1) ^ -(zv & 1)
+	return ((zv >> 1) & INT64_VALUE_MASK) ^ -(zv & 1)
+
 #endregion
 
-#region Tag
+#region Wire Format
+
+# Decodes a protobuf length prefix and rejects values outside the int32 range.
+static func decode_length(stream: ProtoInputStream) -> int:
+	var size := stream.read_varint()
+	if stream.get_error() != OK:
+		return -1
+	if size < 0 or size > MAX_LENGTH:
+		stream._set_error(ERR_INVALID_DATA, "Length exceeds the protobuf 2 GiB limit.")
+		return -1
+	return size
+
 # Encodes a field number and field type into a protobuf tag.
 static func encode_tag(stream: ProtoOutputStream, field_number: int, field_type: int) -> bool:
-	if field_number <= 0:
+	if field_number <= 0 or field_number > MAX_FIELD_NUMBER:
+		stream._set_error(ERR_INVALID_PARAMETER, "Invalid protobuf field number.")
 		return false
 	var wire_type := ProtoFieldDescriptor.get_field_wire_type(field_type)
 	if wire_type < 0:
+		stream._set_error(ERR_INVALID_PARAMETER, "Invalid protobuf field type.")
 		return false
 	var value := (field_number << 3) | wire_type
-	return encode_varint(stream, value)
+	return stream.write_varint(value)
 
 # Decodes a protobuf tag value from the stream.
 static func decode_tag(stream: ProtoInputStream) -> int:
-	return decode_varint(stream)
+	var tag := stream.read_varint()
+	if stream.get_error() != OK:
+		return 0
+	var field_number := get_tag_field_number(tag)
+	if field_number <= 0 or field_number > MAX_FIELD_NUMBER:
+		stream._set_error(ERR_INVALID_DATA, "Invalid protobuf field number.")
+		return 0
+	return tag
 
 # Extracts the field number from an encoded protobuf tag.
 static func get_tag_field_number(tag: int) -> int:
@@ -207,16 +278,14 @@ static func get_tag_wire_type(tag: int) -> int:
 static func skip_field(stream: ProtoInputStream, wire_type: int) -> bool:
 	match wire_type:
 		ProtoFieldDescriptor.WireType.WIRETYPE_VARINT:
-			decode_varint(stream)
+			stream.read_varint()
 			return stream.get_error() == OK
 		ProtoFieldDescriptor.WireType.WIRETYPE_FIXED64:
 			stream.skip(8)
 			return stream.get_error() == OK
 		ProtoFieldDescriptor.WireType.WIRETYPE_LENGTH_DELIMITED:
-			var field_size := decode_varint(stream)
+			var field_size := decode_length(stream)
 			if stream.get_error() != OK:
-				return false
-			if field_size < 0:
 				return false
 			stream.skip(field_size)
 			return stream.get_error() == OK
@@ -224,46 +293,86 @@ static func skip_field(stream: ProtoInputStream, wire_type: int) -> bool:
 			stream.skip(4)
 			return stream.get_error() == OK
 		_:
+			stream._set_error(ERR_INVALID_DATA, "Invalid protobuf wire type.")
 			return false
+
 #endregion
 
-#region Message
+#region Messages
+
 # Encodes a nested message as a length-delimited protobuf payload.
 static func encode_message(stream: ProtoOutputStream, msg: ProtoMessage) -> bool:
 	if msg == null:
+		stream._set_error(ERR_INVALID_PARAMETER, "message cannot be null")
 		return false
 	var size := msg.size()
 	if size < 0:
+		stream._set_error(ERR_INVALID_DATA, "Message size cannot be negative.")
 		return false
-	if !encode_varint(stream, size):
+	if !stream.write_varint(size):
 		return false
 	if !msg.serialize(stream):
+		if stream.get_error() == OK:
+			stream._set_error(ERR_INVALID_DATA, "Message serialization failed.")
 		return false
 	return stream.get_error() == OK
 
-# Decodes a nested message using a bounded substream of the declared message size.
+# Decodes a nested message from a buffer containing exactly the declared payload.
 static func decode_message(stream: ProtoInputStream, msg: ProtoMessage) -> bool:
 	if msg == null:
+		stream._set_error(ERR_INVALID_PARAMETER, "message cannot be null")
 		return false
-	var size := decode_varint(stream)
+	var size := decode_length(stream)
 	if stream.get_error() != OK:
 		return false
-	if size < 0:
+	var payload := stream.read_bytes(size)
+	if stream.get_error() != OK:
 		return false
-	var limited_stream := ProtoLimitedInputStream.new(stream, size)
-	if !msg.deserialize(limited_stream):
+	var payload_stream := ProtoInputBuffer.new(payload)
+	if !msg.deserialize(payload_stream) or payload_stream.get_error() != OK:
+		_set_nested_input_error(stream, payload_stream, "Message deserialization failed.")
 		return false
-	return limited_stream.get_error() == OK and limited_stream.eof()
+	if !payload_stream.eof():
+		_set_nested_input_error(stream, payload_stream, "Message payload was not fully consumed.")
+		return false
+	return true
+
 #endregion
 
-#region Sizeof Helpers
+#region Dictionaries
+
+# Returns dictionary keys sorted with the same ordering rules used by deterministic map serialization.
+static func sorted_dictionary_keys(values: Dictionary, key_order: int = DictionaryKeyOrder.DEFAULT) -> Array:
+	if values.is_empty():
+		return []
+	var keys := values.keys()
+	match key_order:
+		DictionaryKeyOrder.UINT64:
+			keys.sort_custom(func(a, b): return _compare_u64(a, b) < 0)
+		_:
+			keys.sort()
+	return keys
+
+#endregion
+
+#region Size Calculation
+
 # Returns the encoded size of a zigzag32 payload.
 static func sizeof_zigzag32(value: int) -> int:
-	return sizeof_varint((value << 1) ^ (value >> 31))
+	value = _to_int32(value)
+	return sizeof_varint(((value << 1) ^ (value >> 31)) & UINT32_MASK)
 
 # Returns the encoded size of a zigzag64 payload.
 static func sizeof_zigzag64(value: int) -> int:
 	return sizeof_varint((value << 1) ^ (value >> 63))
+
+# Returns the encoded size after applying signed int32 truncation.
+static func sizeof_int32(value: int) -> int:
+	return sizeof_varint(_to_int32(value))
+
+# Returns the encoded size of the low 32 unsigned bits.
+static func sizeof_uint32(value: int) -> int:
+	return sizeof_varint(value & UINT32_MASK)
 
 # Returns the encoded size of a UTF-8 string payload.
 static func sizeof_string(value: String) -> int:
@@ -302,6 +411,15 @@ static func sizeof_array_payload(values: Array, value_sizer: Callable) -> int:
 		total += int(value_sizer.call(value))
 	return total
 
+# Returns the encoded payload size of a packed 64-bit integer array.
+static func sizeof_packed_int64_array_payload(values: PackedInt64Array, value_sizer: Callable) -> int:
+	if values.is_empty() or !value_sizer.is_valid():
+		return 0
+	var total := 0
+	for value in values:
+		total += int(value_sizer.call(value))
+	return total
+
 # Returns the encoded field size of a non-packed repeated field.
 static func sizeof_array(values: Array, tag_size: int, value_sizer: Callable) -> int:
 	if values.is_empty() or !value_sizer.is_valid():
@@ -316,6 +434,13 @@ static func sizeof_packed_array(values: Array, tag_size: int, value_sizer: Calla
 	if values.is_empty() or !value_sizer.is_valid():
 		return 0
 	var payload_size := sizeof_array_payload(values, value_sizer)
+	return tag_size + sizeof_varint(payload_size) + payload_size
+
+# Returns the encoded field size of a packed repeated field stored in a PackedInt64Array.
+static func sizeof_packed_int64_array(values: PackedInt64Array, tag_size: int, value_sizer: Callable) -> int:
+	if values.is_empty() or !value_sizer.is_valid():
+		return 0
+	var payload_size := sizeof_packed_int64_array_payload(values, value_sizer)
 	return tag_size + sizeof_varint(payload_size) + payload_size
 
 # Returns the encoded payload size of a single dictionary entry.
@@ -363,9 +488,11 @@ static func sizeof_dictionary(
 		)
 		total += tag_size + sizeof_varint(entry_size) + entry_size
 	return total
+
 #endregion
 
-#region Hash Helpers
+#region Hashing
+
 # Writes the fixed message field count prefix used by generated message hash_to methods.
 static func hash_message_fields(hasher: ProtoHasher, field_count: int) -> void:
 	hasher.write_uint64(max(field_count, 0))
@@ -450,6 +577,15 @@ static func hash_array(hasher: ProtoHasher, values: Array, value_hasher: Callabl
 	for value in values:
 		value_hasher.call(value)
 
+# Hashes a packed 64-bit integer array in declaration order with an element-count prefix.
+static func hash_packed_int64_array(hasher: ProtoHasher, values: PackedInt64Array, value_hasher: Callable) -> void:
+	hasher.write_byte(HASH_TAG_ARRAY)
+	hasher.write_uint64(values.size())
+	if values.is_empty() or !value_hasher.is_valid():
+		return
+	for value in values:
+		value_hasher.call(value)
+
 # Hashes a dictionary in sorted-key order with an entry-count prefix.
 static func hash_dictionary(
 	hasher: ProtoHasher,
@@ -465,9 +601,11 @@ static func hash_dictionary(
 	for key in sorted_dictionary_keys(values, key_order):
 		key_hasher.call(key)
 		value_hasher.call(values[key])
+
 #endregion
 
-#region Equality Helpers
+#region Equality
+
 # Compares two 32-bit floats by their IEEE 754 bit pattern.
 static func equal_float32(a: float, b: float) -> bool:
 	return _float32_bits(a) == _float32_bits(b)
@@ -500,6 +638,10 @@ static func equal_array(a: Array, b: Array, value_equal: Callable) -> bool:
 			return false
 	return true
 
+# Compares two packed 64-bit integer arrays using Godot's native implementation.
+static func equal_packed_int64_array(a: PackedInt64Array, b: PackedInt64Array) -> bool:
+	return a == b
+
 # Compares two dictionaries by key membership and value equality.
 static func equal_dictionary(a: Dictionary, b: Dictionary, value_equal: Callable) -> bool:
 	if a == b:
@@ -514,20 +656,23 @@ static func equal_dictionary(a: Dictionary, b: Dictionary, value_equal: Callable
 		if !bool(value_equal.call(a[key], b[key])):
 			return false
 	return true
+
 #endregion
 
-#region Internal Helpers
-# Returns dictionary keys sorted with the same ordering rules used by deterministic map serialization.
-static func sorted_dictionary_keys(values: Dictionary, key_order: int = DictionaryKeyOrder.DEFAULT) -> Array:
-	if values.is_empty():
-		return []
-	var keys := values.keys()
-	match key_order:
-		DictionaryKeyOrder.UINT64:
-			keys.sort_custom(func(a, b): return _compare_u64(a, b) < 0)
-		_:
-			keys.sort()
-	return keys
+# Marks the parent payload as invalid while preserving the nested stream error as diagnostic context.
+static func _set_nested_input_error(stream: ProtoInputStream, source: ProtoInputStream, fallback_message: String) -> void:
+	var message: String = "%s payload_error=%d" % [fallback_message, source.get_error()]
+	var payload_message := source.get_error_message()
+	if !payload_message.is_empty():
+		message += ", payload_message=%s" % payload_message
+	stream._set_error(ERR_INVALID_DATA, message)
+
+# Converts the low 32 bits of an int to its signed representation.
+static func _to_int32(value: int) -> int:
+	value &= UINT32_MASK
+	if (value & INT32_SIGN_BIT) != 0:
+		return value - UINT32_MODULUS
+	return value
 
 # Returns the IEEE 754 bit pattern of a 32-bit float.
 static func _float32_bits(value: float) -> int:
@@ -553,4 +698,3 @@ static func _compare_u64(a: int, b: int) -> int:
 	if left > right:
 		return 1
 	return 0
-#endregion

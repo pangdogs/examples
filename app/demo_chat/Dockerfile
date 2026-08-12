@@ -1,34 +1,29 @@
-FROM golang:1.25-alpine
+FROM golang:1.25-alpine AS builder
 
-ENV GOPROXY=https://goproxy.cn,direct
-ENV ETCD_ADDR=${ETCD_ADDR}
-ENV NATS_ADDR=${NATS_ADDR}
+ARG GOPROXY=https://goproxy.cn,direct
+ENV CGO_ENABLED=0 \
+    GOPROXY=${GOPROXY}
+
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY app/demo_chat/consts ./app/demo_chat/consts
+COPY app/demo_chat/server ./app/demo_chat/server
+
+RUN go build -trimpath -ldflags="-s -w" -o /out/chat-server ./app/demo_chat/server
+
+FROM alpine:3.22
+
+RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
 
-COPY ./bin ./bin
-COPY ./cli ./cli
-COPY ./server ./server
+COPY --from=builder /out/chat-server ./chat-server
+COPY app/demo_chat/bin/cli.pub app/demo_chat/bin/serv.pem ./
 
-WORKDIR /app/server
+EXPOSE 8080 9090
 
-RUN go mod init server
-RUN go get git.golaxy.org/examples@latest
-RUN go mod tidy
-RUN go build -o ../bin/server
-
-WORKDIR /app/cli
-
-RUN go mod init cli
-RUN go get git.golaxy.org/examples@latest
-RUN go mod tidy
-RUN go build -o ../bin/cli
-
-WORKDIR /app/bin
-
-RUN echo -e '#!/bin/sh\n\
-exec ./server --etcd.address=${ETCD_ADDR} --nats.address=${NATS_ADDR}\n\
-'> ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["./chat-server"]
+CMD ["--cli_pub_key=./cli.pub", "--serv_priv_key=./serv.pem"]

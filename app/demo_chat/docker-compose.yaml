@@ -1,22 +1,31 @@
 name: chat
+
 services:
   app:
-    build: .
+    build:
+      context: ../..
+      dockerfile: app/demo_chat/Dockerfile
+    command:
+      - --cli_pub_key=/app/cli.pub
+      - --serv_priv_key=/app/serv.pem
+      - --etcd.address=etcd:2379
+      - --nats.address=nats:4222
     ports:
       - "8080:8080"
       - "9090:9090"
     environment:
-      - TZ=Asia/Shanghai
-      - ETCD_ADDR=etcd:2379
-      - NATS_ADDR=nats:4222
+      TZ: Asia/Shanghai
     depends_on:
       - nats
       - etcd
+    restart: "on-failure:10"
 
   nats:
     image: nats:2.10.25
+    ports:
+      - "4222:4222"
     environment:
-      - TZ=Asia/Shanghai
+      TZ: Asia/Shanghai
 
   etcd:
     image: rancher/hardened-etcd:v3.6.7-k3s1-build20260512
@@ -24,5 +33,7 @@ services:
       - /usr/local/bin/etcd
       - --listen-client-urls=http://0.0.0.0:2379
       - --advertise-client-urls=http://etcd:2379
+    ports:
+      - "2379:2379"
     environment:
-      - TZ=Asia/Shanghai
+      TZ: Asia/Shanghai
