@@ -54,7 +54,7 @@ func (comp *HelloWorldComp) scheduleRPC(interval time.Duration) {
 			cp := callpath.CallPath{
 				TargetKind: callpath.Entity,
 				ExcludeSrc: true,
-				Id:         entityId,
+				ID:         entityID,
 				Script:     "HelloWorldComp",
 				Method:     "TestRPC",
 			}

@@ -32,7 +32,7 @@ func init() {
 }
 
 const (
-	MsgId_HelloWorld = gap.MsgId_Customize + iota
+	MsgID_HelloWorld = gap.MsgID_Customize + iota
 )
 
 type MsgHelloWorld struct {
@@ -101,7 +101,7 @@ func (m MsgHelloWorld) Size() int {
 	return binaryutil.SizeofVarint(int64(m.Int)) + binaryutil.SizeofDouble + binaryutil.SizeofString(m.Str) + m.Map.Size() + m.Array.Size()
 }
 
-// MsgId 消息Id
-func (MsgHelloWorld) MsgId() gap.MsgId {
-	return MsgId_HelloWorld
+// MsgID 消息ID
+func (MsgHelloWorld) MsgID() gap.MsgID {
+	return MsgID_HelloWorld
 }

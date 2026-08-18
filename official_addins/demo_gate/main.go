@@ -93,23 +93,23 @@ func (s *HelloWorldService) handleSessionEstablished(session gate.ISession) {
 	// 在运行时中创建实体
 	if err := core.Post(rt, func(rtCtx runtime.Context, _ ...any) {
 		entity, err := core.BuildEntity(rtCtx, "helloworld").
-			SetPersistId(session.Id()).
+			SetPersistID(session.ID()).
 			New()
 		if err != nil {
 			log.L(s).Panic("create entity failed", zap.Error(err))
 		}
-		log.L(s).Info("entity created", zap.String("entity_id", entity.Id().String()))
+		log.L(s).Info("entity created", zap.String("entity_id", entity.ID().String()))
 
 		go func() {
 			<-session.Closed().Done()
 			if err := core.Post(entity, func(runtime.Context, ...any) { entity.Destroy() }); err != nil {
-				log.L(s).Error("enqueue entity destroy failed", zap.String("entity_id", entity.Id().String()), zap.Error(err))
+				log.L(s).Error("enqueue entity destroy failed", zap.String("entity_id", entity.ID().String()), zap.Error(err))
 				return
 			}
 			<-entity.Terminated().Done()
-			log.L(s).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
+			log.L(s).Info("entity destroyed", zap.String("entity_id", entity.ID().String()))
 		}()
 	}); err != nil {
-		log.L(s).Error("enqueue entity creation failed", zap.String("session_id", session.Id().String()), zap.Error(err))
+		log.L(s).Error("enqueue entity creation failed", zap.String("session_id", session.ID().String()), zap.Error(err))
 	}
 }

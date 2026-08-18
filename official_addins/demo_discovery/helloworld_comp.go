@@ -50,8 +50,8 @@ func (comp *HelloWorldComp) Start() {
 		Name: service.Current(comp).Name(),
 		Nodes: []discovery.Node{
 			{
-				Id:      service.Current(comp).Id(),
-				Address: fmt.Sprintf("service:%s:%s", service.Current(comp).Name(), service.Current(comp).Id()),
+				ID:      service.Current(comp).ID(),
+				Address: fmt.Sprintf("service:%s:%s", service.Current(comp).Name(), service.Current(comp).ID()),
 			},
 		},
 	}

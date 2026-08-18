@@ -45,7 +45,7 @@ type HelloWorldComp struct {
 // Start 组件开始
 func (comp *HelloWorldComp) Start() {
 	log.L(service.Current(comp)).Info("starting...",
-		zap.String("entity_id", comp.Entity().Id().String()),
+		zap.String("entity_id", comp.Entity().ID().String()),
 		zap.Int64("max_payload", Broker.Require(service.Current(comp)).MaxPayload()))
 
 	_, err := Broker.Require(service.Current(comp)).SubscribeHandler(comp.Entity(), "helloworld.>", "",
@@ -72,7 +72,7 @@ func (comp *HelloWorldComp) schedulePublish(interval time.Duration) {
 			}
 
 			topic := "helloworld.testing"
-			msg := fmt.Sprintf("%s/%d", comp.Entity().Id(), comp.sequence)
+			msg := fmt.Sprintf("%s/%d", comp.Entity().ID(), comp.sequence)
 
 			if err := Broker.Require(service.Current(comp)).Publish(comp.AsyncScope().Context(), topic, []byte(msg)); err != nil {
 				log.L(service.Current(comp)).Panic("publish error", zap.Error(err))
@@ -89,5 +89,5 @@ func (comp *HelloWorldComp) schedulePublish(interval time.Duration) {
 
 // Shut 组件结束
 func (comp *HelloWorldComp) Shut() {
-	log.L(service.Current(comp)).Info("shutting...", zap.String("entity_id", comp.Entity().Id().String()))
+	log.L(service.Current(comp)).Info("shutting...", zap.String("entity_id", comp.Entity().ID().String()))
 }

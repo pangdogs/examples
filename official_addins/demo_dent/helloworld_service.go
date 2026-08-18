@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	entityId = uid.New()
+	entityID = uid.New()
 )
 
 type HelloWorldService struct {
@@ -22,7 +22,7 @@ func (s *HelloWorldService) OnBuilt(svc framework.IService) {
 
 func (s *HelloWorldService) OnStarted(svc framework.IService) {
 	entity, err := s.BuildEntity("helloworld").
-		SetPersistId(entityId).
+		SetPersistID(entityID).
 		New()
 	if err != nil {
 		s.L().Panic("create entity failed", zap.Error(err))

@@ -39,12 +39,12 @@ type GateUserComp struct {
 }
 
 func (c *GateUserComp) Start() {
-	mapping, err := Router.Require(c.Service()).Map(c.Id(), c.Id())
+	mapping, err := Router.Require(c.Service()).Map(c.ID(), c.ID())
 	if err != nil {
 		c.L().Panic("mapping failed", log.JSON("user", c.Entity()), zap.Error(err))
 	}
 
-	err = rpc.ResultVoid(rpc.ProxyService(c).BalanceRPC(consts.Chat, "", "WakeUpUser", c.Id())).Error
+	err = rpc.ResultVoid(rpc.ProxyService(c).BalanceRPC(consts.Chat, "", "WakeUpUser", c.ID())).Error
 	if err != nil {
 		c.L().Panic("RPC::WakeUpUser failed", log.JSONRawStringer("user", c.Entity()), zap.Error(err))
 	}

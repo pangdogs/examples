@@ -36,7 +36,7 @@ type HelloWorldComp struct {
 }
 
 func (comp *HelloWorldComp) Awake() {
-	session, ok := Gate.Require(service.Current(comp)).Get(comp.Entity().Id())
+	session, ok := Gate.Require(service.Current(comp)).Get(comp.Entity().ID())
 	if !ok {
 		log.L(service.Current(comp)).Panic("session not found")
 	}

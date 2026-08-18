@@ -49,7 +49,7 @@ func (c *GateChatChannelComp) Shut() {
 	c.createdGroups.Each(func(channelName string, createdTime time.Time) {
 		c.C_RemoveChannel(channelName)
 	})
-	for _, group := range Router.Require(c.Service()).GetGroupsByEntity(context.Background(), c.Id()) {
+	for _, group := range Router.Require(c.Service()).GetGroupsByEntity(context.Background(), c.ID()) {
 		c.C_LeaveChannel(group.Name())
 	}
 }
@@ -118,7 +118,7 @@ func (c *GateChatChannelComp) C_LeaveChannel(channelName string) {
 	c.SendToChannel(channelName, "leaved")
 	c.CliOnewayRPC("", "ChannelKickOut", channelName)
 
-	if err := group.Remove(context.Background(), []uid.Id{c.Id()}); err != nil {
+	if err := group.Remove(context.Background(), []uid.ID{c.ID()}); err != nil {
 		c.L().Error("leave channel failed", zap.String("channel", channelName), zap.Error(err))
 		return
 	}
@@ -127,7 +127,7 @@ func (c *GateChatChannelComp) C_LeaveChannel(channelName string) {
 }
 
 func (c *GateChatChannelComp) C_InChannel(channelName string) bool {
-	for _, group := range Router.Require(c.Service()).GetGroupsByEntity(c.Entity(), c.Id()) {
+	for _, group := range Router.Require(c.Service()).GetGroupsByEntity(c.Entity(), c.ID()) {
 		if group.Name() == channelName {
 			return true
 		}
@@ -136,7 +136,7 @@ func (c *GateChatChannelComp) C_InChannel(channelName string) bool {
 }
 
 func (c *GateChatChannelComp) SendToChannel(channelName, text string) {
-	err := rpc.ProxyGroup(c, channelName).CliOnewayRPC("", "OutputText", time.Now().Unix(), channelName, c.Id(), text)
+	err := rpc.ProxyGroup(c, channelName).CliOnewayRPC("", "OutputText", time.Now().Unix(), channelName, c.ID(), text)
 	if err != nil {
 		c.L().Error("send to channel failed", zap.String("channel", channelName), zap.String("text", text), zap.Error(err))
 		return
@@ -155,7 +155,7 @@ func (c *GateChatChannelComp) JoinChannel(channelName string) {
 		return
 	}
 
-	if err := channel.Add(c.Entity(), []uid.Id{c.Id()}); err != nil {
+	if err := channel.Add(c.Entity(), []uid.ID{c.ID()}); err != nil {
 		c.L().Error("join channel failed", zap.String("channel", channelName), zap.Error(err))
 		return
 	}

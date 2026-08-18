@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	entityId = uid.New()
+	entityID = uid.New()
 )
 
 /*
@@ -96,15 +96,15 @@ func main() {
 
 						// 在运行时中创建实体
 						if err := core.Post(rt, func(rtCtx runtime.Context, _ ...any) {
-							entity, err := core.BuildEntity(rtCtx, "helloworld").SetPersistId(entityId).New()
+							entity, err := core.BuildEntity(rtCtx, "helloworld").SetPersistID(entityID).New()
 							if err != nil {
 								log.L(svcCtx).Panic("create entity failed", zap.Error(err))
 							}
-							log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.Id().String()))
+							log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.ID().String()))
 
 							go func() {
 								<-entity.Terminated().Done()
-								log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
+								log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.ID().String()))
 								<-svcCtx.Terminate().Done()
 							}()
 						}); err != nil {

@@ -57,10 +57,10 @@ func (s *ChatService) InstallRPC(svc framework.IService) {
 	)
 }
 
-func (s *ChatService) WakeUpUser(userId uid.Id) {
+func (s *ChatService) WakeUpUser(userID uid.ID) {
 	// 创建用户实体
 	user, err := s.BuildEntity(consts.User).
-		SetPersistId(userId).
+		SetPersistID(userID).
 		New()
 	if err != nil {
 		s.L().Panic("create user failed", log.JSONRawStringer("user", user), zap.Error(err))

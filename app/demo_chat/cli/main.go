@@ -215,7 +215,7 @@ func (m *MainScript) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Cli().L().Error("rtt failed", zap.Error(resp.Error))
 					break
 				}
-				m.OutputText(time.Now().Unix(), m.channel, m.Cli().SessionId().String(), fmt.Sprintf("RTT:%fs", resp.Value.(*cli.TimeSample).RTT().Seconds()))
+				m.OutputText(time.Now().Unix(), m.channel, m.Cli().SessionID().String(), fmt.Sprintf("RTT:%fs", resp.Value.(*cli.TimeSample).RTT().Seconds()))
 			default:
 				if err := rpc.ResultVoid(m.Cli().RPC(consts.Chat, "ChatUserComp", "C_InputText", m.channel, line)).Error; err != nil {
 					m.Cli().L().Error("RPC::ChatUserComp.C_InputText failed", zap.String("channel", m.channel), zap.Error(err))
@@ -265,20 +265,20 @@ func (m *MainScript) Console() {
 	}
 }
 
-func (m *MainScript) OutputText(ts int64, channel, userId, text string) {
+func (m *MainScript) OutputText(ts int64, channel, userID, text string) {
 	channelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(channel).Hex()))
-	userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(userId).Hex()))
+	userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(StrToColor(userID).Hex()))
 
 	var you string
 
-	if uid.Id(userId) == m.Cli().SessionId() {
+	if uid.ID(userID) == m.Cli().SessionID() {
 		you = "(YOU)"
 	}
 
 	msg := fmt.Sprintf("%s %s %s: %s",
 		time.Unix(ts, 0).Format(time.TimeOnly),
 		channelStyle.Render(channel),
-		userStyle.Render(userId+you),
+		userStyle.Render(userID+you),
 		text,
 	)
 

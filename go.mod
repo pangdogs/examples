@@ -3,8 +3,8 @@ module git.golaxy.org/examples
 go 1.25.0
 
 require (
-	git.golaxy.org/core v0.4.27
-	git.golaxy.org/framework v0.3.68
+	git.golaxy.org/core v0.4.28-0.20260818082804-0e04f2f8607b
+	git.golaxy.org/framework v0.3.69-0.20260818083543-94c8f41d98a7
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0

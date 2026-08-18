@@ -73,11 +73,11 @@ func main() {
 							if err != nil {
 								log.L(svcCtx).Panic("create entity failed", zap.Error(err))
 							}
-							log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.Id().String()))
+							log.L(svcCtx).Info("entity created", zap.String("entity_id", entity.ID().String()))
 
 							go func() {
 								<-entity.Terminated().Done()
-								log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.Id().String()))
+								log.L(svcCtx).Info("entity destroyed", zap.String("entity_id", entity.ID().String()))
 								<-svcCtx.Terminate().Done()
 							}()
 						}); err != nil {

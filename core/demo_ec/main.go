@@ -55,11 +55,11 @@ func main() {
 					if err != nil {
 						log.Panic(err)
 					}
-					log.Printf("[%s] entity created", entity.Id())
+					log.Printf("[%s] entity created", entity.ID())
 
 					go func() {
 						<-entity.Terminated().Done()
-						log.Printf("[%s] entity destroyed", entity.Id())
+						log.Printf("[%s] entity destroyed", entity.ID())
 						<-svcCtx.Terminate().Done()
 					}()
 				}); err != nil {

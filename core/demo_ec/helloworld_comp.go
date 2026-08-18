@@ -33,42 +33,42 @@ type HelloWorldComp struct {
 
 // Awake 组件唤醒
 func (comp *HelloWorldComp) Awake() {
-	log.Printf("[%s] Awake", comp.Entity().Id())
+	log.Printf("[%s] Awake", comp.Entity().ID())
 }
 
 // OnEnable 组件启用
 func (comp *HelloWorldComp) OnEnable() {
-	log.Printf("[%s] OnEnable", comp.Entity().Id())
+	log.Printf("[%s] OnEnable", comp.Entity().ID())
 }
 
 // Start 组件开始
 func (comp *HelloWorldComp) Start() {
-	log.Printf("[%s] Start", comp.Entity().Id())
+	log.Printf("[%s] Start", comp.Entity().ID())
 }
 
 // Update 组件更新
 func (comp *HelloWorldComp) Update() {
 	frame := runtime.Current(comp).Frame()
-	log.Printf("[%s] Update, frame %d, last loop elapse %fs", comp.Entity().Id(), frame.CurFrames(), frame.LastLoopElapseTime().Seconds())
+	log.Printf("[%s] Update, frame %d, last loop elapse %fs", comp.Entity().ID(), frame.CurFrames(), frame.LastLoopElapseTime().Seconds())
 }
 
 // LateUpdate 组件滞后更新
 func (comp *HelloWorldComp) LateUpdate() {
 	frame := runtime.Current(comp).Frame()
-	log.Printf("[%s] Late Update, frame %d, last loop elapse %fs", comp.Entity().Id(), frame.CurFrames(), frame.LastLoopElapseTime().Seconds())
+	log.Printf("[%s] Late Update, frame %d, last loop elapse %fs", comp.Entity().ID(), frame.CurFrames(), frame.LastLoopElapseTime().Seconds())
 }
 
 // Shut 组件停止
 func (comp *HelloWorldComp) Shut() {
-	log.Printf("[%s] Shut", comp.Entity().Id())
+	log.Printf("[%s] Shut", comp.Entity().ID())
 }
 
 // OnDisable 组件关闭
 func (comp *HelloWorldComp) OnDisable() {
-	log.Printf("[%s] OnDisable", comp.Entity().Id())
+	log.Printf("[%s] OnDisable", comp.Entity().ID())
 }
 
 // Dispose 组件销毁
 func (comp *HelloWorldComp) Dispose() {
-	log.Printf("[%s] Dispose", comp.Entity().Id())
+	log.Printf("[%s] Dispose", comp.Entity().ID())
 }

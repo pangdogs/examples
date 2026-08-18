@@ -126,7 +126,7 @@ func (s *GateService) InstallRPC(svc framework.IService) {
 func (s *GateService) handleSessionEstablished(session gate.ISession) {
 	// 创建用户实体
 	user, err := s.BuildEntity(consts.User).
-		SetPersistId(session.Id()).
+		SetPersistID(session.ID()).
 		New()
 	if err != nil {
 		s.L().Panic("create user failed", log.JSONRawStringer("session", session), zap.Error(err))
