@@ -69,7 +69,7 @@ flowchart LR
 ### 环境要求
 
 - Go `1.25.0`，或与当前 [`go.mod`](./go.mod) 兼容的版本。
-- 运行 ETCD/NATS 相关示例时需要 Docker 和 Compose。
+- 运行 ETCD/NATS 相关示例时需要 Docker Engine 和 Compose v2，可通过 `docker compose version` 验证。
 - 运行图形聊天客户端时需要 Godot `4.6`。
 
 在仓库根目录下载依赖并运行不依赖外部服务的示例：
@@ -127,6 +127,8 @@ flowchart LR
 ```bash
 docker compose -f app/demo_chat/docker-compose.yaml up --build -d
 ```
+
+镜像构建会在 builder 容器内编译 Go 服务端。低内存主机出现 `compile: signal: killed` 通常表示宿主机或容器内存耗尽，并非日志中对应的 Go 包编译错误。可以增加 swap、换用内存更充足的机器构建，或由 CI 构建并发布镜像后再在目标主机启动。
 
 然后运行 Go 终端客户端：
 

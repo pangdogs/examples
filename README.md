@@ -69,7 +69,7 @@ flowchart LR
 ### Requirements
 
 - Go `1.25.0` or a version compatible with the current [`go.mod`](./go.mod).
-- Docker with Compose for ETCD/NATS-backed examples.
+- Docker Engine with Compose v2 (`docker compose version`) for ETCD/NATS-backed examples.
 - Godot `4.6` when running the graphical chat client.
 
 Download dependencies and run the standalone examples from the repository root:
@@ -127,6 +127,8 @@ Build the current checkout and start the chat server, ETCD, and NATS:
 ```bash
 docker compose -f app/demo_chat/docker-compose.yaml up --build -d
 ```
+
+The image build compiles the Go server inside the builder container. On a low-memory host, a line such as `compile: signal: killed` usually means the host or container ran out of memory, not that the named Go package failed to compile. Add swap, build on a machine with more memory, or build and publish the image from CI before starting it on the target host.
 
 Then run the Go terminal client:
 
