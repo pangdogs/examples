@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"time"
 
+	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/service"
 	. "git.golaxy.org/framework/addins"
@@ -66,14 +67,22 @@ func (comp *HelloWorldComp) Start() {
 	}
 	comp.reg = reg
 
-	go func() {
-		for e := range w {
-			if e.Error != nil {
-				log.L(service.Current(comp)).Error("watch event failed", zap.Error(e.Error))
+	core.SpawnVoid(comp, func(ctx context.Context, _ ...any) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case e, ok := <-w:
+				if !ok {
+					return
+				}
+				if e.Error != nil {
+					log.L(service.Current(comp)).Error("watch event failed", zap.Error(e.Error))
+				}
+				log.L(service.Current(comp)).Info("[event]", log.JSON("event", e))
 			}
-			log.L(service.Current(comp)).Info("[event]", log.JSON("event", e))
 		}
-	}()
+	})
 }
 
 // Shut 组件停止
